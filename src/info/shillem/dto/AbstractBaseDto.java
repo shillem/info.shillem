@@ -18,8 +18,8 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
 	private long lastModified;
 	private boolean isNewRecord;
 
-	private final Map<BaseField, Object> values = new HashMap<BaseField, Object>();
-	private final Map<BaseField, ValueHolder> changes = new HashMap<BaseField, ValueHolder>();
+	private final Map<BaseField, Object> values = new HashMap<>();
+	private final Map<BaseField, ValueHolder> changes = new HashMap<>();
 
 	@Override
 	public void clear() {
@@ -37,7 +37,7 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
 	@Override
 	public void commit(Date commitDate) {
 		if (id == null) {
-			throw new NullPointerException("Invalid id");
+			throw new NullPointerException("Invalid Id");
 		}
 
 		for (Iterator<Map.Entry<BaseField, ValueHolder>> iter = changes.entrySet().iterator(); iter

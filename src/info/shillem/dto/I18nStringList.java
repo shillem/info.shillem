@@ -8,7 +8,7 @@ public class I18nStringList implements I18nValue, Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	private final Map<String, String> map = new LinkedHashMap<String, String>();
+	private final Map<String, String> map = new LinkedHashMap<>();
 	
 	public void add(String value, String label) {
 		map.put(value, label);

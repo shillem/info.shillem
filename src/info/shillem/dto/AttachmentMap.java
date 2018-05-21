@@ -14,11 +14,11 @@ public class AttachmentMap implements Serializable {
 	private final Map<String, AttachmentFile> attachments;
 
 	public AttachmentMap() {
-		attachments = new Hashtable<String, AttachmentFile>();
+		attachments = new Hashtable<>();
 	}
 
 	public AttachmentMap(int size) {
-		attachments = new Hashtable<String, AttachmentFile>(size);
+		attachments = new Hashtable<>(size);
 	}
 
 	public void add(String fileName) {
