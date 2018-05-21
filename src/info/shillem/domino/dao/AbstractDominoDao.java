@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,10 +29,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
-import info.shillem.dao.AbstractQuery;
+import info.shillem.dao.Query;
 import info.shillem.domino.util.DominoFactory;
 import info.shillem.domino.util.DominoI18n;
 import info.shillem.domino.util.DominoUtil;
+import info.shillem.domino.util.MimeContentType;
 import info.shillem.dto.AttachmentFile;
 import info.shillem.dto.AttachmentMap;
 import info.shillem.dto.BaseDto;
@@ -65,37 +65,6 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 		this.builder = builder;
 	}
 
-	protected final Map<String, MIMEEntity> getAttachmentMimeEntities(MIMEEntity mimeEntity)
-			throws NotesException {
-		if (mimeEntity != null) {
-			Map<String, MIMEEntity> attachments = new HashMap<String, MIMEEntity>();
-			MIMEEntity entity = null;
-
-			try {
-				entity = mimeEntity.getNextEntity();
-
-				while (entity != null) {
-					for (Object header : entity.getHeaderObjects()) {
-						String fileName = ((MIMEHeader) header).getParamVal("filename");
-
-						if (!fileName.isEmpty()) {
-							attachments.put(fileName.replaceAll("'|\"", ""), entity);
-						}
-					}
-
-					// No recycle
-					entity = entity.getNextEntity();
-				}
-			} finally {
-				DominoUtil.recycle(entity);
-			}
-
-			return attachments;
-		}
-
-		return Collections.<String, MIMEEntity> emptyMap();
-	}
-
 	protected String getDominoItemName(BaseField f) {
 		return f.toString();
 	}
@@ -108,7 +77,7 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 					@Override
 					public Map<String, Object> deserialize(JsonElement jsonElement, Type type,
 							JsonDeserializationContext context) throws JsonParseException {
-						Map<String, Object> map = new TreeMap<String, Object>();
+						Map<String, Object> map = new TreeMap<>();
 
 						for (Entry<String, JsonElement> entry : jsonElement.getAsJsonObject()
 								.entrySet()) {
@@ -235,35 +204,39 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 
 	private AttachmentMap pullAttachmentMap(Document doc, BaseField field) throws NotesException {
 		String itemName = getDominoItemName(field);
-		MIMEEntity root = null;
+		MIMEEntity mimeEntity = null;
 
 		try {
-			root = DominoUtil.getMimeEntity(doc, itemName, false);
+			mimeEntity = DominoUtil.getMimeEntity(doc, itemName, false);
 
-			if (root != null) {
-				Map<String, MIMEEntity> ame = getAttachmentMimeEntities(root);
+			if (mimeEntity == null) {
+				return null;
+			}
 
-				if (!ame.isEmpty()) {
-					try {
-						AttachmentMap m = new AttachmentMap(ame.size());
+			List<MIMEEntity> attachments = DominoUtil
+					.getMimeEntities(mimeEntity, MimeContentType.ATTACHMENT)
+					.get(MimeContentType.ATTACHMENT);
 
-						for (String fileName : ame.keySet()) {
-							m.add(fileName);
-						}
+			if (attachments == null) {
+				return null;
+			}
 
-						return m;
-					} finally {
-						DominoUtil.recycle(ame.values().toArray(new Base[ame.values().size()]));
-					}
+			try {
+				AttachmentMap am = new AttachmentMap(attachments.size());
+
+				for (MIMEEntity attachment : attachments) {
+					am.add(DominoUtil.getMimeEntityFilename(attachment));
 				}
+
+				return am;
+			} finally {
+				DominoUtil.recycle(attachments.toArray(new Base[attachments.size()]));
 			}
 		} finally {
-			DominoUtil.recycle(root);
+			DominoUtil.recycle(mimeEntity);
 
 			doc.closeMIMEEntities(false, itemName);
 		}
-
-		return null;
 	}
 
 	private Object pullJsonable(Document doc, BaseField field, Class<?> type) throws NotesException {
@@ -367,16 +340,28 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 		try {
 			mimeEntity = DominoUtil.getMimeEntity(doc, itemName, true);
 
-			Map<String, MIMEEntity> ame = getAttachmentMimeEntities(mimeEntity);
+			List<MIMEEntity> attachments = DominoUtil
+					.getMimeEntities(mimeEntity, MimeContentType.ATTACHMENT)
+					.get(MimeContentType.ATTACHMENT);
 
-			// Removing files
-			for (AttachmentFile af : am.getFiles()) {
-				if (af.isRemove()) {
-					if (ame.containsKey(af.getName())) {
-						ame.get(af.getName()).remove();
+			Map<String, MIMEEntity> attachmentsByName = new HashMap<>();
+
+			if (attachments != null) {
+				for (MIMEEntity attachment : attachments) {
+					attachmentsByName.put(DominoUtil.getMimeEntityFilename(attachment), attachment);
+				}
+
+				// Removing files
+				for (AttachmentFile af : am.getFiles()) {
+					if (af.isRemove()) {
+						MIMEEntity att = attachmentsByName.get(af.getName());
+
+						if (att != null) {
+							att.remove();
+						}
+
+						am.remove(af.getName());
 					}
-
-					am.remove(af.getName());
 				}
 			}
 
@@ -400,7 +385,7 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 				try {
 					is = new FileInputStream(uploadedFile);
 
-					pushInputStream(is, af.getName(), ame.get(af.getName()), mimeEntity);
+					pushInputStream(is, af.getName(), attachmentsByName.get(af.getName()), mimeEntity);
 				} catch (FileNotFoundException BaseField) {
 					throw new IllegalArgumentException(String.format(
 							"The file with path %s was not found", uploadedFile.getAbsolutePath()));
@@ -419,8 +404,8 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 		}
 	}
 
-	private void pushInputStream(InputStream is, String fileName, MIMEEntity child,
-			MIMEEntity parent) throws NotesException, IOException {
+	private void pushInputStream(InputStream is, String fileName, MIMEEntity child, MIMEEntity parent)
+			throws NotesException, IOException {
 		Stream stm = null;
 
 		try {
@@ -442,8 +427,8 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 				header.setHeaderVal("attachment;filename=\"" + fileName + "\"");
 			}
 
-			child.setContentFromBytes(stm, "application/octet-stream",
-					MIMEEntity.ENC_IDENTITY_BINARY);
+			child.setContentFromBytes(stm, "application/octet-stream", MIMEEntity.ENC_IDENTITY_BINARY);
+
 			stm.close();
 		} finally {
 			DominoUtil.recycle(stm);
@@ -461,8 +446,8 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 			stm.writeText(getGson().toJson(jsonable));
 
 			mimeEntity = DominoUtil.getMimeEntity(doc, itemName, true);
-			mimeEntity.setContentFromText(stm, "application/json;charset=UTF-8",
-					MIMEEntity.ENC_NONE);
+			mimeEntity.setContentFromText(stm, "application/json;charset=UTF-8", MIMEEntity.ENC_NONE);
+
 			stm.close();
 		} finally {
 			DominoUtil.recycle(stm, mimeEntity);
@@ -495,8 +480,8 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 
 		return value;
 	}
-	
-	protected T read(Document doc, AbstractQuery query) throws NotesException {
+
+	protected T read(Document doc, Query query) throws NotesException {
 		T dto = builder.build();
 
 		pull(doc, dto, query.getSchema(), query.getLocale());

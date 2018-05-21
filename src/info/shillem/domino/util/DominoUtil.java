@@ -170,7 +170,7 @@ public enum DominoUtil {
 						List<MIMEEntity> filteredEntities = mimeEntities.get(contentType);
 
 						if (filteredEntities == null) {
-							filteredEntities = new ArrayList<MIMEEntity>();
+							filteredEntities = new ArrayList<>();
 							mimeEntities.put(contentType, filteredEntities);
 						}
 

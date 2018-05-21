@@ -9,8 +9,6 @@ import lotus.domino.Session;
 import lotus.domino.View;
 
 public interface DominoFactory {
-	
-	void addDatabasePath(DatabaseIdentifier identifier, DatabasePath path);
 
 	Database getDatabase(DatabaseIdentifier ddi) throws NotesException;
 

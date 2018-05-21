@@ -56,7 +56,7 @@ public enum DominoI18n {
 		Document doc = null;
 
 		try {
-			Map<BaseField, I18nValue> resources = new HashMap<BaseField, I18nValue>();
+			Map<BaseField, I18nValue> resources = new HashMap<>();
 
 			doc = vw.getFirstDocument();
 
@@ -99,7 +99,7 @@ public enum DominoI18n {
 
 			doc.setPreferJavaDates(true);
 
-			Map<BaseField, I18nValue> resources = new HashMap<BaseField, I18nValue>();
+			Map<BaseField, I18nValue> resources = new HashMap<>();
 
 			for (BaseField field : fields) {
 				resources.put(field, getValue(locale, doc, field));

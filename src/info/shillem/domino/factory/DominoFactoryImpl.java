@@ -32,13 +32,15 @@ public class DominoFactoryImpl implements DominoFactory {
 		}
 
 		this.session = session;
-		this.databasePaths = new HashMap<String, DatabasePath>();
-		this.databaseHandles = new HashMap<String, Database>();
+		this.databasePaths = new HashMap<>();
+		this.databaseHandles = new HashMap<>();
+		this.viewHandles = new HashMap<>();
 	}
 
-	@Override
-	public void addDatabasePath(DatabaseIdentifier identifier, DatabasePath databasePath) {
+	public DominoFactoryImpl addDatabasePath(DatabaseIdentifier identifier, DatabasePath databasePath) {
 		databasePaths.put(identifier.getName(), databasePath);
+		
+		return this;
 	}
 
 	@Override
@@ -89,7 +91,7 @@ public class DominoFactoryImpl implements DominoFactory {
 	@Override
 	public final View getView(ViewIdentifier dvi, ViewAccessPolicy policy) throws NotesException {
 		if (viewHandles == null) {
-			viewHandles = new HashMap<String, View>();
+			viewHandles = new HashMap<>();
 		}
 
 		View vw = viewHandles.get(dvi.getName());

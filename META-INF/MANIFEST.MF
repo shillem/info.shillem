@@ -13,4 +13,5 @@ Import-Package: com.google.gson,
  lotus.domino
 Automatic-Module-Name: info.shillem.util
 Export-Package: info.shillem.domino.dao,
+ info.shillem.domino.factory,
  info.shillem.domino.util
