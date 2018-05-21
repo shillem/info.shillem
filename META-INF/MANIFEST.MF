@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Shillem Util Plug-in
+Bundle-SymbolicName: info.shillem.util;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Shillem Volpato
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: com.google.gson,
+ com.google.gson.reflect,
+ info.shillem.dao,
+ info.shillem.dto,
+ info.shillem.util,
+ lotus.domino
+Automatic-Module-Name: info.shillem.util
+Export-Package: info.shillem.domino.dao,
+ info.shillem.domino.util
