@@ -7,10 +7,10 @@ import info.shillem.dto.BaseField;
 
 public interface Query {
 
-	Set<? extends BaseField> getSchema();
+	boolean getCache();
 
 	Locale getLocale();
 
-	boolean getCache();
+	Set<? extends BaseField> getSchema();
 
 }

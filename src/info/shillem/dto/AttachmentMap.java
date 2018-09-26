@@ -1,52 +1,22 @@
 package info.shillem.dto;
 
 import java.io.File;
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
 
-public class AttachmentMap implements Serializable {
+public class AttachmentMap extends Hashtable<String, AttachmentFile> {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
+    
+    public void put(String fileName) {
+        put(fileName, new AttachmentFile(fileName));
+    }
 
-	private final Map<String, AttachmentFile> attachments;
-
-	public AttachmentMap() {
-		attachments = new Hashtable<>();
-	}
-
-	public AttachmentMap(int size) {
-		attachments = new Hashtable<>(size);
-	}
-
-	public void add(String fileName) {
-		attachments.put(fileName, new AttachmentFile(fileName));
-	}
-
-	public void add(String fileName, File uploadedFile) {
-		attachments.put(fileName, new AttachmentFile(fileName, uploadedFile));
-	}
-
-	public void remove(String fileName) {
-		attachments.remove(fileName);
-	}
-
-	public AttachmentFile getFile(String fileName) {
-		return attachments.get(fileName);
-	}
-
-	public List<AttachmentFile> getFiles() {
-		return new ArrayList<>(attachments.values());
-	}
-
-	public boolean isEmpty() {
-		return attachments.isEmpty();
-	}
-
-	public void clear() {
-		attachments.clear();
-	}
+    public void put(String fileName, File uploadedFile) {
+        put(fileName, new AttachmentFile(fileName, uploadedFile));
+    }
+    
+    public AttachmentFile getFirst() {
+        return values().iterator().next();
+    }
 
 }

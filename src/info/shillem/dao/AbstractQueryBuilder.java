@@ -3,73 +3,77 @@ package info.shillem.dao;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import info.shillem.dto.BaseField;
 
 public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
-		implements QueryBuilder<T> {
+        implements QueryBuilder<T> {
 
-	private Set<BaseField> schema;
-	private Locale locale;
-	private boolean cache;
+    private Set<BaseField> schema;
+    private Locale locale;
+    private boolean cache;
 
-	@Override
-	public T add(BaseField... fields) {
-		if (schema == null) {
-			schema = new HashSet<>();
-		}
+    @Override
+    public T add(BaseField... fields) {
+        Objects.requireNonNull(fields, "Field cannot be null");
+        
+        if (schema == null) {
+            schema = new HashSet<>();
+        }
+        
+        Stream.of(fields).forEach(schema::add);
+        
+        return autocast();
+    }
 
-		for (BaseField field : fields) {
-			schema.add(field);
-		}
+    @Override
+    public T add(Set<? extends BaseField> fields) {
+        Objects.requireNonNull(fields, "Fields cannot be null");
+        
+        if (schema == null) {
+            schema = new HashSet<>();
+        }
 
-		return autocast();
-	}
+        schema.addAll(fields);
 
-	@Override
-	public T add(Set<? extends BaseField> fields) {
-		if (schema == null) {
-			schema = new HashSet<>();
-		}
+        return autocast();
+    }
 
-		schema.addAll(fields);
+    @SuppressWarnings("unchecked")
+    private T autocast() {
+        return (T) this;
+    }
 
-		return autocast();
-	}
+    @Override
+    public boolean getCache() {
+        return cache;
+    }
 
-	@SuppressWarnings("unchecked")
-	private T autocast() {
-		return (T) this;
-	}
+    @Override
+    public Locale getLocale() {
+        return locale;
+    }
 
-	@Override
-	public boolean getCache() {
-		return cache;
-	}
+    @Override
+    public Set<BaseField> getSchema() {
+        return schema != null ? schema : Collections.emptySet();
+    }
 
-	@Override
-	public Locale getLocale() {
-		return locale;
-	}
+    @Override
+    public T setCache(boolean flag) {
+        this.cache = flag;
 
-	@Override
-	public Set<BaseField> getSchema() {
-		return schema != null ? schema : Collections.emptySet();
-	}
+        return autocast();
+    }
 
-	@Override
-	public T setCache(boolean flag) {
-		this.cache = flag;
+    @Override
+    public T setLocale(Locale locale) {
+        this.locale = locale;
 
-		return autocast();
-	}
-
-	@Override
-	public T setLocale(Locale locale) {
-		this.locale = locale;
-
-		return autocast();
-	}
+        return autocast();
+    }
 
 }

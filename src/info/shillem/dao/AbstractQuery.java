@@ -12,14 +12,14 @@ public abstract class AbstractQuery implements Query {
 	private final boolean cache;
 	
 	public AbstractQuery(QueryBuilder<?> builder) {
-		this.schema = builder.getSchema();
-		this.locale = builder.getLocale();
-		this.cache = builder.getCache();
+		schema = builder.getSchema();
+		locale = builder.getLocale();
+		cache = builder.getCache();
 	}
 
 	@Override
-	public Set<? extends BaseField> getSchema() {
-		return schema;
+	public boolean getCache() {
+		return cache;
 	}
 
 	@Override
@@ -28,8 +28,8 @@ public abstract class AbstractQuery implements Query {
 	}
 	
 	@Override
-	public boolean getCache() {
-		return cache;
+	public Set<? extends BaseField> getSchema() {
+		return schema;
 	}
 
 }
