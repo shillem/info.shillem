@@ -1,6 +1,7 @@
 package info.shillem.domino.util;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,15 +14,13 @@ public final class DatabasePath implements Serializable {
 	private final String serverName;
 	private final String filePath;
 
-	public DatabasePath(String s) {
-		if (s == null) {
-			throw new NullPointerException("Path cannot be null");
-		}
+	public DatabasePath(String path) {
+	    Objects.requireNonNull(path);
 		
-		Matcher matcher = PATH_PATTERN.matcher(s);
+		Matcher matcher = PATH_PATTERN.matcher(path);
 
 		if (!matcher.find()) {
-			throw new IllegalArgumentException("Cannot match path " + s);
+			throw new IllegalArgumentException("Cannot match path: " + path);
 		}
 
 		this.serverName = matcher.group(1);
@@ -29,25 +28,22 @@ public final class DatabasePath implements Serializable {
 	}
 
 	public DatabasePath(String serverName, String filePath) {
-		if (serverName == null || filePath == null) {
-			throw new NullPointerException("Path cannot be null");
-		}
+        Objects.requireNonNull(serverName);
+        Objects.requireNonNull(filePath);
 		
 		this.serverName = serverName;
 		this.filePath = formatFilePath(filePath);
 	}
 
-	public DatabasePath(String[] arr) {
-		if (arr == null) {
-			throw new NullPointerException("Path cannot be null");
-		}
+	public DatabasePath(String[] path) {
+        Objects.requireNonNull(path);
 		
-		if (arr.length != 2) {
+		if (path.length != 2) {
 			throw new IllegalArgumentException();
 		}
 
-		this.serverName = arr[0];
-		this.filePath = formatFilePath(arr[1]);
+		this.serverName = path[0];
+		this.filePath = formatFilePath(path[1]);
 	}
 
 	private String formatFilePath(String filePath) {

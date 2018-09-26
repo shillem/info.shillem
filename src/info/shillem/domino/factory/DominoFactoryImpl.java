@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import info.shillem.domino.util.DatabaseIdentifier;
 import info.shillem.domino.util.DatabasePath;
@@ -26,10 +27,11 @@ public class DominoFactoryImpl implements DominoFactory {
 	private Map<String, View> viewHandles;
 	private Map<String, List<String>> viewColumnNames;
 
-	public DominoFactoryImpl(Session session) {
-		if (session == null) {
-			throw new NullPointerException("Session cannot be null");
-		}
+	public DominoFactoryImpl(Session session) throws NotesException {
+        Objects.requireNonNull(session, "Session cannot be null");
+		
+		session.setConvertMime(false);
+		session.setTrackMillisecInJavaDates(true);
 
 		this.session = session;
 		this.databasePaths = new HashMap<>();
@@ -45,9 +47,7 @@ public class DominoFactoryImpl implements DominoFactory {
 
 	@Override
 	public final Database getDatabase(DatabaseIdentifier ddi) throws NotesException {
-		if (ddi == null) {
-			throw new NullPointerException("Database Identifier cannot be null");
-		}
+        Objects.requireNonNull(ddi, "Database Identifier cannot be null");
 
 		Database db = databaseHandles.get(ddi.getName());
 
@@ -120,7 +120,7 @@ public class DominoFactoryImpl implements DominoFactory {
 	@Override
 	public List<String> getViewColumnNames(ViewIdentifier dvi) throws NotesException {
 		if (viewColumnNames == null) {
-			viewColumnNames = new HashMap<String, List<String>>();
+			viewColumnNames = new HashMap<>();
 		}
 
 		List<String> columnNames = viewColumnNames.get(dvi.getName());
@@ -142,8 +142,8 @@ public class DominoFactoryImpl implements DominoFactory {
 
 	@Override
 	public void recycle() {
-		DominoUtil.recycle(viewHandles.values().toArray(new View[0]));
-		DominoUtil.recycle(databaseHandles.values().toArray(new Database[0]));
+		DominoUtil.recycle(viewHandles.values());
+		DominoUtil.recycle(databaseHandles.values());
 
 		viewHandles.clear();
 		databaseHandles.clear();
