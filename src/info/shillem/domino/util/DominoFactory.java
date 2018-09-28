@@ -1,24 +1,17 @@
 package info.shillem.domino.util;
 
-import java.util.List;
-
-import lotus.domino.Database;
-import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
-import lotus.domino.View;
 
 public interface DominoFactory {
 
-	Database getDatabase(DatabaseIdentifier ddi) throws NotesException;
+    void addDominoSilo(DominoSilo silo);
+    
+    boolean containsDominoSilo(String name);
 
-	Document getDocumentById(DatabaseIdentifier dd, String id) throws NotesException;
-
+    DominoSilo getDominoSilo(String name);
+    
 	Session getSession() throws NotesException;
-
-	View getView(ViewIdentifier dvi, ViewAccessPolicy policy) throws NotesException;
-
-	List<String> getViewColumnNames(ViewIdentifier dvi) throws NotesException;
 	
 	void recycle();
 

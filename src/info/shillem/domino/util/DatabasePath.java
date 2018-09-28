@@ -7,68 +7,71 @@ import java.util.regex.Pattern;
 
 public final class DatabasePath implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private static final Pattern PATH_PATTERN = Pattern.compile("([^!]*)!!(.*)");
+    private static final Pattern PATH_END_PATTERN =
+            Pattern.compile("\\.n[st]f$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern SYNTAX_PATTERN =
+            Pattern.compile("([^!]*)!!(.*)");
 
-	private final String serverName;
-	private final String filePath;
+    private final String serverName;
+    private final String filePath;
 
-	public DatabasePath(String path) {
-	    Objects.requireNonNull(path);
-		
-		Matcher matcher = PATH_PATTERN.matcher(path);
+    public DatabasePath(String filePath) {
+        Objects.requireNonNull(filePath);
 
-		if (!matcher.find()) {
-			throw new IllegalArgumentException("Cannot match path: " + path);
-		}
+        Matcher matcher = SYNTAX_PATTERN.matcher(filePath);
 
-		this.serverName = matcher.group(1);
-		this.filePath = formatFilePath(matcher.group(2));
-	}
+        if (!matcher.find()) {
+            throw new IllegalArgumentException("Cannot match path: " + filePath);
+        }
 
-	public DatabasePath(String serverName, String filePath) {
+        this.serverName = matcher.group(1);
+        this.filePath = formatFilePath(matcher.group(2));
+    }
+
+    public DatabasePath(String serverName, String filePath) {
         Objects.requireNonNull(serverName);
         Objects.requireNonNull(filePath);
-		
-		this.serverName = serverName;
-		this.filePath = formatFilePath(filePath);
-	}
 
-	public DatabasePath(String[] path) {
-        Objects.requireNonNull(path);
-		
-		if (path.length != 2) {
-			throw new IllegalArgumentException();
-		}
+        this.serverName = serverName;
+        this.filePath = formatFilePath(filePath);
+    }
 
-		this.serverName = path[0];
-		this.filePath = formatFilePath(path[1]);
-	}
+    public DatabasePath(String[] filePath) {
+        Objects.requireNonNull(filePath);
 
-	private String formatFilePath(String filePath) {
-		if (!filePath.toLowerCase().endsWith(".nsf")) {
-			return filePath + ".nsf";
-		}
+        if (filePath.length != 2) {
+            throw new IllegalArgumentException(
+                    "Path must contain a 2-value array with server name and path");
+        }
 
-		return filePath;
+        this.serverName = filePath[0];
+        this.filePath = formatFilePath(filePath[1]);
+    }
 
-	}
+    private String formatFilePath(String filePath) {
+        if (PATH_END_PATTERN.matcher(filePath).find()) {
+            return filePath;
+        }
 
-	public String getServerName() {
-		return serverName;
-	}
+        return filePath + ".nsf";
+    }
 
-	public String getFilePath() {
-		return filePath;
-	}
+    public String getApiPath() {
+        return serverName + "!!" + filePath;
+    }
 
-	public String getUrlPath() {
-		return filePath.replace('\\', '/');
-	}
+    public String getFilePath() {
+        return filePath;
+    }
 
-	public String getApiPath() {
-		return serverName + "!!" + filePath;
-	}
+    public String getServerName() {
+        return serverName;
+    }
+
+    public String getUrlPath() {
+        return filePath.replace('\\', '/');
+    }
 
 }
