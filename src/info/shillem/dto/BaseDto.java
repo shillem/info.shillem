@@ -23,6 +23,8 @@ public interface BaseDto {
 	Boolean getBoolean(BaseField key);
 
 	Set<? extends BaseField> getChanges();
+	
+	String getDatabaseUrl();
 
 	Date getDate(BaseField key);
 
@@ -39,6 +41,8 @@ public interface BaseDto {
 	<T> List<T> getList(BaseField key, Class<T> type);
 
 	String getString(BaseField key);
+	
+	boolean is(BaseField key);
 
 	boolean isNewRecord();
 
@@ -51,6 +55,8 @@ public interface BaseDto {
 	void setId(String id);
 
 	void setLastModified(Date lastModified);
+	
+	void setDatabaseUrl(String databaseUrl);
 
 	void trackChange(BaseField key);
 

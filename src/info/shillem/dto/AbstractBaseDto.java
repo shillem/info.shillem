@@ -14,6 +14,7 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     private static final long serialVersionUID = 1L;
 
     private String id;
+    private String databaseUrl;
     private long lastModified;
     private boolean newRecord;
 
@@ -79,6 +80,11 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     @Override
     public Set<? extends BaseField> getChanges() {
         return changes.keySet();
+    }
+    
+    @Override
+    public String getDatabaseUrl() {
+        return databaseUrl;
     }
 
     @Override
@@ -155,6 +161,13 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
         return id == null || newRecord;
     }
 
+    @Override
+    public boolean is(BaseField key) {
+        Boolean flag = getBoolean(key);
+        
+        return flag != null && flag;
+    }
+    
     @Override
     public void rollback() {
         if (isNewRecord()) {
@@ -248,6 +261,11 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     @Override
     public final void setId(String id) {
         this.id = id;
+    }
+    
+    @Override
+    public void setDatabaseUrl(String databaseUrl) {
+        this.databaseUrl = databaseUrl;
     }
 
     @Override
