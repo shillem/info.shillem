@@ -7,7 +7,7 @@ public class DaoResolutionException extends DaoException {
     public DaoResolutionException(String url) {
         super(
                 String.format("The resource with url %s is not resolvable", url),
-                DaoErrorCode.RESOLUTION);
+                DaoErrorCode.UNRESOLVABLE);
     }
 
 }
