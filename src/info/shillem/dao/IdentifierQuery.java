@@ -6,7 +6,7 @@ import java.util.Objects;
 import info.shillem.dto.BaseField;
 import info.shillem.util.StringUtil;
 
-public class IdentifierQuery extends AbstractQuery {
+public class IdentifierQuery extends Query {
 
     public static class Builder extends AbstractQueryBuilder<IdentifierQuery.Builder> {
 

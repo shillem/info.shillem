@@ -5,12 +5,36 @@ import java.util.Set;
 
 import info.shillem.dto.BaseField;
 
-public interface Query {
+public class Query {
 
-	boolean getCache();
+    public static class Builder extends AbstractQueryBuilder<Query.Builder> {
 
-	Locale getLocale();
+        public Query build() {
+            return new Query(this);
+        }
 
-	Set<? extends BaseField> getSchema();
+    }
+
+    private final Set<? extends BaseField> schema;
+    private final Locale locale;
+    private final boolean cache;
+
+    protected Query(QueryBuilder<?> builder) {
+        schema = builder.getSchema();
+        locale = builder.getLocale();
+        cache = builder.getCache();
+    }
+
+    public boolean getCache() {
+        return cache;
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public Set<? extends BaseField> getSchema() {
+        return schema;
+    }
 
 }

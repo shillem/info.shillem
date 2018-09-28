@@ -2,7 +2,7 @@ package info.shillem.dao;
 
 import info.shillem.util.StringUtil;
 
-public class UrlQuery extends AbstractQuery {
+public class UrlQuery extends Query {
 
     public static class Builder extends AbstractQueryBuilder<UrlQuery.Builder> {
 

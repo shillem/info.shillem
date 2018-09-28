@@ -12,9 +12,9 @@ import info.shillem.dto.BaseField;
 public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
         implements QueryBuilder<T> {
 
+    private boolean cache;
     private Set<BaseField> schema;
     private Locale locale;
-    private boolean cache;
 
     @Override
     public T add(BaseField... fields) {
