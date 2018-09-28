@@ -61,7 +61,7 @@ public enum DominoI18n {
 			doc = vw.getFirstDocument();
 
 			while (doc != null) {
-				doc.setPreferJavaDates(true);
+	            DominoUtil.setDefaultOptions(doc);
 
 				for (BaseField field : fields) {
 					I18nStringList stringList = (I18nStringList) resources.get(field);
@@ -97,7 +97,7 @@ public enum DominoI18n {
 				return Collections.emptyMap();
 			}
 
-			doc.setPreferJavaDates(true);
+			DominoUtil.setDefaultOptions(doc);
 
 			Map<BaseField, I18nValue> resources = new HashMap<>();
 

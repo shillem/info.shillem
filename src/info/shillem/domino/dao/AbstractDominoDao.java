@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -29,6 +30,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
+import info.shillem.dao.lang.DaoException;
+import info.shillem.dao.lang.DaoResolutionException;
 import info.shillem.domino.util.DominoFactory;
 import info.shillem.domino.util.DominoI18n;
 import info.shillem.domino.util.DominoUtil;
@@ -43,7 +46,7 @@ import info.shillem.dto.ValueOperation;
 import info.shillem.util.IOUtil;
 import info.shillem.util.StringUtil;
 import lotus.domino.Base;
-import lotus.domino.DateTime;
+import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Item;
 import lotus.domino.MIMEEntity;
@@ -99,25 +102,22 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         this.factory = factory;
     }
 
+    protected Document createDocument(Database database) throws NotesException {
+        Document doc = database.createDocument();
+
+        DominoUtil.setDefaultOptions(doc);
+
+        return doc;
+    }
+
     protected String getDominoItemName(BaseField f) {
         return f.toString();
     }
 
-    protected final Date getLastModified(Document doc) throws NotesException {
-        DateTime d = null;
-
-        try {
-            d = doc.getLastModified();
-
-            return d.toJavaDate();
-        } finally {
-            DominoUtil.recycle(d);
-        }
-    }
-
     protected final boolean lastModifiedDatesMatch(BaseDto dto, Document doc)
             throws NotesException {
-        return dto.getLastModified() == null || dto.getLastModified().equals(getLastModified(doc));
+        return dto.getLastModified() == null
+                || dto.getLastModified().equals(DominoUtil.getLastModified(doc));
     }
 
     @SuppressWarnings("unchecked")
@@ -172,8 +172,8 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 
     protected void pull(Document doc, T wrapper, Set<? extends BaseField> schema, Locale locale)
             throws NotesException {
-        if (!doc.isPreferJavaDates()) {
-            throw new UnsupportedOperationException("Java dates are not enabled");
+        if (!DominoUtil.hasDefaultOptions(doc)) {
+            throw new IllegalArgumentException("Document is not treated with compatible options");
         }
 
         for (BaseField field : schema) {
@@ -182,14 +182,14 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 
         if (!doc.isNewNote()) {
             wrapper.setId(doc.getUniversalID());
-            wrapper.setLastModified(getLastModified(doc));
+            wrapper.setLastModified(DominoUtil.getLastModified(doc));
         }
     }
 
     protected void pull(List<String> columns, ViewEntry entry, T wrapper,
             Set<? extends BaseField> schema) throws NotesException {
-        if (!entry.isPreferJavaDates()) {
-            throw new UnsupportedOperationException("Java dates are not enabled");
+        if (!DominoUtil.hasDefaultOptions(entry)) {
+            throw new IllegalArgumentException("Entry is not treated with compatible options");
         }
 
         for (BaseField field : schema) {
@@ -494,6 +494,22 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         }
 
         return value;
+    }
+
+    protected Document resolveDocument(String notesUrl) throws DaoException, NotesException {
+        Objects.requireNonNull(notesUrl, "Notes URL cannot be null");
+
+        Base base = factory.getSession().resolve(notesUrl);
+
+        if (base == null || !(base instanceof Document)) {
+            throw new DaoResolutionException(notesUrl);
+        }
+
+        Document doc = (Document) base;
+
+        DominoUtil.setDefaultOptions(doc);
+
+        return doc;
     }
 
 }

@@ -8,6 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.google.gson,
  com.google.gson.reflect,
  info.shillem.dao,
+ info.shillem.dao.lang,
  info.shillem.dto,
  info.shillem.util,
  lotus.domino

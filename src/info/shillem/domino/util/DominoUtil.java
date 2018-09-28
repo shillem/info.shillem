@@ -18,6 +18,7 @@ import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
+import lotus.domino.ViewEntry;
 
 public enum DominoUtil {
     ;
@@ -93,68 +94,6 @@ public enum DominoUtil {
         }
     }
 
-    public static MIMEEntity getMimeEntity(Document doc, String itemName, boolean createOnFail)
-            throws NotesException {
-        if (itemName == null) {
-            throw new NullPointerException("Invalid MIME entity item name");
-        }
-
-        MIMEEntity mimeEntity = doc.getMIMEEntity(itemName);
-
-        if (mimeEntity == null) {
-            if (doc.hasItem(itemName)) {
-                doc.removeItem(itemName);
-            }
-
-            if (createOnFail) {
-                mimeEntity = doc.createMIMEEntity(itemName);
-            }
-        }
-
-        return mimeEntity;
-    }
-
-    public static String getMimeEntityHeaderValAndParams(MIMEEntity entity, String name)
-            throws NotesException {
-        if (name == null) {
-            return null;
-        }
-
-        Vector<?> headers = entity.getHeaderObjects();
-
-        try {
-            for (Object header : headers) {
-                MIMEHeader h = (MIMEHeader) header;
-
-                if (h.getHeaderName().equals(name)) {
-                    return h.getHeaderValAndParams();
-                }
-            }
-
-            return null;
-        } finally {
-            recycle(headers);
-        }
-    }
-
-    public static String getMimeEntityFilename(MIMEEntity entity) throws NotesException {
-        Vector<?> headers = entity.getHeaderObjects();
-
-        try {
-            for (Object header : headers) {
-                String fileName = ((MIMEHeader) header).getParamVal("filename");
-
-                if (!fileName.isEmpty()) {
-                    return fileName.replaceAll("'|\"", "");
-                }
-            }
-
-            return null;
-        } finally {
-            recycle(headers);
-        }
-    }
-
     public static Map<MimeContentType, List<MIMEEntity>> getMimeEntities(MIMEEntity entity,
             MimeContentType... contentTypes) throws NotesException {
         if (entity == null || contentTypes == null) {
@@ -195,6 +134,76 @@ public enum DominoUtil {
         return mimeEntities;
     }
 
+    public static MIMEEntity getMimeEntity(Document doc, String itemName, boolean createOnFail)
+            throws NotesException {
+        if (itemName == null) {
+            throw new NullPointerException("Invalid MIME entity item name");
+        }
+
+        MIMEEntity mimeEntity = doc.getMIMEEntity(itemName);
+
+        if (mimeEntity == null) {
+            if (doc.hasItem(itemName)) {
+                doc.removeItem(itemName);
+            }
+
+            if (createOnFail) {
+                mimeEntity = doc.createMIMEEntity(itemName);
+            }
+        }
+
+        return mimeEntity;
+    }
+
+    public static String getMimeEntityFilename(MIMEEntity entity) throws NotesException {
+        Vector<?> headers = entity.getHeaderObjects();
+
+        try {
+            for (Object header : headers) {
+                String fileName = ((MIMEHeader) header).getParamVal("filename");
+
+                if (!fileName.isEmpty()) {
+                    return fileName.replaceAll("'|\"", "");
+                }
+            }
+
+            return null;
+        } finally {
+            recycle(headers);
+        }
+    }
+
+    public static String getMimeEntityHeaderValAndParams(MIMEEntity entity, String name)
+            throws NotesException {
+        if (name == null) {
+            return null;
+        }
+
+        Vector<?> headers = entity.getHeaderObjects();
+
+        try {
+            for (Object header : headers) {
+                MIMEHeader h = (MIMEHeader) header;
+
+                if (h.getHeaderName().equals(name)) {
+                    return h.getHeaderValAndParams();
+                }
+            }
+
+            return null;
+        } finally {
+            recycle(headers);
+        }
+    }
+
+    public static boolean hasDefaultOptions(Document doc) throws NotesException {
+        return doc.isPreferJavaDates();
+    }
+
+    public static boolean hasDefaultOptions(ViewEntry entry) throws NotesException {
+        return entry.isPreferJavaDates();
+    }
+
     public static void recycle(Base base) {
         if (base != null) {
             try {
@@ -203,13 +212,6 @@ public enum DominoUtil {
                 // Do nothing
             }
         }
-    }
-
-    public static void recycle(Collection<? extends Object> objs) {
-        objs.stream()
-                .filter(o -> o instanceof Base)
-                .map(o -> (Base) o)
-                .forEach(DominoUtil::recycle);
     }
 
     public static void recycle(Base b1, Base b2) {
@@ -230,7 +232,14 @@ public enum DominoUtil {
             Arrays.stream(bases).forEach(DominoUtil::recycle);
         }
     }
-
+    
+    public static void recycle(Collection<? extends Object> objs) {
+        objs.stream()
+                .filter(o -> o instanceof Base)
+                .map(o -> (Base) o)
+                .forEach(DominoUtil::recycle);
+    }
+    
     public static void setDate(Session session, Document doc, String itemName, Date value)
             throws NotesException {
         DateTime dateTime = null;
@@ -245,5 +254,14 @@ public enum DominoUtil {
             recycle(dateTime);
         }
     }
+    
+    public static void setDefaultOptions(Document doc) throws NotesException {
+        doc.setPreferJavaDates(true);
+    }
+    
+    public static void setDefaultOptions(ViewEntry entry) throws NotesException {
+        entry.setPreferJavaDates(true);
+    }
+    
 
 }

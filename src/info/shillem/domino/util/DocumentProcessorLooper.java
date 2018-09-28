@@ -25,8 +25,8 @@ public class DocumentProcessorLooper {
 
             while (doc != null) {
                 Document nextDocument = coll.getNextDocument(doc);
-
-                doc.setPreferJavaDates(true);
+                DominoUtil.setDefaultOptions(nextDocument);
+                
                 process(doc);
                 DominoUtil.recycle(doc);
 
@@ -47,8 +47,8 @@ public class DocumentProcessorLooper {
 
             while (doc != null) {
                 Document nextDocument = view.getNextDocument(doc);
-
-                doc.setPreferJavaDates(true);
+                DominoUtil.setDefaultOptions(nextDocument);
+                
                 process(doc);
                 DominoUtil.recycle(doc);
 
