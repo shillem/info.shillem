@@ -6,10 +6,10 @@ import java.util.Set;
 import info.shillem.dto.BaseField;
 
 public interface QueryBuilder<T> {
+    
+	T addField(BaseField... fields);
 	
-	T add(BaseField... fields);
-	
-	T add(Set<? extends BaseField> fields);
+	T addField(Set<? extends BaseField> fields);
 	
 	boolean getCache();
 	

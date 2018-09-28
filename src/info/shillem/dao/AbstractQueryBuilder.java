@@ -17,7 +17,7 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
     private Locale locale;
 
     @Override
-    public T add(BaseField... fields) {
+    public T addField(BaseField... fields) {
         Objects.requireNonNull(fields, "Field cannot be null");
         
         if (schema == null) {
@@ -30,7 +30,7 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
     }
 
     @Override
-    public T add(Set<? extends BaseField> fields) {
+    public T addField(Set<? extends BaseField> fields) {
         Objects.requireNonNull(fields, "Fields cannot be null");
         
         if (schema == null) {
