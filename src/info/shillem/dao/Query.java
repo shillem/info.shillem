@@ -14,19 +14,19 @@ public class Query {
         }
 
     }
+    
+    public static final Query EMPTY = new Query.Builder().build();
 
-    private final Set<? extends BaseField> schema;
+    private final boolean cached;
+    private final boolean databaseUrl;
     private final Locale locale;
-    private final boolean cache;
+    private final Set<? extends BaseField> schema;
 
     protected Query(QueryBuilder<?> builder) {
-        schema = builder.getSchema();
+        cached = builder.isFetchCached();
+        databaseUrl = builder.isFetchDatabaseUrl();
         locale = builder.getLocale();
-        cache = builder.getCache();
-    }
-
-    public boolean getCache() {
-        return cache;
+        schema = builder.getSchema();
     }
 
     public Locale getLocale() {
@@ -35,6 +35,18 @@ public class Query {
 
     public Set<? extends BaseField> getSchema() {
         return schema;
+    }
+
+    public boolean isFetchCached() {
+        return cached;
+    }
+    
+    public boolean isFetchDatabaseUrl() {
+        return databaseUrl;
+    }
+    
+    public static Query empty() {
+        return EMPTY;
     }
 
 }

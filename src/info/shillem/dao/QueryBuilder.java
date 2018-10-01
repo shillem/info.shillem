@@ -7,17 +7,21 @@ import info.shillem.dto.BaseField;
 
 public interface QueryBuilder<T> {
     
-	T addField(BaseField... fields);
+	T fetch(BaseField... fields);
 	
-	T addField(Set<? extends BaseField> fields);
+	T fetch(Set<? extends BaseField> fields);
 	
-	boolean getCache();
+	T fetchCached(boolean flag);
+	
+	T fetchDatabaseUrl(boolean flag);
 	
 	Locale getLocale();
 	
 	Set<? extends BaseField> getSchema();
-	
-	T setCache(boolean flag);
+    
+    boolean isFetchCached();
+    
+    boolean isFetchDatabaseUrl();
 	
 	T setLocale(Locale locale);
 	

@@ -12,7 +12,7 @@ public class FilterQuery extends Query {
 
         private final Map<BaseField, Object> filters = new LinkedHashMap<>();
 
-        public Builder addFilter(BaseField field, Object value) {
+        public Builder filter(BaseField field, Object value) {
             Objects.requireNonNull(field, "Field cannot be null");
             Objects.requireNonNull(field, "Value for " + field + " cannot be null");
 

@@ -13,11 +13,17 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
         implements QueryBuilder<T> {
 
     private boolean cache;
-    private Set<BaseField> schema;
+    private boolean databaseUrl;
     private Locale locale;
+    private Set<BaseField> schema;
+
+    @SuppressWarnings("unchecked")
+    private T autocast() {
+        return (T) this;
+    }
 
     @Override
-    public T addField(BaseField... fields) {
+    public T fetch(BaseField... fields) {
         Objects.requireNonNull(fields, "Field cannot be null");
         
         if (schema == null) {
@@ -30,7 +36,7 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
     }
 
     @Override
-    public T addField(Set<? extends BaseField> fields) {
+    public T fetch(Set<? extends BaseField> fields) {
         Objects.requireNonNull(fields, "Fields cannot be null");
         
         if (schema == null) {
@@ -42,14 +48,18 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
         return autocast();
     }
 
-    @SuppressWarnings("unchecked")
-    private T autocast() {
-        return (T) this;
-    }
-
     @Override
-    public boolean getCache() {
-        return cache;
+    public T fetchCached(boolean flag) {
+        this.cache = flag;
+
+        return autocast();
+    }
+    
+    @Override
+    public T fetchDatabaseUrl(boolean flag) {
+        this.databaseUrl = flag;
+        
+        return autocast();
     }
 
     @Override
@@ -63,10 +73,13 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
     }
 
     @Override
-    public T setCache(boolean flag) {
-        this.cache = flag;
-
-        return autocast();
+    public boolean isFetchCached() {
+        return cache;
+    }
+    
+    @Override
+    public boolean isFetchDatabaseUrl() {
+        return databaseUrl;
     }
 
     @Override
