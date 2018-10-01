@@ -4,6 +4,6 @@ import info.shillem.lang.ErrorCode;
 
 public enum DaoErrorCode implements ErrorCode {
 
-    DEFAULT, INVALID_FIELD_VALUE, MISSING, UNRESOLVABLE
+    DEFAULT, DUPLICATE_RECORD, INVALID_FIELD_VALUE, MISSING_RECORD, UNRESOLVABLE_NOTES_URL 
     
 }
