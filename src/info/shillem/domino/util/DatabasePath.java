@@ -73,5 +73,10 @@ public final class DatabasePath implements Serializable {
     public String getUrlPath() {
         return filePath.replace('\\', '/');
     }
+    
+    @Override
+    public String toString() {
+        return getApiPath();
+    }
 
 }

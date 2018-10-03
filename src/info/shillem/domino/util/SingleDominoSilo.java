@@ -154,13 +154,13 @@ public class SingleDominoSilo implements DominoSilo {
         if (viewColumnNames != null) {
             viewColumnNames.clear();
         }
-        
+
         if (viewHandles != null) {
             DominoUtil.recycle(viewHandles.values());
             viewHandles.clear();
-            
+
         }
-        
+
         DominoUtil.recycle(databaseHandle);
 
         databaseHandle = null;
