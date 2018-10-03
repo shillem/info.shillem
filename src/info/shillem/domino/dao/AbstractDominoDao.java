@@ -48,7 +48,6 @@ import info.shillem.util.StringUtil;
 import lotus.domino.Base;
 import lotus.domino.Database;
 import lotus.domino.Document;
-import lotus.domino.Item;
 import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
 import lotus.domino.NotesException;
@@ -120,7 +119,6 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
                 || dto.getLastModified().equals(DominoUtil.getLastModified(doc));
     }
 
-    @SuppressWarnings("unchecked")
     protected void pull(Document doc, T wrapper, BaseField field, Locale locale)
             throws NotesException {
         Class<? extends Serializable> type = field.getProperties().getType();
@@ -128,45 +126,19 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         if (type == AttachmentMap.class) {
             wrapper.set(field, pullAttachmentMap(doc, field), ValueOperation.INSERT);
         } else if (I18nValue.class.isAssignableFrom(type)) {
-            wrapper.set(field, DominoI18n.getValue(locale, doc, field));
+            wrapper.set(field, DominoI18n.getValue(locale, doc, field), ValueOperation.INSERT);
         } else if (JsonValue.class.isAssignableFrom(type)) {
-            wrapper.set(field, pullJsonable(doc, field, field.getProperties().getType()),
+            wrapper.set(field, pullJsonable(doc, field, type), ValueOperation.INSERT);
+        } else if (field.getProperties().isList()) {
+            wrapper.set(field,
+                    DominoUtil.getItemValues(
+                            doc, getDominoItemName(field), (value) -> pullValue(value, type)),
                     ValueOperation.INSERT);
         } else {
-            Item item = null;
-            @SuppressWarnings("rawtypes")
-            List values = null;
-
-            try {
-                item = doc.getFirstItem(getDominoItemName(field));
-
-                if (item != null) {
-                    if (item.getType() == Item.RICHTEXT) {
-                        values = new ArrayList<>();
-                        values.add(item.getText());
-                    } else {
-                        values = item.getValues();
-                    }
-                }
-            } finally {
-                DominoUtil.recycle(item);
-            }
-
-            if (field.getProperties().isList()) {
-                @SuppressWarnings("rawtypes")
-                List newValues = new ArrayList();
-
-                if (values != null) {
-                    for (Object value : values) {
-                        newValues.add(pullValue(value, type));
-                    }
-                }
-
-                wrapper.set(field, newValues, ValueOperation.INSERT);
-            } else {
-                wrapper.set(field, pullValue(values != null ? values.get(0) : null, type),
-                        ValueOperation.INSERT);
-            }
+            wrapper.set(field,
+                    DominoUtil.getItemValue(
+                            doc, getDominoItemName(field), (value) -> pullValue(value, type)),
+                    ValueOperation.INSERT);
         }
     }
 

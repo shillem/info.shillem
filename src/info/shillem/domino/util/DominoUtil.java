@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import lotus.domino.Base;
 import lotus.domino.DateTime;
@@ -35,8 +37,12 @@ public enum DominoUtil {
         MIME_FILTERED_HEADERS.add("Content-Disposition");
     }
 
-    public static <T> T getItemValue(Document doc, String itemName, Class<T> type)
+    public static <T> T getItemValue(Document doc, String itemName, Function<Object, T> converter)
             throws NotesException {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        Objects.requireNonNull(itemName, "Item name cannot be null");
+        Objects.requireNonNull(converter, "Converter cannot be null");
+
         Item item = null;
 
         try {
@@ -47,41 +53,54 @@ public enum DominoUtil {
             }
 
             if (item.getType() == Item.RICHTEXT) {
-                return type.cast(item.getText());
+                return converter.apply(item.getText());
             } else {
-                @SuppressWarnings("unchecked")
-                List<T> values = (List<T>) item.getValues();
+                List<?> values = item.getValues();
 
-                return values != null ? values.get(0) : null;
+                if (values == null) {
+                    return null;
+                }
+
+                return converter.apply(values.get(0));
             }
         } finally {
             DominoUtil.recycle(item);
         }
     }
 
-    public static <T> List<T> getItemValues(Document doc, String itemName, Class<T> type)
+    public static <T> List<T> getItemValues(
+            Document doc, String itemName, Function<Object, T> converter)
             throws NotesException {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        Objects.requireNonNull(itemName, "Item name cannot be null");
+        Objects.requireNonNull(converter, "Converter cannot be null");
+
         Item item = null;
 
         try {
             item = doc.getFirstItem(itemName);
 
             if (item == null) {
-                return Collections.<T>emptyList();
+                return Collections.emptyList();
             }
 
             if (item.getType() == Item.RICHTEXT) {
                 List<T> values = new ArrayList<>();
 
-                values.add(type.cast(item.getText()));
+                values.add(converter.apply(item.getText()));
 
                 return values;
-            } else {
-                @SuppressWarnings("unchecked")
-                List<T> values = (List<T>) item.getValues();
-
-                return values != null ? new ArrayList<>(values) : Collections.<T>emptyList();
             }
+
+            List<?> values = item.getValues();
+
+            if (values == null) {
+                return Collections.emptyList();
+            }
+
+            return values.stream()
+                    .map(converter)
+                    .collect(Collectors.toList());
         } finally {
             DominoUtil.recycle(item);
         }
@@ -141,9 +160,8 @@ public enum DominoUtil {
 
     public static MIMEEntity getMimeEntity(Document doc, String itemName, boolean createOnFail)
             throws NotesException {
-        if (itemName == null) {
-            throw new NullPointerException("Invalid MIME entity item name");
-        }
+        Objects.requireNonNull(doc, "Document cannot be null");
+        Objects.requireNonNull(itemName, "Item name cannot be null");
 
         MIMEEntity mimeEntity = doc.getMIMEEntity(itemName);
 
@@ -161,6 +179,8 @@ public enum DominoUtil {
     }
 
     public static String getMimeEntityFilename(MIMEEntity entity) throws NotesException {
+        Objects.requireNonNull(entity, "Entity cannot be null");
+
         Vector<?> headers = entity.getHeaderObjects();
 
         try {
@@ -180,9 +200,8 @@ public enum DominoUtil {
 
     public static String getMimeEntityHeaderValAndParams(MIMEEntity entity, String name)
             throws NotesException {
-        if (name == null) {
-            return null;
-        }
+        Objects.requireNonNull(entity, "Entity cannot be null");
+        Objects.requireNonNull(name, "Name cannot be null");
 
         Vector<?> headers = entity.getHeaderObjects();
 
@@ -218,13 +237,13 @@ public enum DominoUtil {
             throws NotesException {
         Objects.requireNonNull(coll, "Collection cannot be null");
         Objects.requireNonNull(consumer, "Consumer cannot be null");
-        
+
         if (maxCount < 0) {
             throw new IllegalArgumentException("Max count cannot be lower than 0");
         }
-        
+
         Document doc = null;
-        
+
         int count = 0;
 
         try {
@@ -234,7 +253,7 @@ public enum DominoUtil {
                 if (maxCount > 0 && count >= maxCount) {
                     break;
                 }
-                
+
                 Document nextDocument = coll.getNextDocument(doc);
 
                 DominoUtil.setDefaultOptions(doc);
@@ -242,7 +261,7 @@ public enum DominoUtil {
                 DominoUtil.recycle(doc);
 
                 doc = nextDocument;
-                
+
                 count++;
             }
         } finally {
@@ -274,7 +293,7 @@ public enum DominoUtil {
                 if (maxCount > 0 && count >= maxCount) {
                     break;
                 }
-                
+
                 Document nextDocument = view.getNextDocument(doc);
 
                 DominoUtil.setDefaultOptions(doc);
@@ -289,42 +308,42 @@ public enum DominoUtil {
             DominoUtil.recycle(doc);
         }
     }
-    
+
     public static void loop(ViewNavigator nav, Consumer<ViewEntry> consumer) throws NotesException {
         loop(nav, consumer, 0);
     }
-    
+
     public static void loop(ViewNavigator nav, Consumer<ViewEntry> consumer, int maxCount)
             throws NotesException {
         Objects.requireNonNull(nav, "View navigator cannot be null");
         Objects.requireNonNull(consumer, "Consumer cannot be null");
-        
+
         if (maxCount < 0) {
             throw new IllegalArgumentException("Max count cannot be lower than 0");
         }
 
         ViewEntry entry = null;
-        
+
         int count = 0;
-        
+
         try {
             nav.setCacheGuidance(400, ViewNavigator.VN_CACHEGUIDANCE_READALL);
 
             entry = nav.getFirstDocument();
-            
+
             while (entry != null) {
                 if (maxCount > 0 && count >= maxCount) {
                     break;
                 }
 
                 ViewEntry nextEntry = nav.getNextDocument();
-                
+
                 DominoUtil.setDefaultOptions(entry);
                 consumer.accept(entry);
                 DominoUtil.recycle(entry);
-                
+
                 entry = nextEntry;
-                
+
                 count++;
             }
         } finally {

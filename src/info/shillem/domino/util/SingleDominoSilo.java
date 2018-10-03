@@ -38,14 +38,14 @@ public class SingleDominoSilo implements DominoSilo {
         if (databaseHandle == null) {
             databaseHandle = session.getDatabase(
                     databasePath.getServerName(), databasePath.getFilePath(), false);
-        }
 
-        if (databaseHandle == null && templatePath != null) {
-            databaseHandle = createTemplate();
-        }
+            if (databaseHandle == null && templatePath != null) {
+                databaseHandle = createTemplate();
+            }
 
-        if (databaseHandle == null) {
-            throw new NullPointerException("Unable to open database " + databasePath);
+            if (databaseHandle == null) {
+                throw new NullPointerException("Unable to open database " + databasePath);
+            }
         }
 
         return databaseHandle;
