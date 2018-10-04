@@ -4,7 +4,7 @@ import info.shillem.util.StringUtil;
 
 public class IdQuery extends Query {
 
-    public static class Builder extends AbstractQueryBuilder<IdQuery.Builder> {
+    public static class Builder extends AbstractQueryBuilder<IdQuery.Builder, IdQuery> {
 
         private String id;
 
@@ -16,6 +16,7 @@ public class IdQuery extends Query {
             this.id = id;
         }
 
+        @Override
         public IdQuery build() {
             return new IdQuery(this);
         }

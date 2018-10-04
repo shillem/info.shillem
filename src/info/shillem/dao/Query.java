@@ -7,8 +7,9 @@ import info.shillem.dto.BaseField;
 
 public class Query {
 
-    public static class Builder extends AbstractQueryBuilder<Query.Builder> {
+    public static class Builder extends AbstractQueryBuilder<Query.Builder, Query> {
 
+        @Override
         public Query build() {
             return new Query(this);
         }
@@ -22,7 +23,7 @@ public class Query {
     private final Locale locale;
     private final Set<? extends BaseField> schema;
 
-    protected Query(QueryBuilder<?> builder) {
+    protected Query(QueryBuilder<?, ?> builder) {
         cached = builder.isFetchCached();
         databaseUrl = builder.isFetchDatabaseUrl();
         locale = builder.getLocale();

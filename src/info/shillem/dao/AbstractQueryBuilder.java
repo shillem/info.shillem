@@ -9,8 +9,8 @@ import java.util.stream.Stream;
 
 import info.shillem.dto.BaseField;
 
-public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
-        implements QueryBuilder<T> {
+public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?, ?>, R extends Query>
+        implements QueryBuilder<T, R> {
 
     private boolean cache;
     private boolean databaseUrl;
@@ -25,20 +25,20 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
     @Override
     public T fetch(BaseField... fields) {
         Objects.requireNonNull(fields, "Field cannot be null");
-        
+
         if (schema == null) {
             schema = new HashSet<>();
         }
-        
+
         Stream.of(fields).forEach(schema::add);
-        
+
         return autocast();
     }
 
     @Override
     public T fetch(Set<? extends BaseField> fields) {
         Objects.requireNonNull(fields, "Fields cannot be null");
-        
+
         if (schema == null) {
             schema = new HashSet<>();
         }
@@ -54,11 +54,11 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
 
         return autocast();
     }
-    
+
     @Override
     public T fetchDatabaseUrl(boolean flag) {
         this.databaseUrl = flag;
-        
+
         return autocast();
     }
 
@@ -76,7 +76,7 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?>>
     public boolean isFetchCached() {
         return cache;
     }
-    
+
     @Override
     public boolean isFetchDatabaseUrl() {
         return databaseUrl;

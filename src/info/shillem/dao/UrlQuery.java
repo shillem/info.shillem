@@ -4,7 +4,7 @@ import info.shillem.util.StringUtil;
 
 public class UrlQuery extends Query {
 
-    public static class Builder extends AbstractQueryBuilder<UrlQuery.Builder> {
+    public static class Builder extends AbstractQueryBuilder<UrlQuery.Builder, UrlQuery> {
 
         private String url;
 
@@ -16,6 +16,7 @@ public class UrlQuery extends Query {
             this.url = url;
         }
 
+        @Override
         public UrlQuery build() {
             return new UrlQuery(this);
         }

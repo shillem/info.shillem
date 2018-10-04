@@ -8,7 +8,7 @@ import info.shillem.dto.BaseField;
 
 public class FilterQuery extends Query {
 
-    public static class Builder extends AbstractQueryBuilder<FilterQuery.Builder> {
+    public static class Builder extends AbstractQueryBuilder<FilterQuery.Builder, FilterQuery> {
 
         private final Map<BaseField, Object> filters = new LinkedHashMap<>();
 
@@ -21,6 +21,7 @@ public class FilterQuery extends Query {
             return this;
         }
 
+        @Override
         public FilterQuery build() {
             if (filters.isEmpty()) {
                 throw new IllegalStateException("Filters cannot be empty");
