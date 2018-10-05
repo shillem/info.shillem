@@ -42,7 +42,6 @@ import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseField;
 import info.shillem.dto.I18nValue;
 import info.shillem.dto.JsonValue;
-import info.shillem.dto.ValueOperation;
 import info.shillem.util.IOUtil;
 import info.shillem.util.StringUtil;
 import lotus.domino.Base;
@@ -124,21 +123,19 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         Class<? extends Serializable> type = field.getProperties().getType();
 
         if (type == AttachmentMap.class) {
-            wrapper.set(field, pullAttachmentMap(doc, field), ValueOperation.INSERT);
+            wrapper.preset(field, pullAttachmentMap(doc, field));
         } else if (I18nValue.class.isAssignableFrom(type)) {
-            wrapper.set(field, DominoI18n.getValue(locale, doc, field), ValueOperation.INSERT);
+            wrapper.preset(field, DominoI18n.getValue(locale, doc, field));
         } else if (JsonValue.class.isAssignableFrom(type)) {
-            wrapper.set(field, pullJsonable(doc, field, type), ValueOperation.INSERT);
+            wrapper.preset(field, pullJsonable(doc, field, type));
         } else if (field.getProperties().isList()) {
-            wrapper.set(field,
+            wrapper.preset(field,
                     DominoUtil.getItemValues(
-                            doc, getDominoItemName(field), (value) -> pullValue(value, type)),
-                    ValueOperation.INSERT);
+                            doc, getDominoItemName(field), (value) -> pullValue(value, type)));
         } else {
-            wrapper.set(field,
+            wrapper.preset(field,
                     DominoUtil.getItemValue(
-                            doc, getDominoItemName(field), (value) -> pullValue(value, type)),
-                    ValueOperation.INSERT);
+                            doc, getDominoItemName(field), (value) -> pullValue(value, type)));
         }
     }
 
@@ -170,8 +167,9 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
             if (columns.contains(fieldName)) {
                 List<?> columnValues = entry.getColumnValues();
 
-                wrapper.set(field, pullValue(columnValues.get(columns.indexOf(fieldName)), field
-                        .getProperties().getType()), ValueOperation.INSERT);
+                wrapper.preset(field, pullValue(
+                        columnValues.get(columns.indexOf(fieldName)),
+                        field.getProperties().getType()));
             } else {
                 throw new IllegalArgumentException("Unable to retrieve value for schema field %s "
                         + field);
@@ -270,8 +268,10 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
     }
 
     protected void push(T wrapper, Document doc) throws NotesException {
-        for (BaseField field : wrapper.getChanges()) {
-            push(wrapper, doc, field);
+        for (BaseField field : wrapper.getFields()) {
+            if (wrapper.isUpdated(field)) {
+                push(wrapper, doc, field);
+            }
         }
     }
 
