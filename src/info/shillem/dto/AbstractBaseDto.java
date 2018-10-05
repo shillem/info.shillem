@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,18 +14,15 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
 
     private String id;
     private String databaseUrl;
-    private long lastModified;
-    private boolean newRecord;
+    private Date lastModified;
 
-    private final Map<BaseField, Object> values = new HashMap<>();
-    private final Map<BaseField, ValueHolder> changes = new HashMap<>();
+    private final Map<BaseField, ValueHolder> values = new HashMap<>();
 
     @Override
     public void clear() {
         id = null;
-        lastModified = 0;
+        lastModified = null;
         values.clear();
-        changes.clear();
     }
 
     @Override
@@ -37,39 +33,46 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     @Override
     public void commit(Date commitDate) {
         if (id == null) {
-            throw new IllegalStateException("Invalid Id");
+            throw new IllegalStateException("Cannot commit on null id");
         }
 
-        changes.forEach((field, value) -> values.put(field, value.getValue()));
-        changes.clear();
-        newRecord = false;
+        values.values().forEach(ValueHolder::commit);
         setLastModified(commitDate);
     }
 
     @Override
-    public boolean containsChange(BaseField key) {
-        return changes.containsKey(key);
-    }
-
-    @Override
-    public boolean containsField(BaseField key) {
-        return values.containsKey(key) || changes.containsKey(key);
+    public boolean contains(BaseField key) {
+        return values.containsKey(key);
     }
 
     @Override
     public Object get(BaseField key) {
-        return changes.containsKey(key) ? changes.get(key).getValue() : values.get(key);
+        ValueHolder valueHolder = values.get(key);
+
+        return valueHolder != null ? valueHolder.getValue() : null;
     }
 
     @Override
     public <T> T get(BaseField key, Class<T> type) {
         Object value = get(key);
 
-        if (type != key.getProperties().getType()) {
-            throw invalidTypeException(key, type);
+        try {
+            return type.cast(value);
+        } catch (ClassCastException e) {
+            if (key.getProperties().isList()) {
+                throw new IllegalArgumentException(
+                        String.format("%s value type is List<%s> and not %s",
+                                key,
+                                key.getProperties().getType().getName(),
+                                type.getName()));
+            } else {
+                throw new IllegalArgumentException(
+                        String.format("%s value type is %s and not %s",
+                                key,
+                                key.getProperties().getType().getName(),
+                                type.getName()));
+            }
         }
-
-        return type.cast(value);
     }
 
     @Override
@@ -77,11 +80,6 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
         return get(key, Boolean.class);
     }
 
-    @Override
-    public Set<? extends BaseField> getChanges() {
-        return changes.keySet();
-    }
-    
     @Override
     public String getDatabaseUrl() {
         return databaseUrl;
@@ -99,12 +97,7 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
 
     @Override
     public Set<? extends BaseField> getFields() {
-        Set<BaseField> allFields = new HashSet<>();
-
-        allFields.addAll(values.keySet());
-        allFields.addAll(changes.keySet());
-
-        return allFields;
+        return values.keySet();
     }
 
     @Override
@@ -119,31 +112,23 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
 
     @Override
     public final Date getLastModified() {
-        if (lastModified > 0) {
-            return new Date(lastModified);
-        }
-
-        return null;
+        return lastModified != null ? new Date(lastModified.getTime()) : null;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> List<T> getList(BaseField key, Class<T> listType) {
-        if (!key.getProperties().isList()) {
-            throw new IllegalArgumentException(String.format("%s is not a list type value", key));
-        }
-
-        if (listType != key.getProperties().getType()) {
-            throw invalidTypeException(key, listType);
-        }
-
+    public <T> List<T> getList(BaseField key, Class<T> type) {
         Object value = get(key);
 
-        if (value != null) {
-            return (List<T>) value;
+        try {
+            return value != null ? (List<T>) value : Collections.emptyList();
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException(
+                    String.format("%s value type is List<%s> and not %s",
+                            key,
+                            key.getProperties().getType().getName(),
+                            type.getName()));
         }
-
-        return Collections.emptyList();
     }
 
     @Override
@@ -151,136 +136,86 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
         return get(key, String.class);
     }
 
-    private ClassCastException invalidTypeException(BaseField field, Class<?> c) {
-        return new ClassCastException(String.format("%s value type is %s and not %s", field, field
-                .getProperties().getType(), c));
+    @Override
+    public final boolean isNew() {
+        return id == null;
     }
 
     @Override
-    public final boolean isNewRecord() {
-        return id == null || newRecord;
-    }
-
-    @Override
-    public boolean is(BaseField key) {
+    public boolean isTrue(BaseField key) {
         Boolean flag = getBoolean(key);
-        
+
         return flag != null && flag;
     }
-    
+
     @Override
-    public void rollback() {
-        if (isNewRecord()) {
-            id = null;
+    public boolean isUpdated(BaseField key) {
+        ValueHolder valueHolder = values.get(key);
+
+        return valueHolder != null && valueHolder.isUpdated();
+    }
+
+    @Override
+    public void preset(BaseField key, Object value) {
+        ValueHolder valueHolder = values.get(key);
+
+        if (valueHolder != null) {
+            throw new IllegalStateException(key + " value is already set");
         }
 
-        changes.entrySet()
-                .removeIf(e -> e.getValue().getOperation() == ValueOperation.TRANSACTION);
+        values.put(key, ValueHolder.newSavedValue(value, key.getProperties().getFullType()));
+    }
+
+    @Override
+    public void rollback() {
+        values.values().forEach(ValueHolder::rollback);
     }
 
     @Override
     public final void set(BaseField key, Object value) {
-        set(key, value, ValueOperation.UPDATE);
-    }
+        ValueHolder valueHolder = values.get(key);
+        Class<?> type = key.getProperties().getFullType();
 
-    @Override
-    public final void set(BaseField key, Object value, ValueOperation operation) {
-        Object newValue = null;
-        boolean newChange = false;
-
-        if (!values.containsKey(key) && value == null) {
-            newChange = true;
+        if (valueHolder != null) {
+            valueHolder.updateValue(value, type);
         } else {
-            newChange = !changes.containsKey(key);
-            Object storedValue = newChange ? values.get(key) : changes.get(key).getValue();
-
-            if (value == storedValue) {
-                return;
-            } else if (key.getProperties().isList()) {
-                if (value != null) {
-                    if (!(value instanceof List)) {
-                        throw invalidTypeException(key, value.getClass());
-                    }
-
-                    List<?> newValues = (List<?>) value;
-                    List<?> storedValues = (List<?>) storedValue;
-
-                    if (storedValue != null && storedValues.size() == newValues.size()) {
-                        for (int i = 0; i < newValues.size(); i++) {
-                            Object o = newValues.get(i);
-
-                            if (o.getClass() != key.getProperties().getType()) {
-                                throw invalidTypeException(key, o.getClass());
-                            }
-
-                            if (!newValues.get(i).equals(storedValues.get(i))) {
-                                newValue = newValues;
-
-                                break;
-                            }
-                        }
-
-                        if (newValue == null) {
-                            return;
-                        }
-                    } else {
-                        newValue = newValues;
-                    }
-                }
-            } else {
-                newValue = value;
-
-                if (newValue != null) {
-                    if (newValue.getClass() != key.getProperties().getType()) {
-                        throw invalidTypeException(key, newValue.getClass());
-                    }
-
-                    if (newValue.equals(storedValue)) {
-                        return;
-                    }
-                }
-            }
-        }
-
-        switch (operation) {
-        case INSERT:
-            values.put(key, newValue);
-            break;
-        case UPDATE:
-        case TRANSACTION:
-            if (newChange) {
-                changes.put(key, new ValueHolder(newValue, operation));
-            } else {
-                changes.get(key).updateValue(newValue, operation);
-            }
-
-            break;
+            values.put(key, ValueHolder.newValue(value, type));
         }
     }
 
     @Override
-    public final void setId(String id) {
-        this.id = id;
+    public void setAsUpdated(BaseField key) {
+        ValueHolder valueHolder = values.get(key);
+
+        if (valueHolder != null) {
+            valueHolder.setAsUpdated();
+        }
     }
-    
+
     @Override
     public void setDatabaseUrl(String databaseUrl) {
         this.databaseUrl = databaseUrl;
     }
 
     @Override
-    public final void setLastModified(Date lastModified) {
-        if (lastModified != null) {
-            this.lastModified = lastModified.getTime();
-        } else {
-            this.lastModified = 0;
-        }
+    public final void setId(String id) {
+        this.id = id;
     }
 
     @Override
-    public void trackChange(BaseField key) {
-        if (!changes.containsKey(key)) {
-            changes.put(key, new ValueHolder(values.get(key), ValueOperation.UPDATE));
+    public final void setLastModified(Date lastModified) {
+        this.lastModified = lastModified != null ? new Date(lastModified.getTime()) : null;
+    }
+
+    @Override
+    public void transact(BaseField key, Object value) {
+        ValueHolder valueHolder = values.get(key);
+        Class<?> type = key.getProperties().getFullType();
+
+        if (valueHolder != null) {
+            valueHolder.transactValue(value, type);
+        } else {
+            values.put(key, ValueHolder.newTransactionValue(value, type));
         }
     }
 

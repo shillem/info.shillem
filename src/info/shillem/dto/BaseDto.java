@@ -6,58 +6,58 @@ import java.util.Set;
 
 public interface BaseDto {
 
-	void clear();
+    void clear();
 
-	void commit();
+    void commit();
 
-	void commit(Date commitDate);
+    void commit(Date commitDate);
 
-	boolean containsChange(BaseField key);
+    boolean contains(BaseField key);
 
-	boolean containsField(BaseField key);
+    Object get(BaseField key);
 
-	Object get(BaseField key);
-	
-	<T> T get(BaseField key, Class<T> type);
+    <T> T get(BaseField key, Class<T> type);
 
-	Boolean getBoolean(BaseField key);
+    Boolean getBoolean(BaseField key);
 
-	Set<? extends BaseField> getChanges();
-	
-	String getDatabaseUrl();
+    String getDatabaseUrl();
 
-	Date getDate(BaseField key);
+    Date getDate(BaseField key);
 
-	Double getDouble(BaseField key);
+    Double getDouble(BaseField key);
 
-	Set<? extends BaseField> getFields();
+    Set<? extends BaseField> getFields();
 
-	String getId();
+    String getId();
 
-	Integer getInteger(BaseField key);
+    Integer getInteger(BaseField key);
 
-	Date getLastModified();
+    Date getLastModified();
 
-	<T> List<T> getList(BaseField key, Class<T> type);
+    <T> List<T> getList(BaseField key, Class<T> type);
 
-	String getString(BaseField key);
-	
-	boolean is(BaseField key);
+    String getString(BaseField key);
 
-	boolean isNewRecord();
+    boolean isNew();
 
-	void rollback();
+    boolean isTrue(BaseField key);
 
-	void set(BaseField key, Object value);
+    boolean isUpdated(BaseField key);
+    
+    void preset(BaseField key, Object value);
 
-	void set(BaseField key, Object value, ValueOperation operation);
+    void rollback();
 
-	void setId(String id);
+    void set(BaseField key, Object value);
 
-	void setLastModified(Date lastModified);
-	
-	void setDatabaseUrl(String databaseUrl);
+    void setAsUpdated(BaseField key);
 
-	void trackChange(BaseField key);
+    void setDatabaseUrl(String databaseUrl);
+
+    void setId(String id);
+
+    void setLastModified(Date lastModified);
+    
+    void transact(BaseField key, Object value);
 
 }
