@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
@@ -30,6 +31,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
+import info.shillem.dao.Query;
 import info.shillem.dao.lang.DaoException;
 import info.shillem.dao.lang.DaoResolutionException;
 import info.shillem.domino.util.DominoFactory;
@@ -103,7 +105,7 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
     protected Document createDocument(Database database) throws NotesException {
         Document doc = database.createDocument();
 
-        DominoUtil.setDefaultOptions(doc);
+        DominoUtil.setEncouragedOptions(doc);
 
         return doc;
     }
@@ -141,8 +143,8 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 
     protected void pull(Document doc, T wrapper, Set<? extends BaseField> schema, Locale locale)
             throws NotesException {
-        if (!DominoUtil.hasDefaultOptions(doc)) {
-            throw new IllegalArgumentException("Document is not treated with compatible options");
+        if (!DominoUtil.hasEncouragedOptions(doc)) {
+            throw new IllegalArgumentException("Document is not treated with encouraged options");
         }
 
         for (BaseField field : schema) {
@@ -157,8 +159,8 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 
     protected void pull(List<String> columns, ViewEntry entry, T wrapper,
             Set<? extends BaseField> schema) throws NotesException {
-        if (!DominoUtil.hasDefaultOptions(entry)) {
-            throw new IllegalArgumentException("Entry is not treated with compatible options");
+        if (!DominoUtil.hasEncouragedOptions(entry)) {
+            throw new IllegalArgumentException("Entry is not treated with encouraged options");
         }
 
         for (BaseField field : schema) {
@@ -468,6 +470,18 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         return value;
     }
 
+    protected T read(Document doc, Query query, Supplier<T> supplier) throws NotesException {
+        T dto = supplier.get();
+
+        pull(doc, dto, query.getSchema(), query.getLocale());
+
+        if (query.isFetchDatabaseUrl()) {
+            dto.setDatabaseUrl(doc.getNotesURL());
+        }
+
+        return dto;
+    }
+
     protected Document resolveDocument(String notesUrl) throws DaoException, NotesException {
         Objects.requireNonNull(notesUrl, "Notes URL cannot be null");
 
@@ -479,7 +493,7 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
 
         Document doc = (Document) base;
 
-        DominoUtil.setDefaultOptions(doc);
+        DominoUtil.setEncouragedOptions(doc);
 
         return doc;
     }

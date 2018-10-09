@@ -17,13 +17,13 @@ public final class DatabasePath implements Serializable {
     private final String serverName;
     private final String filePath;
 
-    public DatabasePath(String filePath) {
-        Objects.requireNonNull(filePath);
+    public DatabasePath(String apiPath) {
+        Objects.requireNonNull(apiPath, "Api path cannot be null");
 
-        Matcher matcher = SYNTAX_PATTERN.matcher(filePath);
+        Matcher matcher = SYNTAX_PATTERN.matcher(apiPath);
 
         if (!matcher.find()) {
-            throw new IllegalArgumentException("Cannot match path: " + filePath);
+            throw new IllegalArgumentException("Cannot match path: " + apiPath);
         }
 
         this.serverName = matcher.group(1);
@@ -31,23 +31,23 @@ public final class DatabasePath implements Serializable {
     }
 
     public DatabasePath(String serverName, String filePath) {
-        Objects.requireNonNull(serverName);
-        Objects.requireNonNull(filePath);
+        Objects.requireNonNull(serverName, "Server name cannot be null");
+        Objects.requireNonNull(filePath, "File path cannot be null");
 
         this.serverName = serverName;
         this.filePath = formatFilePath(filePath);
     }
 
-    public DatabasePath(String[] filePath) {
-        Objects.requireNonNull(filePath);
+    public DatabasePath(String[] apiPath) {
+        Objects.requireNonNull(apiPath);
 
-        if (filePath.length != 2) {
+        if (apiPath.length != 2) {
             throw new IllegalArgumentException(
-                    "Path must contain a 2-value array with server name and path");
+                    "Api path must contain a 2-value array with server name and path");
         }
 
-        this.serverName = filePath[0];
-        this.filePath = formatFilePath(filePath[1]);
+        this.serverName = apiPath[0];
+        this.filePath = formatFilePath(apiPath[1]);
     }
 
     private String formatFilePath(String filePath) {

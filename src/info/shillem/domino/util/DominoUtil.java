@@ -10,22 +10,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Vector;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import lotus.domino.Base;
 import lotus.domino.DateTime;
 import lotus.domino.Document;
-import lotus.domino.DocumentCollection;
 import lotus.domino.Item;
 import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
-import lotus.domino.View;
 import lotus.domino.ViewEntry;
-import lotus.domino.ViewNavigator;
 
 public enum DominoUtil {
     ;
@@ -220,135 +216,12 @@ public enum DominoUtil {
         }
     }
 
-    public static boolean hasDefaultOptions(Document doc) throws NotesException {
+    public static boolean hasEncouragedOptions(Document doc) throws NotesException {
         return doc.isPreferJavaDates();
     }
 
-    public static boolean hasDefaultOptions(ViewEntry entry) throws NotesException {
+    public static boolean hasEncouragedOptions(ViewEntry entry) throws NotesException {
         return entry.isPreferJavaDates();
-    }
-
-    public static void loop(DocumentCollection coll, Consumer<Document> consumer)
-            throws NotesException {
-        loop(coll, consumer, 0);
-    }
-
-    public static void loop(DocumentCollection coll, Consumer<Document> consumer, int maxCount)
-            throws NotesException {
-        Objects.requireNonNull(coll, "Collection cannot be null");
-        Objects.requireNonNull(consumer, "Consumer cannot be null");
-
-        if (maxCount < 0) {
-            throw new IllegalArgumentException("Max count cannot be lower than 0");
-        }
-
-        Document doc = null;
-
-        int count = 0;
-
-        try {
-            doc = coll.getFirstDocument();
-
-            while (doc != null) {
-                if (maxCount > 0 && count >= maxCount) {
-                    break;
-                }
-
-                Document nextDocument = coll.getNextDocument(doc);
-
-                DominoUtil.setDefaultOptions(doc);
-                consumer.accept(doc);
-                DominoUtil.recycle(doc);
-
-                doc = nextDocument;
-
-                count++;
-            }
-        } finally {
-            DominoUtil.recycle(doc);
-        }
-    }
-
-    public static void loop(View view, Consumer<Document> consumer) throws NotesException {
-        loop(view, consumer, 0);
-    }
-
-    public static void loop(View view, Consumer<Document> consumer, int maxCount)
-            throws NotesException {
-        Objects.requireNonNull(view, "View cannot be null");
-        Objects.requireNonNull(consumer, "Consumer cannot be null");
-
-        if (maxCount < 0) {
-            throw new IllegalArgumentException("Max count cannot be lower than 0");
-        }
-
-        Document doc = null;
-
-        int count = 0;
-
-        try {
-            doc = view.getFirstDocument();
-
-            while (doc != null) {
-                if (maxCount > 0 && count >= maxCount) {
-                    break;
-                }
-
-                Document nextDocument = view.getNextDocument(doc);
-
-                DominoUtil.setDefaultOptions(doc);
-                consumer.accept(doc);
-                DominoUtil.recycle(doc);
-
-                doc = nextDocument;
-
-                count++;
-            }
-        } finally {
-            DominoUtil.recycle(doc);
-        }
-    }
-
-    public static void loop(ViewNavigator nav, Consumer<ViewEntry> consumer) throws NotesException {
-        loop(nav, consumer, 0);
-    }
-
-    public static void loop(ViewNavigator nav, Consumer<ViewEntry> consumer, int maxCount)
-            throws NotesException {
-        Objects.requireNonNull(nav, "View navigator cannot be null");
-        Objects.requireNonNull(consumer, "Consumer cannot be null");
-
-        if (maxCount < 0) {
-            throw new IllegalArgumentException("Max count cannot be lower than 0");
-        }
-
-        ViewEntry entry = null;
-
-        int count = 0;
-
-        try {
-            nav.setCacheGuidance(400, ViewNavigator.VN_CACHEGUIDANCE_READALL);
-
-            entry = nav.getFirstDocument();
-
-            while (entry != null) {
-                if (maxCount > 0 && count >= maxCount) {
-                    break;
-                }
-
-                ViewEntry nextEntry = nav.getNextDocument();
-
-                DominoUtil.setDefaultOptions(entry);
-                consumer.accept(entry);
-                DominoUtil.recycle(entry);
-
-                entry = nextEntry;
-
-                count++;
-            }
-        } finally {
-            DominoUtil.recycle(entry);
-        }
     }
 
     public static void recycle(Base base) {
@@ -402,11 +275,11 @@ public enum DominoUtil {
         }
     }
 
-    public static void setDefaultOptions(Document doc) throws NotesException {
+    public static void setEncouragedOptions(Document doc) throws NotesException {
         doc.setPreferJavaDates(true);
     }
 
-    public static void setDefaultOptions(ViewEntry entry) throws NotesException {
+    public static void setEncouragedOptions(ViewEntry entry) throws NotesException {
         entry.setPreferJavaDates(true);
     }
 
