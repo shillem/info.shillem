@@ -15,23 +15,27 @@ public class Query {
         }
 
     }
-    
-    public static final Query EMPTY = new Query.Builder().build();
 
     private final boolean cached;
     private final boolean databaseUrl;
     private final Locale locale;
+    private final int maxCount;
     private final Set<? extends BaseField> schema;
 
     protected Query(QueryBuilder<?, ?> builder) {
         cached = builder.isFetchCached();
         databaseUrl = builder.isFetchDatabaseUrl();
         locale = builder.getLocale();
+        maxCount = builder.getMaxCount();
         schema = builder.getSchema();
     }
 
     public Locale getLocale() {
         return locale;
+    }
+    
+    public int getMaxCount() {
+        return maxCount;
     }
 
     public Set<? extends BaseField> getSchema() {
@@ -44,10 +48,6 @@ public class Query {
     
     public boolean isFetchDatabaseUrl() {
         return databaseUrl;
-    }
-    
-    public static Query empty() {
-        return EMPTY;
     }
 
 }

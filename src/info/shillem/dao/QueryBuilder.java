@@ -18,6 +18,8 @@ public interface QueryBuilder<T extends QueryBuilder<?, ?>, R extends Query> {
     T fetchDatabaseUrl(boolean flag);
 
     Locale getLocale();
+    
+    int getMaxCount();
 
     Set<? extends BaseField> getSchema();
 
@@ -26,5 +28,7 @@ public interface QueryBuilder<T extends QueryBuilder<?, ?>, R extends Query> {
     boolean isFetchDatabaseUrl();
 
     T setLocale(Locale locale);
+    
+    T setMaxCount(int maxCount);
 
 }

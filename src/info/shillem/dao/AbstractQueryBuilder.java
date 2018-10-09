@@ -15,6 +15,7 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?, ?>,
     private boolean cache;
     private boolean databaseUrl;
     private Locale locale;
+    private int maxCount;
     private Set<BaseField> schema;
 
     @SuppressWarnings("unchecked")
@@ -66,6 +67,11 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?, ?>,
     public Locale getLocale() {
         return locale;
     }
+    
+    @Override
+    public int getMaxCount() {
+        return maxCount;
+    }
 
     @Override
     public Set<BaseField> getSchema() {
@@ -86,6 +92,13 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?, ?>,
     public T setLocale(Locale locale) {
         this.locale = locale;
 
+        return autocast();
+    }
+    
+    @Override
+    public T setMaxCount(int maxCount) {
+        this.maxCount = maxCount;
+        
         return autocast();
     }
 
