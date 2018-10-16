@@ -3,7 +3,7 @@ package info.shillem.dto;
 import java.io.Serializable;
 import java.util.List;
 
-class ValueHolder implements Serializable {
+public class ValueHolder implements Serializable {
 
     private enum State {
         NEW,
@@ -27,7 +27,7 @@ class ValueHolder implements Serializable {
         this.state = state;
     }
 
-    void commit() {
+    public void commit() {
         switch (state) {
         case TRANSACTION:
         case TRANSACTION_FROM_NEW:
@@ -36,13 +36,13 @@ class ValueHolder implements Serializable {
             value = transactionValue;
             updateValue = null;
             transactionValue = null;
-            
+
             break;
         case UPDATE:
             value = updateValue;
             updateValue = null;
             transactionValue = null;
-            
+
             break;
         default:
             // Do nothing
@@ -51,7 +51,7 @@ class ValueHolder implements Serializable {
         state = State.SAVE;
     }
 
-    Object getValue() {
+    public Object getValue() {
         switch (state) {
         case TRANSACTION:
         case TRANSACTION_FROM_NEW:
@@ -65,7 +65,7 @@ class ValueHolder implements Serializable {
         }
     }
 
-    boolean isUpdated() {
+    public boolean isUpdated() {
         return state != State.SAVE;
     }
 
@@ -85,41 +85,41 @@ class ValueHolder implements Serializable {
                 : !after.equals(before);
     }
 
-    void rollback() {
+    public void rollback() {
         switch (state) {
         case TRANSACTION:
             transactionValue = null;
-            
+
             break;
         case TRANSACTION_FROM_NEW:
             transactionValue = null;
             state = State.NEW;
-            
+
             break;
         case TRANSACTION_FROM_SAVE:
             transactionValue = null;
             state = State.SAVE;
-            
+
             break;
         case TRANSACTION_FROM_UPDATE:
             transactionValue = null;
             state = State.UPDATE;
-            
+
             break;
         default:
             // Do nothing
         }
     }
 
-    void setAsUpdated() {
+    public void setAsUpdated() {
         updateValue = getValue();
         state = State.UPDATE;
     }
 
-    void transactValue(Object value, Class<?> type) {
+    public void transactValue(Object value, Class<?> type) {
         if (isValueChanged(getValue(), value, type)) {
             transactionValue = value;
-            
+
             switch (state) {
             case NEW:
                 this.state = State.TRANSACTION_FROM_NEW;
@@ -136,26 +136,26 @@ class ValueHolder implements Serializable {
         }
     }
 
-    void updateValue(Object value, Class<?> type) {
+    public void updateValue(Object value, Class<?> type) {
         if (isValueChanged(getValue(), value, type)) {
             updateValue = value;
             state = State.UPDATE;
         }
     }
 
-    static ValueHolder newSavedValue(Object value, Class<?> type) {
+    public static ValueHolder newSavedValue(Object value, Class<?> type) {
         testValue(value, type);
 
         return new ValueHolder(value, State.SAVE);
     }
 
-    static ValueHolder newTransactionValue(Object value, Class<?> type) {
+    public static ValueHolder newTransactionValue(Object value, Class<?> type) {
         testValue(value, type);
 
         return new ValueHolder(value, State.TRANSACTION);
     }
 
-    static ValueHolder newValue(Object value, Class<?> type) {
+    public static ValueHolder newValue(Object value, Class<?> type) {
         testValue(value, type);
 
         return new ValueHolder(value, State.NEW);
@@ -168,28 +168,25 @@ class ValueHolder implements Serializable {
 
         if (type.isArray()) {
             if (!(value instanceof List)) {
-                throw illegalValue(value, type);
+                throw new IllegalArgumentException(
+                        String.format(
+                                "Value type is List<%s> and cannot be set to %s",
+                                type.getComponentType().getName(), value.getClass().getName()));
             }
 
             ((List<?>) value).stream()
                     .filter(o -> o.getClass() != type.getComponentType())
                     .findAny()
                     .ifPresent(o -> {
-                        throw illegalValue(value, type);
+                        throw new IllegalArgumentException(
+                                String.format(
+                                        "Value type is List<%s> and cannot be set to List<%s>",
+                                        type.getComponentType().getName(), o.getClass().getName()));
                     });
         } else if (value.getClass() != type) {
-            throw illegalValue(value, type);
-        }
-    }
-
-    private static IllegalArgumentException illegalValue(Object value, Class<?> type) {
-        if (type.isArray()) {
-            return new IllegalArgumentException(
-                    String.format("Value type should be List<%s> and not %s",
-                            type.getComponentType().getName(), value.getClass()));
-        } else {
-            return new IllegalArgumentException(
-                    String.format("Value type should be %s and not %s",
+            throw new IllegalArgumentException(
+                    String.format(
+                            "Value type is %s and cannot be set to %s",
                             type.getName(), value.getClass().getName()));
         }
     }
