@@ -5,30 +5,32 @@ import java.util.Set;
 
 import info.shillem.dto.BaseField;
 
-public interface QueryBuilder<T extends QueryBuilder<?, ?>, R extends Query> {
+public interface QueryBuilder<E extends Enum<E> & BaseField, B extends QueryBuilder<E, B, T>, T extends Query<E>> {
 
-    R build();
+    T build();
 
-    T fetch(BaseField... fields);
+    B fetch(E field);
+    
+    B fetch(E[] field);
 
-    T fetch(Set<? extends BaseField> fields);
+    B fetch(Set<E> fields);
 
-    T fetchCached(boolean flag);
+    B fetchCached(boolean flag);
 
-    T fetchDatabaseUrl(boolean flag);
+    B fetchDatabaseUrl(boolean flag);
 
     Locale getLocale();
-    
+
     int getMaxCount();
 
-    Set<? extends BaseField> getSchema();
+    Set<E> getSchema();
 
     boolean isFetchCached();
 
     boolean isFetchDatabaseUrl();
 
-    T setLocale(Locale locale);
-    
-    T setMaxCount(int maxCount);
+    B setLocale(Locale locale);
+
+    B setMaxCount(int maxCount);
 
 }

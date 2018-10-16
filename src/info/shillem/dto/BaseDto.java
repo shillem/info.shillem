@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-public interface BaseDto {
+public interface BaseDto<E extends Enum<E> & BaseField> {
 
     void clear();
 
@@ -12,52 +12,54 @@ public interface BaseDto {
 
     void commit(Date commitDate);
 
-    boolean contains(BaseField key);
+    boolean containsField(E key);
 
-    Object get(BaseField key);
-
-    <T> T get(BaseField key, Class<T> type);
-
-    Boolean getBoolean(BaseField key);
+    Boolean getBoolean(E key);
 
     String getDatabaseUrl();
 
-    Date getDate(BaseField key);
+    Date getDate(E key);
 
-    Double getDouble(BaseField key);
+    Double getDouble(E key);
+    
+    E getField(String name);
 
-    Set<? extends BaseField> getFields();
+    Set<E> getFields();
 
     String getId();
 
-    Integer getInteger(BaseField key);
+    Integer getInteger(E key);
 
     Date getLastModified();
 
-    <T> List<T> getList(BaseField key, Class<T> type);
+    <T> List<T> getList(E key, Class<T> type);
 
-    String getString(BaseField key);
+    String getString(E key);
+
+    Object getValue(E key);
+
+    <T> T getValue(E key, Class<T> type);
 
     boolean isNew();
 
-    boolean isTrue(BaseField key);
+    boolean isValueTrue(E key);
 
-    boolean isUpdated(BaseField key);
+    boolean isValueUpdated(E key);
     
-    void preset(BaseField key, Object value);
+    void presetValue(E key, Object value);
 
     void rollback();
-
-    void set(BaseField key, Object value);
-
-    void setAsUpdated(BaseField key);
 
     void setDatabaseUrl(String databaseUrl);
 
     void setId(String id);
 
     void setLastModified(Date lastModified);
+
+    void setValue(E key, Object value);
+
+    void setValueAsUpdated(E key);
     
-    void transact(BaseField key, Object value);
+    void transactValue(E key, Object value);
 
 }

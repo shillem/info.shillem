@@ -11,3 +11,5 @@ Export-Package: info.shillem.dao,
  info.shillem.lang,
  info.shillem.util
 Automatic-Module-Name: info.shillem.domino
+Import-Package: com.google.gson,
+ com.google.gson.stream

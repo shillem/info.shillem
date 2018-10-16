@@ -6,13 +6,14 @@ import java.util.Objects;
 
 import info.shillem.dto.BaseField;
 
-public class FilterQuery extends Query {
+public class FilterQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
-    public static class Builder extends AbstractQueryBuilder<FilterQuery.Builder, FilterQuery> {
+    public static class Builder<E extends Enum<E> & BaseField>
+            extends AbstractQueryBuilder<E, Builder<E>, FilterQuery<E>> {
 
-        private final Map<BaseField, Object> filters = new LinkedHashMap<>();
+        private final Map<E, Object> filters = new LinkedHashMap<>();
 
-        public Builder filter(BaseField field, Object value) {
+        public Builder<E> filter(E field, Object value) {
             Objects.requireNonNull(field, "Field cannot be null");
             Objects.requireNonNull(field, "Value for " + field + " cannot be null");
 
@@ -22,29 +23,29 @@ public class FilterQuery extends Query {
         }
 
         @Override
-        public FilterQuery build() {
+        public FilterQuery<E> build() {
             if (filters.isEmpty()) {
                 throw new IllegalStateException("Filters cannot be empty");
             }
 
-            return new FilterQuery(this);
+            return new FilterQuery<>(this);
         }
 
     }
 
-    private final Map<BaseField, Object> filters;
+    private final Map<E, Object> filters;
 
-    private FilterQuery(Builder builder) {
+    private FilterQuery(Builder<E> builder) {
         super(builder);
 
         filters = builder.filters;
     }
 
-    public Map<BaseField, Object> getFilters() {
+    public Map<E, Object> getFilters() {
         return filters;
     }
 
-    public Map.Entry<BaseField, Object> getFirstFilter() {
+    public Map.Entry<E, Object> getFirstFilter() {
         return filters.entrySet().iterator().next();
     }
 

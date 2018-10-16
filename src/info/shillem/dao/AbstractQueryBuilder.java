@@ -9,23 +9,36 @@ import java.util.stream.Stream;
 
 import info.shillem.dto.BaseField;
 
-public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?, ?>, R extends Query>
-        implements QueryBuilder<T, R> {
+public abstract class AbstractQueryBuilder<E extends Enum<E> & BaseField, B extends QueryBuilder<E, B, T>, T extends Query<E>>
+        implements QueryBuilder<E, B, T> {
 
     private boolean cache;
     private boolean databaseUrl;
     private Locale locale;
     private int maxCount;
-    private Set<BaseField> schema;
+    private Set<E> schema;
 
     @SuppressWarnings("unchecked")
-    private T autocast() {
-        return (T) this;
+    private B autocast() {
+        return (B) this;
     }
 
     @Override
-    public T fetch(BaseField... fields) {
-        Objects.requireNonNull(fields, "Field cannot be null");
+    public B fetch(E field) {
+        Objects.requireNonNull(field, "Field cannot be null");
+
+        if (schema == null) {
+            schema = new HashSet<>();
+        }
+        
+        schema.add(field);
+
+        return autocast();
+    }
+
+    @Override
+    public B fetch(E[] fields) {
+        Objects.requireNonNull(fields, "Fields cannot be null");
 
         if (schema == null) {
             schema = new HashSet<>();
@@ -37,7 +50,7 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?, ?>,
     }
 
     @Override
-    public T fetch(Set<? extends BaseField> fields) {
+    public B fetch(Set<E> fields) {
         Objects.requireNonNull(fields, "Fields cannot be null");
 
         if (schema == null) {
@@ -50,14 +63,14 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?, ?>,
     }
 
     @Override
-    public T fetchCached(boolean flag) {
+    public B fetchCached(boolean flag) {
         this.cache = flag;
 
         return autocast();
     }
 
     @Override
-    public T fetchDatabaseUrl(boolean flag) {
+    public B fetchDatabaseUrl(boolean flag) {
         this.databaseUrl = flag;
 
         return autocast();
@@ -67,14 +80,14 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?, ?>,
     public Locale getLocale() {
         return locale;
     }
-    
+
     @Override
     public int getMaxCount() {
         return maxCount;
     }
 
     @Override
-    public Set<BaseField> getSchema() {
+    public Set<E> getSchema() {
         return schema != null ? schema : Collections.emptySet();
     }
 
@@ -89,16 +102,16 @@ public abstract class AbstractQueryBuilder<T extends AbstractQueryBuilder<?, ?>,
     }
 
     @Override
-    public T setLocale(Locale locale) {
+    public B setLocale(Locale locale) {
         this.locale = locale;
 
         return autocast();
     }
-    
+
     @Override
-    public T setMaxCount(int maxCount) {
+    public B setMaxCount(int maxCount) {
         this.maxCount = maxCount;
-        
+
         return autocast();
     }
 

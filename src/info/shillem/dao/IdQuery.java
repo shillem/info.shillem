@@ -1,10 +1,12 @@
 package info.shillem.dao;
 
+import info.shillem.dto.BaseField;
 import info.shillem.util.StringUtil;
 
-public class IdQuery extends Query {
+public class IdQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
-    public static class Builder extends AbstractQueryBuilder<IdQuery.Builder, IdQuery> {
+    public static class Builder<E extends Enum<E> & BaseField>
+            extends AbstractQueryBuilder<E, Builder<E>, IdQuery<E>> {
 
         private String id;
 
@@ -17,15 +19,15 @@ public class IdQuery extends Query {
         }
 
         @Override
-        public IdQuery build() {
-            return new IdQuery(this);
+        public IdQuery<E> build() {
+            return new IdQuery<>(this);
         }
 
     }
 
     private final String id;
 
-    private IdQuery(Builder builder) {
+    private IdQuery(Builder<E> builder) {
         super(builder);
 
         id = builder.id;

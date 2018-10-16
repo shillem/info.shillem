@@ -1,10 +1,12 @@
 package info.shillem.dao;
 
+import info.shillem.dto.BaseField;
 import info.shillem.util.StringUtil;
 
-public class UrlQuery extends Query {
+public class UrlQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
-    public static class Builder extends AbstractQueryBuilder<UrlQuery.Builder, UrlQuery> {
+    public static class Builder<E extends Enum<E> & BaseField>
+            extends AbstractQueryBuilder<E, Builder<E>, UrlQuery<E>> {
 
         private String url;
 
@@ -17,15 +19,15 @@ public class UrlQuery extends Query {
         }
 
         @Override
-        public UrlQuery build() {
-            return new UrlQuery(this);
+        public UrlQuery<E> build() {
+            return new UrlQuery<>(this);
         }
 
     }
 
     private final String url;
 
-    private UrlQuery(Builder builder) {
+    private UrlQuery(Builder<E> builder) {
         super(builder);
 
         url = builder.url;

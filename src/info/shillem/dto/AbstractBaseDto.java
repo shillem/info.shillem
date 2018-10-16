@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class AbstractBaseDto implements BaseDto, Serializable {
+public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
+        implements BaseDto<E>, Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -16,7 +17,7 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     private String databaseUrl;
     private Date lastModified;
 
-    private final Map<BaseField, ValueHolder> values = new HashMap<>();
+    private final Map<E, ValueHolder> values = new HashMap<>();
 
     @Override
     public void clear() {
@@ -41,20 +42,20 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     }
 
     @Override
-    public boolean contains(BaseField key) {
+    public boolean containsField(E key) {
         return values.containsKey(key);
     }
 
     @Override
-    public Object get(BaseField key) {
+    public Object getValue(E key) {        
         ValueHolder valueHolder = values.get(key);
 
         return valueHolder != null ? valueHolder.getValue() : null;
     }
 
     @Override
-    public <T> T get(BaseField key, Class<T> type) {
-        Object value = get(key);
+    public <T> T getValue(E key, Class<T> type) {
+        Object value = getValue(key);
 
         try {
             return type.cast(value);
@@ -76,8 +77,8 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     }
 
     @Override
-    public Boolean getBoolean(BaseField key) {
-        return get(key, Boolean.class);
+    public Boolean getBoolean(E key) {
+        return getValue(key, Boolean.class);
     }
 
     @Override
@@ -86,17 +87,17 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     }
 
     @Override
-    public final Date getDate(BaseField key) {
-        return get(key, Date.class);
+    public final Date getDate(E key) {
+        return getValue(key, Date.class);
     }
 
     @Override
-    public final Double getDouble(BaseField key) {
-        return get(key, Double.class);
+    public final Double getDouble(E key) {
+        return getValue(key, Double.class);
     }
 
     @Override
-    public Set<? extends BaseField> getFields() {
+    public Set<E> getFields() {
         return values.keySet();
     }
 
@@ -106,8 +107,8 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     }
 
     @Override
-    public final Integer getInteger(BaseField key) {
-        return get(key, Integer.class);
+    public final Integer getInteger(E key) {
+        return getValue(key, Integer.class);
     }
 
     @Override
@@ -117,8 +118,8 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> List<T> getList(BaseField key, Class<T> type) {
-        Object value = get(key);
+    public <T> List<T> getList(E key, Class<T> type) {
+        Object value = getValue(key);
 
         try {
             return value != null ? (List<T>) value : Collections.emptyList();
@@ -132,8 +133,8 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     }
 
     @Override
-    public final String getString(BaseField key) {
-        return get(key, String.class);
+    public final String getString(E key) {
+        return getValue(key, String.class);
     }
 
     @Override
@@ -142,21 +143,21 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     }
 
     @Override
-    public boolean isTrue(BaseField key) {
+    public boolean isValueTrue(E key) {
         Boolean flag = getBoolean(key);
 
         return flag != null && flag;
     }
 
     @Override
-    public boolean isUpdated(BaseField key) {
+    public boolean isValueUpdated(E key) {
         ValueHolder valueHolder = values.get(key);
 
         return valueHolder != null && valueHolder.isUpdated();
     }
 
     @Override
-    public void preset(BaseField key, Object value) {
+    public void presetValue(E key, Object value) {
         ValueHolder valueHolder = values.get(key);
 
         if (valueHolder != null) {
@@ -172,7 +173,7 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     }
 
     @Override
-    public final void set(BaseField key, Object value) {
+    public final void setValue(E key, Object value) {
         ValueHolder valueHolder = values.get(key);
         Class<?> type = key.getProperties().getFullType();
 
@@ -184,7 +185,7 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     }
 
     @Override
-    public void setAsUpdated(BaseField key) {
+    public void setValueAsUpdated(E key) {
         ValueHolder valueHolder = values.get(key);
 
         if (valueHolder != null) {
@@ -208,7 +209,7 @@ public abstract class AbstractBaseDto implements BaseDto, Serializable {
     }
 
     @Override
-    public void transact(BaseField key, Object value) {
+    public void transactValue(E key, Object value) {
         ValueHolder valueHolder = values.get(key);
         Class<?> type = key.getProperties().getFullType();
 
