@@ -16,11 +16,8 @@ public final class ServerFolder implements Serializable {
     private final String folderPath;
 
     public ServerFolder(String serverName, String folderPath) {
-        Objects.requireNonNull(serverName);
-        Objects.requireNonNull(folderPath);
-
-        this.serverName = serverName;
-        this.folderPath = formatFolderPath(folderPath);
+        this.serverName = Objects.requireNonNull(serverName);
+        this.folderPath = formatFolderPath(Objects.requireNonNull(folderPath));
     }
 
     private String formatFolderPath(String folderPath) {

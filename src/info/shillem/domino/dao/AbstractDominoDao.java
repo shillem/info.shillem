@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,27 +14,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
 import java.util.Vector;
-import java.util.function.Supplier;
-import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 import info.shillem.dao.Query;
 import info.shillem.dao.lang.DaoException;
+import info.shillem.dao.lang.DaoRecordException;
 import info.shillem.dao.lang.DaoResolutionException;
 import info.shillem.domino.util.DominoFactory;
 import info.shillem.domino.util.DominoI18n;
+import info.shillem.domino.util.DominoSilo;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.domino.util.MimeContentType;
 import info.shillem.dto.AttachmentFile;
@@ -55,51 +47,27 @@ import lotus.domino.NotesException;
 import lotus.domino.Stream;
 import lotus.domino.ViewEntry;
 
-public abstract class AbstractDominoDao<T extends BaseDto> {
+public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
 
     private static class GsonLoader {
-
-        private static final Gson INSTANCE;
-        private static final Pattern DATE_PATTERN;
-
-        static {
-            DATE_PATTERN = Pattern.compile("^\\d{4}-\\d{2}-\\d{2}");
-
-            GsonBuilder gsonBuilder = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-                    .registerTypeAdapter(Map.class, new JsonDeserializer<Map<String, Object>>() {
-
-                        @Override
-                        public Map<String, Object> deserialize(JsonElement jsonElement, Type type,
-                                JsonDeserializationContext context) throws JsonParseException {
-                            Map<String, Object> map = new TreeMap<>();
-
-                            for (Entry<String, JsonElement> entry : jsonElement.getAsJsonObject()
-                                    .entrySet()) {
-                                JsonElement value = entry.getValue();
-
-                                if (value.isJsonPrimitive()
-                                        && value.getAsJsonPrimitive().isString()
-                                        && DATE_PATTERN.matcher(value.getAsString()).find()) {
-                                    map.put(entry.getKey(), context.deserialize(value, Date.class));
-                                } else {
-                                    map.put(entry.getKey(),
-                                            context.deserialize(value, Object.class));
-                                }
-                            }
-
-                            return map;
-                        }
-                    });
-
-            INSTANCE = gsonBuilder.create();
-        }
-
+        private static final Gson INSTANCE = new GsonBuilder().create();
     }
 
     protected final DominoFactory factory;
 
     protected AbstractDominoDao(DominoFactory factory) {
         this.factory = factory;
+    }
+
+    protected void checkTimestampAlignment(T wrapper, Document doc)
+            throws DaoException, NotesException {
+        Date wrapperDate = wrapper.getLastModified();
+        Date docDate = DominoUtil.getLastModified(doc);
+
+        if (wrapperDate != null
+                && wrapperDate.getTime() / 1000 != docDate.getTime() / 1000) {
+            throw DaoRecordException.asDirty(wrapper.getId(), wrapperDate, docDate);
+        }
     }
 
     protected Document createDocument(Database database) throws NotesException {
@@ -110,79 +78,12 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         return doc;
     }
 
-    protected String getDominoItemName(BaseField f) {
-        return f.toString();
+    protected String getDocumentItemName(E field) {
+        return field.toString();
     }
 
-    protected final boolean lastModifiedDatesMatch(BaseDto dto, Document doc)
-            throws NotesException {
-        return dto.getLastModified() == null
-                || dto.getLastModified().equals(DominoUtil.getLastModified(doc));
-    }
-
-    protected void pull(Document doc, T wrapper, BaseField field, Locale locale)
-            throws NotesException {
-        Class<? extends Serializable> type = field.getProperties().getType();
-
-        if (type == AttachmentMap.class) {
-            wrapper.preset(field, pullAttachmentMap(doc, field));
-        } else if (I18nValue.class.isAssignableFrom(type)) {
-            wrapper.preset(field, DominoI18n.getValue(locale, doc, field));
-        } else if (JsonValue.class.isAssignableFrom(type)) {
-            wrapper.preset(field, pullJsonable(doc, field, type));
-        } else if (field.getProperties().isList()) {
-            wrapper.preset(field,
-                    DominoUtil.getItemValues(
-                            doc, getDominoItemName(field), (value) -> pullValue(value, type)));
-        } else {
-            wrapper.preset(field,
-                    DominoUtil.getItemValue(
-                            doc, getDominoItemName(field), (value) -> pullValue(value, type)));
-        }
-    }
-
-    protected void pull(Document doc, T wrapper, Set<? extends BaseField> schema, Locale locale)
-            throws NotesException {
-        if (!DominoUtil.hasEncouragedOptions(doc)) {
-            throw new IllegalArgumentException("Document is not treated with encouraged options");
-        }
-
-        for (BaseField field : schema) {
-            pull(doc, wrapper, field, locale);
-        }
-
-        if (!doc.isNewNote()) {
-            wrapper.setId(doc.getUniversalID());
-            wrapper.setLastModified(DominoUtil.getLastModified(doc));
-        }
-    }
-
-    protected void pull(List<String> columns, ViewEntry entry, T wrapper,
-            Set<? extends BaseField> schema) throws NotesException {
-        if (!DominoUtil.hasEncouragedOptions(entry)) {
-            throw new IllegalArgumentException("Entry is not treated with encouraged options");
-        }
-
-        for (BaseField field : schema) {
-            String fieldName = getDominoItemName(field);
-
-            if (columns.contains(fieldName)) {
-                List<?> columnValues = entry.getColumnValues();
-
-                wrapper.preset(field, pullValue(
-                        columnValues.get(columns.indexOf(fieldName)),
-                        field.getProperties().getType()));
-            } else {
-                throw new IllegalArgumentException("Unable to retrieve value for schema field %s "
-                        + field);
-            }
-        }
-
-        wrapper.setId(entry.getUniversalID());
-    }
-
-    private AttachmentMap pullAttachmentMap(Document doc, BaseField field) throws NotesException {
-        String itemName = getDominoItemName(field);
+    private AttachmentMap getPullAttachmentMap(Document doc, E field) throws NotesException {
+        String itemName = getDocumentItemName(field);
         MIMEEntity mimeEntity = null;
 
         try {
@@ -218,17 +119,18 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         }
     }
 
-    private Object pullJsonable(Document doc, BaseField field, Class<?> type)
+    private Object getPullJsonValue(Document doc, E field, Class<?> type)
             throws NotesException {
-        String itemName = getDominoItemName(field);
+        String itemName = getDocumentItemName(field);
         MIMEEntity mimeEntity = null;
 
         try {
             mimeEntity = DominoUtil.getMimeEntity(doc, itemName, false);
 
             if (mimeEntity != null) {
-                TypeToken<?> t = field.getProperties().isList() ? TypeToken.getParameterized(
-                        ArrayList.class, type) : TypeToken.get(type);
+                TypeToken<?> t = field.getProperties().isList()
+                        ? TypeToken.getParameterized(ArrayList.class, type)
+                        : TypeToken.get(type);
 
                 return GsonLoader.INSTANCE.fromJson(mimeEntity.getContentAsText(), t.getType());
             }
@@ -241,7 +143,7 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         }
     }
 
-    private Object pullValue(Object value, Class<?> type) {
+    private Object getPullValue(Object value, Class<?> type) {
         if (type.isEnum()) {
             if (value instanceof String) {
                 return StringUtil.enumFromString(type, (String) value);
@@ -269,54 +171,104 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         return value;
     }
 
-    protected void push(T wrapper, Document doc) throws NotesException {
-        for (BaseField field : wrapper.getFields()) {
-            if (wrapper.isUpdated(field)) {
-                push(wrapper, doc, field);
-            }
-        }
-    }
-
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected void push(T wrapper, Document doc, BaseField field) throws NotesException {
-        Class<? extends Serializable> type = field.getProperties().getType();
-        Object value = wrapper.get(field);
-        String itemName = getDominoItemName(field);
-
-        if (value == null) {
-            doc.replaceItemValue(itemName, value);
-        } else if (type == AttachmentMap.class) {
-            pushAttachmentMap((AttachmentMap) value, doc, field);
-        } else if (JsonValue.class.isAssignableFrom(type)) {
-            pushJsonable(value, doc, field);
-        } else if (field.getProperties().isList()) {
-            Vector values = new Vector();
-
-            try {
-                for (Object o : (List) value) {
-                    values.add(pushValue(o, type));
-                }
-
-                doc.replaceItemValue(itemName, values);
-            } finally {
-                factory.getSession().recycle(values);
-            }
-        } else {
-            Object transformedValue = pushValue(value, type);
-
-            try {
-                doc.replaceItemValue(itemName, transformedValue);
-            } finally {
-                if (transformedValue instanceof Base) {
-                    DominoUtil.recycle((Base) transformedValue);
-                }
-            }
-        }
-    }
-
-    private void pushAttachmentMap(AttachmentMap am, Document doc, BaseField field)
+    private Object getPushValue(Object value, Class<? extends Serializable> type)
             throws NotesException {
-        String itemName = getDominoItemName(field);
+        if (value == null) {
+            return null;
+        }
+
+        if (type.isEnum() || type == Boolean.class) {
+            return value.toString();
+        } else if (type == Date.class) {
+            return factory.getSession().createDateTime((Date) value);
+        } else if (Number.class.isAssignableFrom(type)) {
+            Number num = (Number) value;
+
+            if (type == Integer.class) {
+                return num.intValue();
+            } else if (type == Long.class) {
+                return num.longValue();
+            } else if (type == Double.class || type == BigDecimal.class) {
+                return num.doubleValue();
+            }
+        }
+
+        return value;
+    }
+
+    protected void pullDocument(Document doc, T wrapper, Query<E> query)
+            throws NotesException {
+        if (!DominoUtil.hasEncouragedOptions(doc)) {
+            throw new IllegalArgumentException("Document is not treated with encouraged options");
+        }
+
+        for (E field : query.getSchema()) {
+            pullItem(doc, wrapper, field, query.getLocale());
+        }
+
+        if (!doc.isNewNote()) {
+            wrapper.setId(doc.getUniversalID());
+            wrapper.setLastModified(DominoUtil.getLastModified(doc));
+        }
+
+        if (query.isFetchDatabaseUrl()) {
+            wrapper.setDatabaseUrl(doc.getNotesURL());
+        }
+    }
+
+    protected void pullEntry(ViewEntry entry, T wrapper, Query<E> query, List<String> columns)
+            throws NotesException {
+        if (!DominoUtil.hasEncouragedOptions(entry)) {
+            throw new IllegalArgumentException("Entry is not treated with encouraged options");
+        }
+
+        for (E field : query.getSchema()) {
+            String fieldName = getDocumentItemName(field);
+
+            if (columns.contains(fieldName)) {
+                List<?> columnValues = entry.getColumnValues();
+
+                wrapper.presetValue(field, getPullValue(
+                        columnValues.get(columns.indexOf(fieldName)),
+                        field.getProperties().getType()));
+            } else {
+                throw new IllegalArgumentException(
+                        "Unable to retrieve value for schema field " + field);
+            }
+        }
+
+        wrapper.setId(entry.getUniversalID());
+
+        if (query.isFetchDatabaseUrl()) {
+            throw new UnsupportedOperationException(
+                    "Database URL cannot be fetched from a view entry");
+        }
+    }
+
+    protected void pullItem(Document doc, T wrapper, E field, Locale locale)
+            throws NotesException {
+        Class<? extends Serializable> type = field.getProperties().getType();
+
+        if (type == AttachmentMap.class) {
+            wrapper.presetValue(field, getPullAttachmentMap(doc, field));
+        } else if (I18nValue.class.isAssignableFrom(type)) {
+            wrapper.presetValue(field, DominoI18n.getValue(locale, doc, field));
+        } else if (JsonValue.class.isAssignableFrom(type)) {
+            wrapper.presetValue(field, getPullJsonValue(doc, field, type));
+        } else if (field.getProperties().isList()) {
+            wrapper.presetValue(field,
+                    DominoUtil.getItemValues(
+                            doc, getDocumentItemName(field), (value) -> getPullValue(value, type)));
+        } else {
+            wrapper.presetValue(field,
+                    DominoUtil.getItemValue(
+                            doc, getDocumentItemName(field), (value) -> getPullValue(value, type)));
+        }
+    }
+
+    private void pushAttachmentMap(AttachmentMap am, Document doc, E field)
+            throws NotesException {
+        String itemName = getDocumentItemName(field);
         MIMEEntity mimeEntity = null;
 
         try {
@@ -421,9 +373,9 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         }
     }
 
-    private void pushJsonable(Object jsonable, Document doc, BaseField field)
+    private void pushJsonable(Object jsonable, Document doc, E field)
             throws NotesException {
-        String itemName = getDominoItemName(field);
+        String itemName = getDocumentItemName(field);
 
         Stream stm = null;
         MIMEEntity mimeEntity = null;
@@ -445,41 +397,48 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         }
     }
 
-    private Object pushValue(Object value, Class<? extends Serializable> type)
-            throws NotesException {
-        if (value == null) {
-            return null;
-        }
-
-        if (type.isEnum() || type == Boolean.class) {
-            return value.toString();
-        } else if (type == Date.class) {
-            return factory.getSession().createDateTime((Date) value);
-        } else if (Number.class.isAssignableFrom(type)) {
-            Number num = (Number) value;
-
-            if (type == Integer.class) {
-                return num.intValue();
-            } else if (type == Long.class) {
-                return num.longValue();
-            } else if (type == Double.class || type == BigDecimal.class) {
-                return num.doubleValue();
+    protected void pushWrapper(T wrapper, Document doc) throws NotesException {
+        for (E field : wrapper.getFields()) {
+            if (wrapper.isValueUpdated(field)) {
+                pushWrapperValue(wrapper, doc, field);
             }
         }
-
-        return value;
     }
 
-    protected T read(Document doc, Query query, Supplier<T> supplier) throws NotesException {
-        T dto = supplier.get();
+    protected void pushWrapperValue(T wrapper, Document doc, E field) throws NotesException {
+        Class<? extends Serializable> type = field.getProperties().getType();
+        Object value = wrapper.getValue(field);
+        String itemName = getDocumentItemName(field);
 
-        pull(doc, dto, query.getSchema(), query.getLocale());
+        if (value == null) {
+            doc.replaceItemValue(itemName, "");
+        } else if (type == AttachmentMap.class) {
+            pushAttachmentMap((AttachmentMap) value, doc, field);
+        } else if (JsonValue.class.isAssignableFrom(type)) {
+            pushJsonable(value, doc, field);
+        } else if (field.getProperties().isList()) {
+            Vector<Object> values = new Vector<>();
 
-        if (query.isFetchDatabaseUrl()) {
-            dto.setDatabaseUrl(doc.getNotesURL());
+            try {
+                for (Object o : (List<?>) value) {
+                    values.add(getPushValue(o, type));
+                }
+
+                doc.replaceItemValue(itemName, values);
+            } finally {
+                factory.getSession().recycle(values);
+            }
+        } else {
+            Object transformedValue = getPushValue(value, type);
+
+            try {
+                doc.replaceItemValue(itemName, transformedValue);
+            } finally {
+                if (transformedValue instanceof Base) {
+                    DominoUtil.recycle((Base) transformedValue);
+                }
+            }
         }
-
-        return dto;
     }
 
     protected Document resolveDocument(String notesUrl) throws DaoException, NotesException {
@@ -496,6 +455,30 @@ public abstract class AbstractDominoDao<T extends BaseDto> {
         DominoUtil.setEncouragedOptions(doc);
 
         return doc;
+    }
+
+    protected void update(List<T> wrappers, DominoSilo silo) throws DaoException, NotesException {
+        Document doc = null;
+
+        for (T wrapper : wrappers) {
+            if (wrapper.isNew()) {
+                throw new IllegalStateException("Update cannot be performed on a new object");
+            }
+
+            try {
+                doc = silo.getDocumentById(wrapper.getId());
+
+                checkTimestampAlignment(wrapper, doc);
+
+                pushWrapper(wrapper, doc);
+
+                doc.save();
+
+                wrapper.commit(DominoUtil.getLastModified(doc));
+            } finally {
+                DominoUtil.recycle(doc);
+            }
+        }
     }
 
 }
