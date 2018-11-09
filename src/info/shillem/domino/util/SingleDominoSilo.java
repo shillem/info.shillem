@@ -76,6 +76,11 @@ public class SingleDominoSilo implements DominoSilo {
     }
 
     @Override
+    public DatabasePath getDatabasePath() {
+        return databasePath;
+    }
+
+    @Override
     public Document getDocumentById(String id) throws NotesException {
         if (id == null || id.isEmpty()) {
             throw new IllegalArgumentException("Invalid id");

@@ -48,6 +48,11 @@ public class MultiDominoSilo implements DominoSilo {
     public Database getDatabase() throws NotesException {
         throw new UnsupportedOperationException("Use get(...).getDatabase()");
     }
+    
+    @Override
+    public DatabasePath getDatabasePath() {
+        throw new UnsupportedOperationException("Use get(...).getDatabasePath()");
+    }
 
     @Override
     public Document getDocumentById(String id) throws NotesException {

@@ -57,7 +57,7 @@ public class DominoFactoryImpl implements DominoFactory {
     }
 
     @Override
-    public Session getSession() throws NotesException {
+    public Session getSession() {
         return session;
     }
 

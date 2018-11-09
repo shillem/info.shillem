@@ -14,6 +14,8 @@ public interface DominoSilo {
 
     Database getDatabase() throws NotesException;
 
+    DatabasePath getDatabasePath();
+
     Document getDocumentById(String id) throws NotesException;
 
     String getName();

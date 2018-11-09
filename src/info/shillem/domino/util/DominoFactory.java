@@ -1,6 +1,5 @@
 package info.shillem.domino.util;
 
-import lotus.domino.NotesException;
 import lotus.domino.Session;
 
 public interface DominoFactory {
@@ -11,7 +10,7 @@ public interface DominoFactory {
 
     DominoSilo getDominoSilo(String name);
     
-	Session getSession() throws NotesException;
+	Session getSession();
 	
 	void recycle();
 
