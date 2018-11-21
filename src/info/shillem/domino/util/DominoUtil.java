@@ -103,6 +103,8 @@ public enum DominoUtil {
     }
 
     public static Date getLastModified(Document doc) throws NotesException {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        
         DateTime d = null;
 
         try {
@@ -162,11 +164,11 @@ public enum DominoUtil {
         MIMEEntity mimeEntity = doc.getMIMEEntity(itemName);
 
         if (mimeEntity == null) {
-            if (doc.hasItem(itemName)) {
-                doc.removeItem(itemName);
-            }
-
             if (createOnFail) {
+                if (doc.hasItem(itemName)) {
+                    doc.removeItem(itemName);
+                }
+                
                 mimeEntity = doc.createMIMEEntity(itemName);
             }
         }
@@ -217,10 +219,14 @@ public enum DominoUtil {
     }
 
     public static boolean hasEncouragedOptions(Document doc) throws NotesException {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        
         return doc.isPreferJavaDates();
     }
 
     public static boolean hasEncouragedOptions(ViewEntry entry) throws NotesException {
+        Objects.requireNonNull(entry, "Entry cannot be null");
+        
         return entry.isPreferJavaDates();
     }
 
@@ -260,8 +266,53 @@ public enum DominoUtil {
                 .forEach(DominoUtil::recycle);
     }
 
+    public static void setAuthorValue(Document doc, String itemName, Object value)
+            throws NotesException {        
+        Item item = null;
+        
+        try {
+            item = doc.replaceItemValue(itemName, value);
+            item.setAuthors(true);
+        } finally {
+            recycle(item);
+        }
+    }
+    
+    public static void setNameValue(Document doc, String itemName, Object value)
+            throws NotesException {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        Objects.requireNonNull(itemName, "Item name cannot be null");
+        
+        Item item = null;
+        
+        try {
+            item = doc.replaceItemValue(itemName, value);
+            item.setNames(true);
+        } finally {
+            recycle(item);
+        }
+    }
+    
+    public static void setReaderValue(Document doc, String itemName, Object value)
+            throws NotesException {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        Objects.requireNonNull(itemName, "Item name cannot be null");
+        
+        Item item = null;
+        
+        try {
+            item = doc.replaceItemValue(itemName, value);
+            item.setReaders(true);
+        } finally {
+            recycle(item);
+        }
+    }
+    
     public static void setDate(Session session, Document doc, String itemName, Date value)
             throws NotesException {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        Objects.requireNonNull(itemName, "Item name cannot be null");
+        
         DateTime dateTime = null;
 
         try {
@@ -276,10 +327,14 @@ public enum DominoUtil {
     }
 
     public static void setEncouragedOptions(Document doc) throws NotesException {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        
         doc.setPreferJavaDates(true);
     }
 
     public static void setEncouragedOptions(ViewEntry entry) throws NotesException {
+        Objects.requireNonNull(entry, "Entry cannot be null");
+        
         entry.setPreferJavaDates(true);
     }
 
