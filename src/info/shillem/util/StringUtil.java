@@ -70,35 +70,11 @@ public enum StringUtil {
 	}
 
 	public static boolean isEmpty(String s) {
-		return (s == null) || (s.length() == 0);
+		return s == null || s.isEmpty();
 	}
 
 	public static boolean isNotEmpty(String s) {
-		return (s != null) && (s.length() > 0);
-	}
-
-	public static String join(String[] s, String delimiter) {
-		int i = s.length;
-
-		if (i == 0) {
-			return "";
-		}
-
-		if (i == 1) {
-			return s[0];
-		}
-
-		StringBuilder builder = new StringBuilder();
-
-		for (int j = 0; j < i; j++) {
-			if (j > 0) {
-				builder.append(delimiter);
-			}
-
-			builder.append(s[j]);
-		}
-
-		return builder.toString();
+		return !isEmpty(s);
 	}
 
 	public static String right(String s, int len) {

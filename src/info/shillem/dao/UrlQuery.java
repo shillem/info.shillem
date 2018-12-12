@@ -1,7 +1,8 @@
 package info.shillem.dao;
 
+import java.util.Objects;
+
 import info.shillem.dto.BaseField;
-import info.shillem.util.StringUtil;
 
 public class UrlQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
@@ -11,11 +12,7 @@ public class UrlQuery<E extends Enum<E> & BaseField> extends Query<E> {
         private String url;
 
         public Builder(String url) {
-            if (StringUtil.isEmpty(url)) {
-                throw new IllegalArgumentException("The url is invalid");
-            }
-
-            this.url = url;
+            this.url = Objects.requireNonNull(url, "The URL cannot be null");
         }
 
         @Override
