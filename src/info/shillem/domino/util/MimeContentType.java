@@ -2,57 +2,52 @@ package info.shillem.domino.util;
 
 public enum MimeContentType {
 
-	ATTACHMENT {
-		@Override
-		public boolean matches(String[] headers) {
-			for (String header : headers) {
-				if (header.startsWith("Content-Disposition")
-						&& header.contains("attachment")
-						&& header.contains("filename")) {
-					return true;
-				}
-			}
+    ATTACHMENT("attachment") {
 
-			return false;
-		}
-	},
-	TEXT {
-		@Override
-		public boolean matches(String[] headers) {
-			for (String header : headers) {
-				if (header.startsWith("Content-Type") && header.contains("text")) {
-					return true;
-				}
-			}
+        @Override
+        public boolean matches(String[] headers) {
+            int score = 0;
 
-			return false;
-		}
-	},
-	TEXT_HTML {
-		@Override
-		public boolean matches(String[] headers) {
-			for (String header : headers) {
-				if (header.startsWith("Content-Type") && header.contains("text/html")) {
-					return true;
-				}
-			}
+            for (String header : headers) {
+                if (header.startsWith("Content-Disposition")) {
+                    score++;
+                }
 
-			return false;
-		}
-	},
-	TEXT_PLAIN {
-		@Override
-		public boolean matches(String[] headers) {
-			for (String header : headers) {
-				if (header.startsWith("Content-Type") && header.contains("text/plain")) {
-					return true;
-				}
-			}
+                if (header.contains("attachment")) {
+                    score++;
+                }
 
-			return false;
-		}
-	};
+                if (header.contains("filename")) {
+                    score++;
+                }
 
-	public abstract boolean matches(String[] headers);
+                if (score >= 3) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+    },
+    TEXT("text"),
+    TEXT_HTML("text/html"),
+    TEXT_PLAIN("text/plain");
+
+    private final String type;
+
+    private MimeContentType(String type) {
+        this.type = type;
+    }
+
+    public boolean matches(String[] headers) {
+        for (String header : headers) {
+            if (header.startsWith("Content-Type") && header.contains(type)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
 }

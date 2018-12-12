@@ -3,7 +3,6 @@ package info.shillem.domino.dao;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -94,8 +93,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
 
             List<MIMEEntity> attachments = DominoUtil
-                    .getMimeEntities(mimeEntity, MimeContentType.ATTACHMENT)
-                    .get(MimeContentType.ATTACHMENT);
+                    .getMimeEntitiesByContentType(mimeEntity, MimeContentType.ATTACHMENT);
 
             if (attachments.isEmpty()) {
                 return null;
@@ -105,7 +103,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 AttachmentMap am = new AttachmentMap();
 
                 for (MIMEEntity attachment : attachments) {
-                    am.put(DominoUtil.getMimeEntityFilename(attachment));
+                    DominoUtil.getMimeEntityAttachmentFilename(attachment)
+                            .ifPresent(am::put);
                 }
 
                 return am;
@@ -114,8 +113,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
         } finally {
             DominoUtil.recycle(mimeEntity);
-
-            doc.closeMIMEEntities(false, itemName);
         }
     }
 
@@ -275,13 +272,13 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             mimeEntity = DominoUtil.getMimeEntity(doc, itemName, true);
 
             List<MIMEEntity> attachments = DominoUtil
-                    .getMimeEntities(mimeEntity, MimeContentType.ATTACHMENT)
-                    .get(MimeContentType.ATTACHMENT);
+                    .getMimeEntitiesByContentType(mimeEntity, MimeContentType.ATTACHMENT);
 
             Map<String, MIMEEntity> attachmentsByName = new HashMap<>();
 
             for (MIMEEntity attachment : attachments) {
-                attachmentsByName.put(DominoUtil.getMimeEntityFilename(attachment), attachment);
+                DominoUtil.getMimeEntityAttachmentFilename(attachment)
+                        .ifPresent(name -> attachmentsByName.put(name, attachment));
             }
 
             // Removing files
@@ -298,13 +295,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 }
             }
 
-            // Header cleaning on empty entity
-            if (mimeEntity.getNextEntity() == null) {
-                for (Iterator<?> iter = mimeEntity.getHeaderObjects().iterator(); iter.hasNext();) {
-                    ((MIMEHeader) iter.next()).remove();
-                }
-            }
-
             // Adding files
             for (AttachmentFile af : am.values()) {
                 File uploadedFile = af.getUploadedFile();
@@ -314,62 +304,49 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 }
 
                 InputStream is = null;
+                Stream stm = null;
 
                 try {
                     is = new FileInputStream(uploadedFile);
+                    stm = factory.getSession().createStream();
+                    stm.setContents(is);
 
-                    pushInputStream(is,
-                            af.getName(),
-                            attachmentsByName.get(af.getName()),
-                            mimeEntity);
-                } catch (FileNotFoundException BaseField) {
+                    MIMEEntity child = attachmentsByName.get(af.getName());
+
+                    if (child == null) {
+                        child = mimeEntity.createChildEntity();
+                        MIMEHeader header = child.createHeader("Content-Disposition");
+                        header.setHeaderValAndParams(
+                                "attachment; filename=\"" + af.getName() + "\"");
+                    }
+
+                    child.setContentFromBytes(stm,
+                            "application/octet-stream",
+                            MIMEEntity.ENC_IDENTITY_BINARY);
+
+                    stm.close();
+                } catch (FileNotFoundException e) {
                     throw new IllegalArgumentException(String.format(
                             "The file with path %s was not found", uploadedFile.getAbsolutePath()));
-                } catch (IOException BaseField) {
-                    throw new IllegalArgumentException("Error handling file " + af.getName());
                 } finally {
+                    DominoUtil.recycle(stm);
                     IOUtil.close(is);
                 }
 
                 af.setUploadedFile(null);
             }
+
+            // Clear entity if there are no attachments
+            if (mimeEntity.getNextEntity() == null) {
+                mimeEntity.remove();
+            }
         } finally {
-            DominoUtil.recycle(mimeEntity);
 
-            doc.closeMIMEEntities(true, itemName);
-        }
-    }
-
-    private void pushInputStream(InputStream is, String fileName,
-            MIMEEntity child, MIMEEntity parent) throws NotesException, IOException {
-        Stream stm = null;
-
-        try {
-            stm = factory.getSession().createStream();
-            byte buffer[] = new byte[8];
-            int read;
-
-            do {
-                read = is.read(buffer, 0, buffer.length);
-
-                if (read > 0) {
-                    stm.write(buffer);
-                }
-            } while (read > -1);
-
-            if (child == null) {
-                child = parent.createChildEntity();
-                MIMEHeader header = child.createHeader("Content-Disposition");
-                header.setHeaderVal("attachment;filename=\"" + fileName + "\"");
+            if (doc.hasItem(itemName)) {
+                doc.closeMIMEEntities(true, itemName);
             }
 
-            child.setContentFromBytes(stm,
-                    "application/octet-stream",
-                    MIMEEntity.ENC_IDENTITY_BINARY);
-
-            stm.close();
-        } finally {
-            DominoUtil.recycle(stm);
+            DominoUtil.recycle(mimeEntity);
         }
     }
 
@@ -444,17 +421,21 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     protected Document resolveDocument(String notesUrl) throws DaoException, NotesException {
         Objects.requireNonNull(notesUrl, "Notes URL cannot be null");
 
-        Base base = factory.getSession().resolve(notesUrl);
+        try {
+            Base base = factory.getSession().resolve(notesUrl);
 
-        if (base == null || !(base instanceof Document)) {
+            if (!(base instanceof Document)) {
+                throw new RuntimeException();
+            }
+
+            Document doc = (Document) base;
+
+            DominoUtil.setEncouragedOptions(doc);
+
+            return doc;
+        } catch (Exception e) {
             throw new DaoResolutionException(notesUrl);
         }
-
-        Document doc = (Document) base;
-
-        DominoUtil.setEncouragedOptions(doc);
-
-        return doc;
     }
 
     protected void update(List<T> wrappers, DominoSilo silo) throws DaoException, NotesException {

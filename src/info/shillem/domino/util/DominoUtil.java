@@ -5,14 +5,18 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Vector;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import info.shillem.util.ThrowableFunction;
+import info.shillem.util.ThrowablePredicate;
 import lotus.domino.Base;
 import lotus.domino.DateTime;
 import lotus.domino.Document;
@@ -104,7 +108,7 @@ public enum DominoUtil {
 
     public static Date getLastModified(Document doc) throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
-        
+
         DateTime d = null;
 
         try {
@@ -116,44 +120,33 @@ public enum DominoUtil {
         }
     }
 
-    public static Map<MimeContentType, List<MIMEEntity>> getMimeEntities(MIMEEntity entity,
-            MimeContentType... contentTypes) throws NotesException {
-        if (entity == null || contentTypes == null) {
-            return Collections.emptyMap();
-        }
+    public static List<MIMEEntity> getMimeEntitiesByContentType(MIMEEntity entity,
+            MimeContentType contentType) throws NotesException {
+        Objects.requireNonNull(entity, "Entity cannot be null");
+        Objects.requireNonNull(contentType, "Content type cannot be null");
 
-        Map<MimeContentType, List<MIMEEntity>> mimeEntities = new HashMap<>();
+        List<MIMEEntity> subentities = new ArrayList<>();
         MIMEEntity nextEntity = null;
 
         try {
             nextEntity = entity.getNextEntity();
 
             while (nextEntity != null) {
-                String[] entityFilteredHeaders =
-                        nextEntity.getSomeHeaders(MIME_FILTERED_HEADERS, true).split("\\n");
+                String[] entityFilteredHeaders = nextEntity
+                        .getSomeHeaders(MIME_FILTERED_HEADERS, true)
+                        .split("\\n");
 
-                for (MimeContentType contentType : contentTypes) {
-                    if (contentType.matches(entityFilteredHeaders)) {
-                        List<MIMEEntity> filteredEntities = mimeEntities.get(contentType);
-
-                        if (filteredEntities == null) {
-                            filteredEntities = new ArrayList<>();
-                            mimeEntities.put(contentType, filteredEntities);
-                        }
-
-                        filteredEntities.add(nextEntity);
-                    }
+                if (contentType.matches(entityFilteredHeaders)) {
+                    subentities.add(nextEntity);
                 }
 
-                // No recycle because mimeEntity is passed in
-                // and remains under the control of the caller
                 nextEntity = nextEntity.getNextEntity();
             }
         } finally {
             DominoUtil.recycle(nextEntity);
         }
 
-        return mimeEntities;
+        return subentities;
     }
 
     public static MIMEEntity getMimeEntity(Document doc, String itemName, boolean createOnFail)
@@ -168,7 +161,7 @@ public enum DominoUtil {
                 if (doc.hasItem(itemName)) {
                     doc.removeItem(itemName);
                 }
-                
+
                 mimeEntity = doc.createMIMEEntity(itemName);
             }
         }
@@ -176,43 +169,33 @@ public enum DominoUtil {
         return mimeEntity;
     }
 
-    public static String getMimeEntityFilename(MIMEEntity entity) throws NotesException {
-        Objects.requireNonNull(entity, "Entity cannot be null");
-
-        Vector<?> headers = entity.getHeaderObjects();
-
-        try {
-            for (Object header : headers) {
-                String fileName = ((MIMEHeader) header).getParamVal("filename");
-
-                if (!fileName.isEmpty()) {
-                    return fileName.replaceAll("'|\"", "");
-                }
-            }
-
-            return null;
-        } finally {
-            recycle(headers);
-        }
-    }
-
-    public static String getMimeEntityHeaderValAndParams(MIMEEntity entity, String name)
+    public static Optional<String> getMimeEntityAttachmentFilename(MIMEEntity entity)
             throws NotesException {
         Objects.requireNonNull(entity, "Entity cannot be null");
-        Objects.requireNonNull(name, "Name cannot be null");
+
+        return getMimeEntityHeaderValAndParams(
+                entity, (ThrowablePredicate<MIMEHeader>) h -> h.getHeaderVal().equals("attachment"))
+                        .map(s -> {
+                            Matcher m = Pattern.compile("filename=['\"]?([^'\"\\s]+)").matcher(s);
+                            m.find();
+                            return m.group(1);
+                        });
+    }
+
+    public static Optional<String> getMimeEntityHeaderValAndParams(
+            MIMEEntity entity, Predicate<MIMEHeader> matcher) throws NotesException {
+        Objects.requireNonNull(entity, "Entity cannot be null");
+        Objects.requireNonNull(matcher, "Matcher cannot be null");
 
         Vector<?> headers = entity.getHeaderObjects();
 
         try {
-            for (Object header : headers) {
-                MIMEHeader h = (MIMEHeader) header;
-
-                if (h.getHeaderName().equals(name)) {
-                    return h.getHeaderValAndParams();
-                }
-            }
-
-            return null;
+            return headers
+                    .stream()
+                    .map(MIMEHeader.class::cast)
+                    .filter(matcher)
+                    .map((ThrowableFunction<MIMEHeader, String>) MIMEHeader::getHeaderValAndParams)
+                    .findFirst();
         } finally {
             recycle(headers);
         }
@@ -220,13 +203,13 @@ public enum DominoUtil {
 
     public static boolean hasEncouragedOptions(Document doc) throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
-        
+
         return doc.isPreferJavaDates();
     }
 
     public static boolean hasEncouragedOptions(ViewEntry entry) throws NotesException {
         Objects.requireNonNull(entry, "Entry cannot be null");
-        
+
         return entry.isPreferJavaDates();
     }
 
@@ -267,9 +250,9 @@ public enum DominoUtil {
     }
 
     public static void setAuthorValue(Document doc, String itemName, Object value)
-            throws NotesException {        
+            throws NotesException {
         Item item = null;
-        
+
         try {
             item = doc.replaceItemValue(itemName, value);
             item.setAuthors(true);
@@ -277,42 +260,12 @@ public enum DominoUtil {
             recycle(item);
         }
     }
-    
-    public static void setNameValue(Document doc, String itemName, Object value)
-            throws NotesException {
-        Objects.requireNonNull(doc, "Document cannot be null");
-        Objects.requireNonNull(itemName, "Item name cannot be null");
-        
-        Item item = null;
-        
-        try {
-            item = doc.replaceItemValue(itemName, value);
-            item.setNames(true);
-        } finally {
-            recycle(item);
-        }
-    }
-    
-    public static void setReaderValue(Document doc, String itemName, Object value)
-            throws NotesException {
-        Objects.requireNonNull(doc, "Document cannot be null");
-        Objects.requireNonNull(itemName, "Item name cannot be null");
-        
-        Item item = null;
-        
-        try {
-            item = doc.replaceItemValue(itemName, value);
-            item.setReaders(true);
-        } finally {
-            recycle(item);
-        }
-    }
-    
+
     public static void setDate(Session session, Document doc, String itemName, Date value)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
         Objects.requireNonNull(itemName, "Item name cannot be null");
-        
+
         DateTime dateTime = null;
 
         try {
@@ -328,14 +281,44 @@ public enum DominoUtil {
 
     public static void setEncouragedOptions(Document doc) throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
-        
+
         doc.setPreferJavaDates(true);
     }
 
     public static void setEncouragedOptions(ViewEntry entry) throws NotesException {
         Objects.requireNonNull(entry, "Entry cannot be null");
-        
+
         entry.setPreferJavaDates(true);
+    }
+
+    public static void setNameValue(Document doc, String itemName, Object value)
+            throws NotesException {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        Objects.requireNonNull(itemName, "Item name cannot be null");
+
+        Item item = null;
+
+        try {
+            item = doc.replaceItemValue(itemName, value);
+            item.setNames(true);
+        } finally {
+            recycle(item);
+        }
+    }
+
+    public static void setReaderValue(Document doc, String itemName, Object value)
+            throws NotesException {
+        Objects.requireNonNull(doc, "Document cannot be null");
+        Objects.requireNonNull(itemName, "Item name cannot be null");
+
+        Item item = null;
+
+        try {
+            item = doc.replaceItemValue(itemName, value);
+            item.setReaders(true);
+        } finally {
+            recycle(item);
+        }
     }
 
 }
