@@ -1,5 +1,7 @@
 package info.shillem.dto;
 
-public interface JsonValue {
+import java.io.Serializable;
+
+public interface JsonValue extends Serializable {
 
 }
