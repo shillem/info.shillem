@@ -134,8 +134,12 @@ public class DominoLooper {
                 ViewEntry nextEntry = getNextEntry(entries, entry);
                 
                 doc = entry.getDocument();
-                DominoUtil.setEncouragedOptions(doc);
-                consumer.accept(doc);
+                
+                if (doc != null) {
+                    DominoUtil.setEncouragedOptions(doc);
+                    consumer.accept(doc);
+                }
+                
                 DominoUtil.recycle(doc, entry);
                 
                 entry = nextEntry;
@@ -169,8 +173,12 @@ public class DominoLooper {
                 ViewEntry nextEntry = getNextEntry(nav, entry);
                 
                 doc = entry.getDocument();
-                DominoUtil.setEncouragedOptions(doc);
-                consumer.accept(doc);
+                
+                if (doc != null) {
+                    DominoUtil.setEncouragedOptions(doc);
+                    consumer.accept(doc);
+                }
+                
                 DominoUtil.recycle(doc, entry);
                 
                 entry = nextEntry;
