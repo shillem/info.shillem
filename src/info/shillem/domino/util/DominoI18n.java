@@ -1,15 +1,12 @@
 package info.shillem.domino.util;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Vector;
 
-import info.shillem.dto.BaseField;
-import info.shillem.dto.I18nString;
-import info.shillem.dto.I18nStringList;
-import info.shillem.dto.I18nValue;
+import info.shillem.util.ThrowableConsumer;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.View;
@@ -17,98 +14,64 @@ import lotus.domino.View;
 public enum DominoI18n {
 	;
 
-	public static I18nValue getValue(Locale locale, Document doc, BaseField field)
-			throws NotesException {
-		String valueItemName = field.toString();
-		String labelItemName = locale != null ? valueItemName + "_" + locale.getLanguage()
-				: valueItemName;
+    public static String getLocaleItemName(String itemName, Locale locale) {
+        return locale == null || locale.getLanguage().isEmpty()
+                ? itemName : itemName + "_" + locale.getLanguage();
+    }
 
-		Class<?> type = field.getProperties().getType();
+    public static Map<String, String> getValues(
+            Document doc, String valueItemName, Locale locale) throws NotesException {
+        return getValues(doc, valueItemName, getLocaleItemName(valueItemName, locale));
+    }
 
-		if (type == I18nString.class) {
-			String value = doc.getItemValueString(valueItemName);
-			String label = doc.getItemValueString(labelItemName);
+    public static Map<String, String> getValues(
+            Document doc, String valueItemName, String labelItemName) throws NotesException {
+        return getValues(doc, valueItemName, labelItemName, null);
+    }
 
-			I18nString string = new I18nString();
-			string.set(value, label.isEmpty() ? value : label);
+    public static Map<String, String> getValues(
+            Document doc, String valueItemName, String labelItemName, String prefixItemName)
+            throws NotesException {
+        if (!doc.hasItem(valueItemName) || !doc.hasItem(labelItemName)) {
+            return Collections.emptyMap();
+        }
 
-			return string;
-		} else if (type == I18nStringList.class) {
-			List<?> values = doc.getItemValue(valueItemName);
-			List<?> labels = doc.getItemValue(labelItemName);
+        Vector<?> values = doc.getItemValue(valueItemName);
+        Vector<?> labels = doc.getItemValue(labelItemName);
 
-			I18nStringList stringList = new I18nStringList();
+        Map<String, String> map = new LinkedHashMap<>();
+        String prefix = prefixItemName != null ? doc.getItemValueString(prefixItemName) + "_" : "";
 
-			for (int i = 0; i < values.size(); i++) {
-				String value = (String) values.get(i);
+        for (int i = 0; i < values.size(); i++) {
+            String value = (String) values.get(i);
 
-				stringList.add(value, labels.isEmpty() ? value : (String) labels.get(i));
-			}
+            map.put(prefix + value,
+                    values.size() == labels.size() ? (String) labels.get(i) : value);
+        }
 
-			return stringList;
-		}
+        return map;
+    }
 
-		throw new IllegalArgumentException(type + " is invalid class for internationalization");
-	}
+    public static Map<String, String> getValues(
+            View vw, String valueItemName, Locale locale) throws NotesException {
+        return getValues(vw, valueItemName, getLocaleItemName(valueItemName, locale));
+    }
 
-	public static Map<BaseField, I18nValue> getValues(Locale locale, View vw, BaseField... fields)
-			throws NotesException {
-		Document doc = null;
+    public static Map<String, String> getValues(
+            View vw, String valueItemName, String labelItemName) throws NotesException {
+        return getValues(vw, valueItemName, labelItemName, null);
+    }
 
-		try {
-			Map<BaseField, I18nValue> resources = new HashMap<>();
+    public static Map<String, String> getValues(
+            View vw, String valueItemName, String labelItemName, String prefixItemName)
+            throws NotesException {
+        Map<String, String> map = new LinkedHashMap<>();
 
-			doc = vw.getFirstDocument();
+        new DominoLooper().loopDocuments(vw, (ThrowableConsumer<Document>) (doc) -> {
+            map.putAll(getValues(doc, valueItemName, labelItemName, prefixItemName));
+        });
 
-			while (doc != null) {
-	            DominoUtil.setEncouragedOptions(doc);
-
-				for (BaseField field : fields) {
-					I18nStringList stringList = (I18nStringList) resources.get(field);
-
-					if (stringList == null) {
-						stringList = new I18nStringList();
-
-						resources.put(field, stringList);
-					}
-
-					stringList.add(getValue(locale, doc, field));
-				}
-
-				Document nextDocument = vw.getNextDocument(doc);
-				DominoUtil.recycle(doc);
-				doc = nextDocument;
-			}
-
-			return resources;
-		} finally {
-			DominoUtil.recycle(doc);
-		}
-	}
-
-	public static Map<BaseField, I18nValue> getValues(Locale locale, View vw, String key,
-			BaseField... fields) throws NotesException {
-		Document doc = null;
-
-		try {
-			doc = vw.getDocumentByKey(key, true);
-
-			if (doc == null) {
-				return Collections.emptyMap();
-			}
-
-			DominoUtil.setEncouragedOptions(doc);
-
-			Map<BaseField, I18nValue> resources = new HashMap<>();
-
-			for (BaseField field : fields) {
-				resources.put(field, getValue(locale, doc, field));
-			}
-
-			return resources;
-		} finally {
-			DominoUtil.recycle(doc);
-		}
-	}
+        return map;
+    }
 
 }

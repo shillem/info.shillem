@@ -25,7 +25,6 @@ import info.shillem.dao.lang.DaoException;
 import info.shillem.dao.lang.DaoRecordException;
 import info.shillem.dao.lang.DaoResolutionException;
 import info.shillem.domino.util.DominoFactory;
-import info.shillem.domino.util.DominoI18n;
 import info.shillem.domino.util.DominoSilo;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.domino.util.MimeContentType;
@@ -33,7 +32,6 @@ import info.shillem.dto.AttachmentFile;
 import info.shillem.dto.AttachmentMap;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseField;
-import info.shillem.dto.I18nValue;
 import info.shillem.dto.JsonValue;
 import info.shillem.util.IOUtil;
 import info.shillem.util.StringUtil;
@@ -248,8 +246,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
         if (type == AttachmentMap.class) {
             wrapper.presetValue(field, getPullAttachmentMap(doc, field));
-        } else if (I18nValue.class.isAssignableFrom(type)) {
-            wrapper.presetValue(field, DominoI18n.getValue(locale, doc, field));
         } else if (JsonValue.class.isAssignableFrom(type)) {
             wrapper.presetValue(field, getPullJsonValue(doc, field, type));
         } else if (field.getProperties().isList()) {
