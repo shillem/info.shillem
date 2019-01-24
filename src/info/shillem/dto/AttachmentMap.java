@@ -16,6 +16,10 @@ public class AttachmentMap extends Hashtable<String, AttachmentFile> {
     }
     
     public AttachmentFile getFirst() {
+        if (isEmpty()) {
+            return null;
+        }
+        
         return values().iterator().next();
     }
 
