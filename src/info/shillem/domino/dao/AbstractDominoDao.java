@@ -31,8 +31,10 @@ import info.shillem.domino.util.MimeContentType;
 import info.shillem.dto.AttachmentFile;
 import info.shillem.dto.AttachmentMap;
 import info.shillem.dto.BaseDto;
+import info.shillem.dto.BaseDto.SchemaFilter;
 import info.shillem.dto.BaseField;
 import info.shillem.dto.JsonValue;
+import info.shillem.util.CastUtil;
 import info.shillem.util.IOUtil;
 import info.shillem.util.StringUtil;
 import lotus.domino.Base;
@@ -79,126 +81,14 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return field.toString();
     }
 
-    private AttachmentMap getPullAttachmentMap(Document doc, E field) throws NotesException {
-        String itemName = getDocumentItemName(field);
-        MIMEEntity mimeEntity = null;
-
-        try {
-            mimeEntity = DominoUtil.getMimeEntity(doc, itemName, false);
-
-            if (mimeEntity == null) {
-                return null;
-            }
-
-            List<MIMEEntity> attachments = DominoUtil
-                    .getMimeEntitiesByContentType(mimeEntity, MimeContentType.ATTACHMENT);
-
-            if (attachments.isEmpty()) {
-                return null;
-            }
-
-            try {
-                AttachmentMap am = new AttachmentMap();
-
-                for (MIMEEntity attachment : attachments) {
-                    DominoUtil.getMimeEntityAttachmentFilename(attachment)
-                            .ifPresent(am::put);
-                }
-
-                return am;
-            } finally {
-                DominoUtil.recycle(attachments);
-            }
-        } finally {
-            DominoUtil.recycle(mimeEntity);
-        }
-    }
-
-    private Object getPullJsonValue(Document doc, E field, Class<?> type)
-            throws NotesException {
-        String itemName = getDocumentItemName(field);
-        MIMEEntity mimeEntity = null;
-
-        try {
-            mimeEntity = DominoUtil.getMimeEntity(doc, itemName, false);
-
-            if (mimeEntity != null) {
-                TypeToken<?> t = field.getProperties().isList()
-                        ? TypeToken.getParameterized(ArrayList.class, type)
-                        : TypeToken.get(type);
-
-                return GsonLoader.INSTANCE.fromJson(mimeEntity.getContentAsText(), t.getType());
-            }
-
-            return null;
-        } finally {
-            DominoUtil.recycle(mimeEntity);
-
-            doc.closeMIMEEntities(false, itemName);
-        }
-    }
-
-    private Object getPullValue(Object value, Class<?> type) {
-        if (type.isEnum()) {
-            if (value instanceof String) {
-                return StringUtil.enumFromString(type, (String) value);
-            }
-        } else if (type == Boolean.class) {
-            return Boolean.valueOf((String) value);
-        } else if (Number.class.isAssignableFrom(type)) {
-            if (value == null) {
-                return null;
-            }
-
-            Number num = (Number) value;
-
-            if (type == Integer.class) {
-                return num.intValue();
-            } else if (type == Long.class) {
-                return num.longValue();
-            } else if (type == Double.class) {
-                return num.doubleValue();
-            } else if (type == BigDecimal.class) {
-                return new BigDecimal(num.toString());
-            }
-        }
-
-        return value;
-    }
-
-    private Object getPushValue(Object value, Class<? extends Serializable> type)
-            throws NotesException {
-        if (value == null) {
-            return null;
-        }
-
-        if (type.isEnum() || type == Boolean.class) {
-            return value.toString();
-        } else if (type == Date.class) {
-            return factory.getSession().createDateTime((Date) value);
-        } else if (Number.class.isAssignableFrom(type)) {
-            Number num = (Number) value;
-
-            if (type == Integer.class) {
-                return num.intValue();
-            } else if (type == Long.class) {
-                return num.longValue();
-            } else if (type == Double.class || type == BigDecimal.class) {
-                return num.doubleValue();
-            }
-        }
-
-        return value;
-    }
-
     protected void pullDocument(Document doc, T wrapper, Query<E> query)
-            throws NotesException {
+            throws DaoException, NotesException {
         if (!DominoUtil.hasEncouragedOptions(doc)) {
             throw new IllegalArgumentException("Document is not treated with encouraged options");
         }
 
         for (E field : query.getSchema()) {
-            pullItem(doc, wrapper, field, query.getLocale());
+            pullItem(field, doc, wrapper, query.getLocale());
         }
 
         if (!doc.isNewNote()) {
@@ -223,9 +113,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             if (columns.contains(fieldName)) {
                 List<?> columnValues = entry.getColumnValues();
 
-                wrapper.presetValue(field, getPullValue(
-                        columnValues.get(columns.indexOf(fieldName)),
-                        field.getProperties().getType()));
+                wrapper.presetValue(field, pullValue(
+                        field.getProperties().getType(),
+                        columnValues.get(columns.indexOf(fieldName))));
             } else {
                 throw new IllegalArgumentException(
                         "Unable to retrieve value for schema field " + field);
@@ -240,27 +130,201 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    protected void pullItem(Document doc, T wrapper, E field, Locale locale)
-            throws NotesException {
+    protected void pullItem(E field, Document doc, T wrapper, Locale locale)
+            throws DaoException, NotesException {
         Class<? extends Serializable> type = field.getProperties().getType();
 
-        if (type == AttachmentMap.class) {
-            wrapper.presetValue(field, getPullAttachmentMap(doc, field));
+        if (AttachmentMap.class.isAssignableFrom(type)) {
+            wrapper.presetValue(field, pullItemAttachmentMap(field, doc));
         } else if (JsonValue.class.isAssignableFrom(type)) {
-            wrapper.presetValue(field, getPullJsonValue(doc, field, type));
+            wrapper.presetValue(field, pullItemJsonValue(field, doc));
         } else if (field.getProperties().isList()) {
             wrapper.presetValue(field,
                     DominoUtil.getItemValues(
-                            doc, getDocumentItemName(field), (value) -> getPullValue(value, type)));
+                            doc, getDocumentItemName(field), (value) -> pullValue(type, value)));
         } else {
             wrapper.presetValue(field,
                     DominoUtil.getItemValue(
-                            doc, getDocumentItemName(field), (value) -> getPullValue(value, type)));
+                            doc, getDocumentItemName(field), (value) -> pullValue(type, value)));
         }
     }
 
-    private void pushAttachmentMap(AttachmentMap am, Document doc, E field)
+    private AttachmentMap pullItemAttachmentMap(E field, Document doc)
+            throws DaoException, NotesException {
+        String itemName = getDocumentItemName(field);
+        
+        MIMEEntity mimeEntity = null;
+
+        try {
+            mimeEntity = DominoUtil.getMimeEntity(doc, itemName, false);
+
+            if (mimeEntity == null) {
+                return null;
+            }
+
+            List<MIMEEntity> attachments = DominoUtil
+                    .getMimeEntitiesByContentType(mimeEntity, MimeContentType.ATTACHMENT);
+
+            if (attachments.isEmpty()) {
+                return null;
+            }
+
+            try {
+                AttachmentMap am = (AttachmentMap) field.getProperties().getType().newInstance();
+
+                for (MIMEEntity attachment : attachments) {
+                    DominoUtil
+                            .getMimeEntityAttachmentFilename(attachment)
+                            .ifPresent(am::put);
+                }
+
+                return am;
+            } catch (IllegalAccessException | InstantiationException e) {
+                throw new DaoException(e);
+            } finally {
+                DominoUtil.recycle(attachments);
+            }
+        } finally {
+            DominoUtil.recycle(mimeEntity);
+        }
+    }
+
+    private Object pullItemJsonValue(E field, Document doc)
             throws NotesException {
+        String itemName = getDocumentItemName(field);
+        MIMEEntity mimeEntity = null;
+
+        try {
+            mimeEntity = DominoUtil.getMimeEntity(doc, itemName, false);
+
+            if (mimeEntity == null) {
+                return null;
+            }
+            
+            Class<?> type = CastUtil.toAnyClass(field.getProperties().getType());
+            
+            TypeToken<?> t = field.getProperties().isList()
+                    ? TypeToken.getParameterized(ArrayList.class, type)
+                    : TypeToken.get(type);
+
+            return GsonLoader.INSTANCE.fromJson(mimeEntity.getContentAsText(), t.getType());
+        } finally {
+            DominoUtil.recycle(mimeEntity);
+
+            doc.closeMIMEEntities(false, itemName);
+        }
+    }
+
+    private <V> V pullValue(Class<V> type, Object value) {
+        if (type.isEnum()) {
+            if (value instanceof String) {
+                return type.cast(StringUtil.enumFromString(type, (String) value));
+            }
+        } else if (type == Boolean.class) {
+            return type.cast(Boolean.valueOf((String) value));
+        } else if (Number.class.isAssignableFrom(type)) {
+            if (value == null) {
+                return null;
+            }
+
+            Number num = (Number) value;
+
+            if (type == Integer.class) {
+                return type.cast(num.intValue());
+            }
+            
+            if (type == Long.class) {
+                return type.cast(num.longValue());
+            }
+            
+            if (type == Double.class) {
+                return type.cast(num.doubleValue());
+            }
+            
+            if (type == BigDecimal.class) {
+                return type.cast(new BigDecimal(num.toString()));
+            }
+        }
+
+        return type.cast(value);
+    }
+
+    private Object pushValue(Object value) throws NotesException {
+        if (value instanceof BigDecimal || value instanceof Long) {
+            return ((Number) value).doubleValue();
+        }
+        
+        if (value instanceof Boolean || value instanceof Enum) {
+            return value.toString();
+        }
+
+        if (value instanceof Date) {
+            return factory.getSession().createDateTime((Date) value);
+        }
+
+        return value;
+    }
+
+    protected void pushWrapper(T wrapper, Document doc) throws NotesException {
+        for (E field : wrapper.getSchema(SchemaFilter.UPDATED)) {
+            pushWrapperField(field, wrapper, doc);
+        }
+    }
+
+    protected void pushWrapperField(E field, T wrapper, Document doc) throws NotesException {
+        Class<? extends Serializable> type = field.getProperties().getType();
+
+        if (AttachmentMap.class.isAssignableFrom(type)) {
+            pushWrapperFieldAttachmentMap(field, wrapper, doc);
+
+            return;
+        }
+
+        if (JsonValue.class.isAssignableFrom(type)) {
+            pushWrapperFieldJsonValue(field, wrapper, doc);
+
+            return;
+        }
+
+        Object value = wrapper.getValue(field);
+
+        String itemName = getDocumentItemName(field);
+
+        if (value == null) {
+            doc.removeItem(itemName);
+        } else if (field.getProperties().isList()) {
+            Vector<Object> values = new Vector<>();
+
+            try {
+                for (Object o : (List<?>) value) {
+                    values.add(pushValue(o));
+                }
+
+                doc.replaceItemValue(itemName, values);
+            } finally {
+                factory.getSession().recycle(values);
+            }
+        } else {
+            Object transformedValue = pushValue(value);
+
+            try {
+                doc.replaceItemValue(itemName, transformedValue);
+            } finally {
+                if (transformedValue instanceof Base) {
+                    DominoUtil.recycle((Base) transformedValue);
+                }
+            }
+        }
+    }
+
+    private void pushWrapperFieldAttachmentMap(E field, T wrapper, Document doc)
+            throws NotesException {
+        AttachmentMap am = wrapper.getValue(field, AttachmentMap.class);
+
+        if (am == null) {
+            return;
+        }
+
         String itemName = getDocumentItemName(field);
         MIMEEntity mimeEntity = null;
 
@@ -337,7 +401,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 mimeEntity.remove();
             }
         } finally {
-
             if (doc.hasItem(itemName)) {
                 doc.closeMIMEEntities(true, itemName);
             }
@@ -346,16 +409,24 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    private void pushJsonable(Object jsonable, Document doc, E field)
+    private void pushWrapperFieldJsonValue(E field, T wrapper, Document doc)
             throws NotesException {
         String itemName = getDocumentItemName(field);
+        
+        Object jsonValue = wrapper.getValue(field);
+
+        if (jsonValue == null) {
+            doc.removeItem(itemName);
+
+            return;
+        }
 
         Stream stm = null;
         MIMEEntity mimeEntity = null;
 
         try {
             stm = factory.getSession().createStream();
-            stm.writeText(GsonLoader.INSTANCE.toJson(jsonable));
+            stm.writeText(GsonLoader.INSTANCE.toJson(jsonValue));
 
             mimeEntity = DominoUtil.getMimeEntity(doc, itemName, true);
             mimeEntity.setContentFromText(stm,
@@ -364,53 +435,11 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
             stm.close();
         } finally {
+            if (doc.hasItem(itemName)) {
+                doc.closeMIMEEntities(true, itemName);
+            }
+
             DominoUtil.recycle(stm, mimeEntity);
-
-            doc.closeMIMEEntities(true, itemName);
-        }
-    }
-
-    protected void pushWrapper(T wrapper, Document doc) throws NotesException {
-        for (E field : wrapper.getFields()) {
-            if (wrapper.isValueUpdated(field)) {
-                pushWrapperValue(wrapper, doc, field);
-            }
-        }
-    }
-
-    protected void pushWrapperValue(T wrapper, Document doc, E field) throws NotesException {
-        Class<? extends Serializable> type = field.getProperties().getType();
-        Object value = wrapper.getValue(field);
-        String itemName = getDocumentItemName(field);
-
-        if (value == null) {
-            doc.replaceItemValue(itemName, "");
-        } else if (type == AttachmentMap.class) {
-            pushAttachmentMap((AttachmentMap) value, doc, field);
-        } else if (JsonValue.class.isAssignableFrom(type)) {
-            pushJsonable(value, doc, field);
-        } else if (field.getProperties().isList()) {
-            Vector<Object> values = new Vector<>();
-
-            try {
-                for (Object o : (List<?>) value) {
-                    values.add(getPushValue(o, type));
-                }
-
-                doc.replaceItemValue(itemName, values);
-            } finally {
-                factory.getSession().recycle(values);
-            }
-        } else {
-            Object transformedValue = getPushValue(value, type);
-
-            try {
-                doc.replaceItemValue(itemName, transformedValue);
-            } finally {
-                if (transformedValue instanceof Base) {
-                    DominoUtil.recycle((Base) transformedValue);
-                }
-            }
         }
     }
 

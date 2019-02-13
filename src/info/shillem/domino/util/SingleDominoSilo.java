@@ -107,7 +107,7 @@ public class SingleDominoSilo implements DominoSilo {
             viewHandles = new HashMap<>();
         }
 
-        View vw = viewHandles.get(viewPath.getKey());
+        View vw = viewHandles.get(viewPath.getName());
 
         if (vw == null) {
             vw = getDatabase().getView(viewPath.getName());
@@ -119,7 +119,7 @@ public class SingleDominoSilo implements DominoSilo {
 
             vw.setAutoUpdate(false);
 
-            viewHandles.put(viewPath.getKey(), vw);
+            viewHandles.put(viewPath.getName(), vw);
         }
 
         if (accessPolicy == ViewAccessPolicy.REFRESH) {
@@ -137,7 +137,7 @@ public class SingleDominoSilo implements DominoSilo {
             viewColumnNames = new HashMap<>();
         }
 
-        List<String> columnNames = viewColumnNames.get(viewPath.getKey());
+        List<String> columnNames = viewColumnNames.get(viewPath.getName());
 
         if (columnNames == null) {
             columnNames = new ArrayList<>();
@@ -148,7 +148,7 @@ public class SingleDominoSilo implements DominoSilo {
                 columnNames.add(String.valueOf(columnName));
             }
 
-            viewColumnNames.put(viewPath.getKey(), columnNames);
+            viewColumnNames.put(viewPath.getName(), columnNames);
         }
 
         return columnNames;

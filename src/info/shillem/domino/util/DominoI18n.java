@@ -6,17 +6,19 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 
-import info.shillem.util.ThrowableConsumer;
+import info.shillem.domino.util.DocumentLooper.Driver;
+import info.shillem.util.ThrowableBiConsumer;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.View;
 
 public enum DominoI18n {
-	;
+    ;
 
     public static String getLocaleItemName(String itemName, Locale locale) {
         return locale == null || locale.getLanguage().isEmpty()
-                ? itemName : itemName + "_" + locale.getLanguage();
+                ? itemName
+                : itemName + "_" + locale.getLanguage();
     }
 
     public static Map<String, String> getValues(
@@ -67,9 +69,10 @@ public enum DominoI18n {
             throws NotesException {
         Map<String, String> map = new LinkedHashMap<>();
 
-        new DominoLooper().loopDocuments(vw, (ThrowableConsumer<Document>) (doc) -> {
-            map.putAll(getValues(doc, valueItemName, labelItemName, prefixItemName));
-        });
+        new DocumentLooper().loop(vw,
+                (ThrowableBiConsumer<Document, Driver>) (doc, driver) -> {
+                    map.putAll(getValues(doc, valueItemName, labelItemName, prefixItemName));
+                });
 
         return map;
     }
