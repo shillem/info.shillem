@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Set;
 
 public interface BaseDto<E extends Enum<E> & BaseField> {
+    
+    public enum SchemaFilter {
+        SET, UPDATED
+    }
 
     void clear();
 
@@ -14,17 +18,15 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
 
     boolean containsField(E key);
 
+    E fieldOf(String name);
+
     Boolean getBoolean(E key);
 
     String getDatabaseUrl();
 
     Date getDate(E key);
-
-    Double getDouble(E key);
     
-    E getField(String name);
-
-    Set<E> getFields();
+    Double getDouble(E key);
 
     String getId();
 
@@ -33,6 +35,8 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
     Date getLastModified();
 
     <T> List<T> getList(E key, Class<T> type);
+
+    Set<E> getSchema(SchemaFilter schemaQuery);
 
     String getString(E key);
 

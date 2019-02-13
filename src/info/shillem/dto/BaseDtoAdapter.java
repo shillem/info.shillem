@@ -12,6 +12,8 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
+import info.shillem.dto.BaseDto.SchemaFilter;
+
 public class BaseDtoAdapter<T extends BaseDto<E>, E extends Enum<E> & BaseField>
         extends TypeAdapter<T> {
 
@@ -86,7 +88,7 @@ public class BaseDtoAdapter<T extends BaseDto<E>, E extends Enum<E> & BaseField>
                 in.beginObject();
 
                 while (in.hasNext()) {
-                    E field = dto.getField(in.nextName());
+                    E field = dto.fieldOf(in.nextName());
                     FieldProperties properties = field.getProperties();
 
                     if (properties.isList()) {
@@ -120,13 +122,15 @@ public class BaseDtoAdapter<T extends BaseDto<E>, E extends Enum<E> & BaseField>
         writeValue(out, dto.getLastModified());
 
         out.name("values");
-        out.beginObject();
+        {
+            out.beginObject();
 
-        for (E field : dto.getFields()) {
-            writeField(out, dto, field);
+            for (E field : dto.getSchema(SchemaFilter.SET)) {
+                writeField(out, dto, field);
+            }
+
+            out.endObject();
         }
-
-        out.endObject();
 
         out.endObject();
     }

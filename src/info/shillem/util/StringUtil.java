@@ -43,8 +43,8 @@ public enum StringUtil {
 			}
 		}
 
-		throw new IllegalArgumentException(String.format("Cannot resolve enum %s from string %s",
-				cls.getName(), s));
+		throw new IllegalArgumentException(
+		        String.format("Cannot resolve enum %s from string %s", cls.getName(), s));
 	}
 
 	private static String firstCharToCase(String s, char c) {

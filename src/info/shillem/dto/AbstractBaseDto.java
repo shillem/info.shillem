@@ -6,7 +6,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import info.shillem.util.CastUtil;
 
 public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
         implements BaseDto<E>, Serializable {
@@ -47,8 +51,79 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     }
 
     @Override
-    public Object getValue(E key) {        
-        ValueHolder valueHolder = values.get(key);
+    public Boolean getBoolean(E key) {
+        return getValue(key, Boolean.class);
+    }
+    
+    @Override
+    public String getDatabaseUrl() {
+        return databaseUrl;
+    }
+
+    @Override
+    public final Date getDate(E key) {
+        return getValue(key, Date.class);
+    }
+
+    @Override
+    public final Double getDouble(E key) {
+        return getValue(key, Double.class);
+    }
+
+    @Override
+    public final String getId() {
+        return id;
+    }
+
+    @Override
+    public final Integer getInteger(E key) {
+        return getValue(key, Integer.class);
+    }
+
+    @Override
+    public final Date getLastModified() {
+        return lastModified != null ? new Date(lastModified.getTime()) : null;
+    }
+
+    @Override
+    public <T> List<T> getList(E key, Class<T> type) {
+        try {
+            List<?> value = (List<?>) getValue(key);
+
+            return value != null ? CastUtil.toAnyList(value) : Collections.emptyList();
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException(
+                    String.format("%s value type is List<%s> and not %s",
+                            key,
+                            key.getProperties().getType().getName(),
+                            type.getName()));
+        }
+    }
+
+    @Override
+    public Set<E> getSchema(SchemaFilter filter) {
+        switch (Objects.requireNonNull(filter, "Schema filter cannot be null")) {
+        case UPDATED:
+            return values
+                    .keySet()
+                    .stream()
+                    .filter(this::isValueUpdated)
+                    .collect(Collectors.toSet());
+        case SET:
+            return values.keySet();
+        default:
+            throw new UnsupportedOperationException(filter + " is not implemented");
+        }
+    }
+
+    @Override
+    public final String getString(E key) {
+        return getValue(key, String.class);
+    }
+
+    @Override
+    public Object getValue(E key) {
+        ValueHolder valueHolder = getValueHolder(key);
 
         return valueHolder != null ? valueHolder.getValue() : null;
     }
@@ -76,65 +151,8 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
         }
     }
 
-    @Override
-    public Boolean getBoolean(E key) {
-        return getValue(key, Boolean.class);
-    }
-
-    @Override
-    public String getDatabaseUrl() {
-        return databaseUrl;
-    }
-
-    @Override
-    public final Date getDate(E key) {
-        return getValue(key, Date.class);
-    }
-
-    @Override
-    public final Double getDouble(E key) {
-        return getValue(key, Double.class);
-    }
-
-    @Override
-    public Set<E> getFields() {
-        return values.keySet();
-    }
-
-    @Override
-    public final String getId() {
-        return id;
-    }
-
-    @Override
-    public final Integer getInteger(E key) {
-        return getValue(key, Integer.class);
-    }
-
-    @Override
-    public final Date getLastModified() {
-        return lastModified != null ? new Date(lastModified.getTime()) : null;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public <T> List<T> getList(E key, Class<T> type) {
-        Object value = getValue(key);
-
-        try {
-            return value != null ? (List<T>) value : Collections.emptyList();
-        } catch (ClassCastException e) {
-            throw new IllegalArgumentException(
-                    String.format("%s value type is List<%s> and not %s",
-                            key,
-                            key.getProperties().getType().getName(),
-                            type.getName()));
-        }
-    }
-
-    @Override
-    public final String getString(E key) {
-        return getValue(key, String.class);
+    private ValueHolder getValueHolder(E key) {
+        return values.get(Objects.requireNonNull(key, "Key cannot be null"));
     }
 
     @Override
@@ -151,14 +169,14 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
 
     @Override
     public boolean isValueUpdated(E key) {
-        ValueHolder valueHolder = values.get(key);
+        ValueHolder valueHolder = getValueHolder(key);
 
         return valueHolder != null && valueHolder.isUpdated();
     }
 
     @Override
     public void presetValue(E key, Object value) {
-        ValueHolder valueHolder = values.get(key);
+        ValueHolder valueHolder = getValueHolder(key);
 
         if (valueHolder != null) {
             throw new IllegalStateException(key + " value is already set");
@@ -170,27 +188,6 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     @Override
     public void rollback() {
         values.values().forEach(ValueHolder::rollback);
-    }
-
-    @Override
-    public final void setValue(E key, Object value) {
-        ValueHolder valueHolder = values.get(key);
-        Class<?> type = key.getProperties().getFullType();
-
-        if (valueHolder != null) {
-            valueHolder.updateValue(value, type);
-        } else {
-            values.put(key, ValueHolder.newValue(value, type));
-        }
-    }
-
-    @Override
-    public void setValueAsUpdated(E key) {
-        ValueHolder valueHolder = values.get(key);
-
-        if (valueHolder != null) {
-            valueHolder.setAsUpdated();
-        }
     }
 
     @Override
@@ -209,8 +206,29 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     }
 
     @Override
+    public final void setValue(E key, Object value) {
+        ValueHolder valueHolder = getValueHolder(key);
+        Class<?> type = key.getProperties().getFullType();
+
+        if (valueHolder != null) {
+            valueHolder.updateValue(value, type);
+        } else {
+            values.put(key, ValueHolder.newValue(value, type));
+        }
+    }
+
+    @Override
+    public void setValueAsUpdated(E key) {
+        ValueHolder valueHolder = getValueHolder(key);
+
+        if (valueHolder != null) {
+            valueHolder.setAsUpdated();
+        }
+    }
+
+    @Override
     public void transactValue(E key, Object value) {
-        ValueHolder valueHolder = values.get(key);
+        ValueHolder valueHolder = getValueHolder(key);
         Class<?> type = key.getProperties().getFullType();
 
         if (valueHolder != null) {
