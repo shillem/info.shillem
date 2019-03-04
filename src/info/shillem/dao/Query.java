@@ -2,6 +2,7 @@ package info.shillem.dao;
 
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import info.shillem.dto.BaseField;
 
@@ -49,6 +50,14 @@ public class Query<E extends Enum<E> & BaseField> {
 
     public boolean isFetchDatabaseUrl() {
         return databaseUrl;
+    }
+
+    public <T> Stream<T> limitStream(Stream<T> stream) {
+        if (getMaxCount() > 0) {
+            return stream.limit(getMaxCount());
+        }
+
+        return stream;
     }
 
 }
