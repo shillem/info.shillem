@@ -15,8 +15,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import info.shillem.util.ThrowableFunction;
-import info.shillem.util.ThrowablePredicate;
+import info.shillem.util.TFunction;
+import info.shillem.util.TPredicate;
 import lotus.domino.Base;
 import lotus.domino.DateTime;
 import lotus.domino.Document;
@@ -223,7 +223,7 @@ public enum DominoUtil {
         Objects.requireNonNull(entity, "Entity cannot be null");
 
         return getMimeEntityHeaderValAndParams(
-                entity, (ThrowablePredicate<MIMEHeader>) h -> h.getHeaderVal().equals("attachment"))
+                entity, (TPredicate<MIMEHeader>) h -> h.getHeaderVal().equals("attachment"))
                         .map(s -> {
                             Matcher m = Pattern.compile("filename=['\"]?([^'\"\\s]+)").matcher(s);
                             m.find();
@@ -243,23 +243,11 @@ public enum DominoUtil {
                     .stream()
                     .map(MIMEHeader.class::cast)
                     .filter(matcher)
-                    .map((ThrowableFunction<MIMEHeader, String>) MIMEHeader::getHeaderValAndParams)
+                    .map((TFunction<MIMEHeader, String>) MIMEHeader::getHeaderValAndParams)
                     .findFirst();
         } finally {
             recycle(headers);
         }
-    }
-
-    public static boolean hasEncouragedOptions(Document doc) throws NotesException {
-        Objects.requireNonNull(doc, "Document cannot be null");
-
-        return doc.isPreferJavaDates();
-    }
-
-    public static boolean hasEncouragedOptions(ViewEntry entry) throws NotesException {
-        Objects.requireNonNull(entry, "Entry cannot be null");
-
-        return entry.isPreferJavaDates();
     }
 
     public static void recycle(Base base) {

@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 import lotus.domino.Database;
-import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
@@ -78,19 +77,6 @@ public class SingleDominoSilo implements DominoSilo {
     @Override
     public DatabasePath getDatabasePath() {
         return databasePath;
-    }
-
-    @Override
-    public Document getDocumentById(String id) throws NotesException {
-        if (id == null || id.isEmpty()) {
-            throw new IllegalArgumentException("Invalid id");
-        }
-
-        if (id.length() == 32) {
-            return getDatabase().getDocumentByUNID(id);
-        } else {
-            return getDatabase().getDocumentByID(id);
-        }
     }
 
     @Override

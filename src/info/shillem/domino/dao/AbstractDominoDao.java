@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -14,13 +16,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Vector;
+import java.util.function.Supplier;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import info.shillem.dao.Query;
+import info.shillem.dao.UrlQuery;
 import info.shillem.dao.lang.DaoException;
 import info.shillem.dao.lang.DaoRecordException;
 import info.shillem.dao.lang.DaoResolutionException;
@@ -28,6 +33,7 @@ import info.shillem.domino.util.DominoFactory;
 import info.shillem.domino.util.DominoSilo;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.domino.util.MimeContentType;
+import info.shillem.domino.util.ViewMatch;
 import info.shillem.dto.AttachmentFile;
 import info.shillem.dto.AttachmentMap;
 import info.shillem.dto.BaseDto;
@@ -44,7 +50,9 @@ import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
 import lotus.domino.NotesException;
 import lotus.domino.Stream;
+import lotus.domino.View;
 import lotus.domino.ViewEntry;
+import lotus.domino.ViewEntryCollection;
 
 public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
 
@@ -77,15 +85,69 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return doc;
     }
 
+    protected Optional<Document> getDocumentById(Database database, String id)
+            throws NotesException {
+        Objects.requireNonNull(id, "Id cannot be null");
+
+        Document doc = id.length() == 32
+                ? database.getDocumentByUNID(id)
+                : database.getDocumentByID(id);
+
+        if (doc == null) {
+            return Optional.empty();
+        }
+
+        DominoUtil.setEncouragedOptions(doc);
+
+        return Optional.of(doc);
+    }
+
+    protected Optional<Document> getDocumentByKey(View view, Object key, ViewMatch match)
+            throws NotesException {
+        Objects.requireNonNull(key, "Key cannot be null");
+
+        return getDocumentByKeys(view, Arrays.asList(key), match);
+    }
+
+    protected Optional<Document> getDocumentByKeys(View view, Collection<?> keys, ViewMatch match)
+            throws NotesException {
+        Objects.requireNonNull(keys, "Key(s) cannot be null");
+
+        if (keys.isEmpty()) {
+            throw new IllegalArgumentException("Key(s) cannot be empty");
+        }
+
+        Document doc = view.getDocumentByKey(
+                keys instanceof Vector ? keys : new Vector<>(keys),
+                match.isExact());
+
+        if (doc == null) {
+            return Optional.empty();
+        }
+
+        DominoUtil.setEncouragedOptions(doc);
+
+        return Optional.of(doc);
+    }
+
     protected String getDocumentItemName(E field) {
-        return field.toString();
+        return field.name();
+    }
+
+    protected ViewEntryCollection getViewEntriesByKeys(
+            View view, Collection<?> keys, ViewMatch match) throws NotesException {
+        Objects.requireNonNull(keys, "Key(s) cannot be null");
+
+        if (keys.isEmpty()) {
+            throw new IllegalArgumentException("Key(s) cannot be empty");
+        }
+
+        return view.getAllEntriesByKey(keys, match.isExact());
     }
 
     protected void pullDocument(Document doc, T wrapper, Query<E> query)
             throws DaoException, NotesException {
-        if (!DominoUtil.hasEncouragedOptions(doc)) {
-            throw new IllegalArgumentException("Document is not treated with encouraged options");
-        }
+        DominoUtil.setEncouragedOptions(doc);
 
         for (E field : query.getSchema()) {
             pullItem(field, doc, wrapper, query.getLocale());
@@ -103,9 +165,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
     protected void pullEntry(ViewEntry entry, T wrapper, Query<E> query, List<String> columns)
             throws NotesException {
-        if (!DominoUtil.hasEncouragedOptions(entry)) {
-            throw new IllegalArgumentException("Entry is not treated with encouraged options");
-        }
+        DominoUtil.setEncouragedOptions(entry);
 
         for (E field : query.getSchema()) {
             String fieldName = getDocumentItemName(field);
@@ -152,7 +212,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     private AttachmentMap pullItemAttachmentMap(E field, Document doc)
             throws DaoException, NotesException {
         String itemName = getDocumentItemName(field);
-        
+
         MIMEEntity mimeEntity = null;
 
         try {
@@ -200,9 +260,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             if (mimeEntity == null) {
                 return null;
             }
-            
+
             Class<?> type = CastUtil.toAnyClass(field.getProperties().getType());
-            
+
             TypeToken<?> t = field.getProperties().isList()
                     ? TypeToken.getParameterized(ArrayList.class, type)
                     : TypeToken.get(type);
@@ -232,15 +292,15 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             if (type == Integer.class) {
                 return type.cast(num.intValue());
             }
-            
+
             if (type == Long.class) {
                 return type.cast(num.longValue());
             }
-            
+
             if (type == Double.class) {
                 return type.cast(num.doubleValue());
             }
-            
+
             if (type == BigDecimal.class) {
                 return type.cast(new BigDecimal(num.toString()));
             }
@@ -253,7 +313,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         if (value instanceof BigDecimal || value instanceof Long) {
             return ((Number) value).doubleValue();
         }
-        
+
         if (value instanceof Boolean || value instanceof Enum) {
             return value.toString();
         }
@@ -412,7 +472,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     private void pushWrapperFieldJsonValue(E field, T wrapper, Document doc)
             throws NotesException {
         String itemName = getDocumentItemName(field);
-        
+
         Object jsonValue = wrapper.getValue(field);
 
         if (jsonValue == null) {
@@ -443,24 +503,31 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    protected Document resolveDocument(String notesUrl) throws DaoException, NotesException {
-        Objects.requireNonNull(notesUrl, "Notes URL cannot be null");
-
-        try {
-            Base base = factory.getSession().resolve(notesUrl);
-
-            if (!(base instanceof Document)) {
-                throw new RuntimeException();
-            }
-
-            Document doc = (Document) base;
-
-            DominoUtil.setEncouragedOptions(doc);
-
-            return doc;
-        } catch (Exception e) {
-            throw new DaoResolutionException(notesUrl);
+    protected Optional<Document> resolveDocument(Query<E> query)
+            throws DaoException, NotesException {
+        if (query instanceof UrlQuery) {
+            return resolveDocumentUrl(((UrlQuery<E>) query).getUrl());
         }
+
+        throw new UnsupportedOperationException(
+                query.getClass().getName() + " is not supported");
+    }
+
+    protected Optional<Document> resolveDocumentUrl(String url)
+            throws DaoException, NotesException {
+        Base base = factory.getSession().resolve(url);
+
+        if (base == null) {
+            return Optional.empty();
+        }
+
+        if (base instanceof Document) {
+            DominoUtil.setEncouragedOptions((Document) base);
+
+            return Optional.of((Document) base);
+        }
+
+        throw new DaoResolutionException(url);
     }
 
     protected void update(List<T> wrappers, DominoSilo silo) throws DaoException, NotesException {
@@ -472,7 +539,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
 
             try {
-                doc = silo.getDocumentById(wrapper.getId());
+                doc = getDocumentById(silo.getDatabase(), wrapper.getId())
+                        .orElseThrow(() -> DaoRecordException.asMissing(wrapper.getId()));
 
                 checkTimestampAlignment(wrapper, doc);
 
@@ -485,6 +553,15 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 DominoUtil.recycle(doc);
             }
         }
+    }
+
+    protected T wrapDocument(Document doc, Supplier<T> supplier, Query<E> query)
+            throws DaoException, NotesException {
+        T dto = supplier.get();
+
+        pullDocument(doc, dto, query);
+
+        return dto;
     }
 
 }

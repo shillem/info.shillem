@@ -7,7 +7,6 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import lotus.domino.Database;
-import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
@@ -48,15 +47,11 @@ public class MultiDominoSilo implements DominoSilo {
     public Database getDatabase() throws NotesException {
         throw new UnsupportedOperationException("Use get(...).getDatabase()");
     }
-    
-    @Override
-    public DatabasePath getDatabasePath() {
-        throw new UnsupportedOperationException("Use get(...).getDatabasePath()");
-    }
 
     @Override
-    public Document getDocumentById(String id) throws NotesException {
-        throw new UnsupportedOperationException("Use get(...).getDocumentById(...)");
+    public DatabasePath getDatabasePath() {
+        throw new UnsupportedOperationException(
+                "Use get(<DominoSilo.getName()>).getDatabasePath()");
     }
 
     @Override
@@ -66,12 +61,13 @@ public class MultiDominoSilo implements DominoSilo {
 
     @Override
     public View getView(ViewPath viewPath, ViewAccessPolicy accessPolicy) throws NotesException {
-        throw new UnsupportedOperationException("Use get(...).getView(...)");
+        throw new UnsupportedOperationException("Use get(<DominoSilo.getName()>).getView(<id>)");
     }
 
     @Override
     public List<String> getViewColumnNames(ViewPath viewPath) throws NotesException {
-        throw new UnsupportedOperationException("Use get(...).getViewColumnNames(...)");
+        throw new UnsupportedOperationException(
+                "Use get(<DominoSilo.getName()>).getViewColumnNames(<id>)");
     }
 
     @Override
