@@ -2,6 +2,7 @@ package info.shillem.dao.lang;
 
 import java.util.Date;
 
+import info.shillem.dao.Query;
 import info.shillem.dto.BaseField;
 import info.shillem.lang.ErrorCode;
 
@@ -10,6 +11,7 @@ public class DaoRecordException extends DaoException {
     private static final long serialVersionUID = 1L;
 
     private String id;
+    private Query<?> query;
     private Date storedDate;
     private String referenceId;
     private BaseField field;
@@ -25,6 +27,10 @@ public class DaoRecordException extends DaoException {
 
     public String getId() {
         return id;
+    }
+    
+    public Query<?> getQuery() {
+        return query;
     }
 
     public String getReferenceId() {
@@ -91,6 +97,16 @@ public class DaoRecordException extends DaoException {
         return exception;
     }
 
+    public static DaoRecordException asMissing(Query<?> query) {
+        DaoRecordException exception = new DaoRecordException(
+                String.format("The resource with query %s is missing", query),
+                DaoErrorCode.MISSING_RECORD);
+        
+        exception.query = query;
+        
+        return exception;
+    }
+    
     public static DaoRecordException asMissing(String id) {
         DaoRecordException exception = new DaoRecordException(
                 String.format("The resource with id %s is missing", id),

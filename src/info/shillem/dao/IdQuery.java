@@ -1,5 +1,8 @@
 package info.shillem.dao;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import info.shillem.dto.BaseField;
 import info.shillem.util.StringUtil;
 
@@ -35,6 +38,15 @@ public class IdQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
     public String getId() {
         return id;
+    }
+    
+    @Override
+    public String toString() {
+        Map<String, Object> m = new HashMap<String, Object>();
+        
+        m.put("id", id);
+        
+        return m.toString();
     }
 
 }

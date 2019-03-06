@@ -3,7 +3,7 @@ package info.shillem.util;
 import java.util.function.Supplier;
 
 @FunctionalInterface
-public interface ThrowableSupplier<T> extends Supplier<T> {
+public interface TSupplier<T> extends Supplier<T> {
 
     @Override
     default T get() {

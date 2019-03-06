@@ -1,5 +1,7 @@
 package info.shillem.dao;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import info.shillem.dto.BaseField;
@@ -32,6 +34,15 @@ public class UrlQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
     public String getUrl() {
         return url;
+    }
+
+    @Override
+    public String toString() {
+        Map<String, Object> m = new HashMap<String, Object>();
+
+        m.put("url", url);
+
+        return m.toString();
     }
 
 }

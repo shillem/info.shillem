@@ -165,7 +165,7 @@ public class ValueHolder implements Serializable {
             if (!(value instanceof List)) {
                 throw new IllegalArgumentException(
                         String.format(
-                                "Value type is List<%s> and cannot be set to %s",
+                                "Value type is List<%s> and not %s",
                                 type.getComponentType().getName(), value.getClass().getName()));
             }
 
@@ -175,13 +175,13 @@ public class ValueHolder implements Serializable {
                     .ifPresent(o -> {
                         throw new IllegalArgumentException(
                                 String.format(
-                                        "Value type is List<%s> and cannot be set to List<%s>",
+                                        "Value type is List<%s> and not List<%s>",
                                         type.getComponentType().getName(), o.getClass().getName()));
                     });
         } else if (value.getClass() != type) {
             throw new IllegalArgumentException(
                     String.format(
-                            "Value type is %s and cannot be set to %s",
+                            "Value type is %s and not %s",
                             type.getName(), value.getClass().getName()));
         }
     }

@@ -3,7 +3,7 @@ package info.shillem.util;
 import java.util.function.Consumer;
 
 @FunctionalInterface
-public interface ThrowableConsumer<T> extends Consumer<T> {
+public interface TConsumer<T> extends Consumer<T> {
 
     @Override
     default void accept(final T t) {

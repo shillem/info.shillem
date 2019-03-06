@@ -3,7 +3,7 @@ package info.shillem.util;
 import java.util.function.Predicate;
 
 @FunctionalInterface
-public interface ThrowablePredicate<T> extends Predicate<T> {
+public interface TPredicate<T> extends Predicate<T> {
     
     @Override
     default boolean test(T t) {

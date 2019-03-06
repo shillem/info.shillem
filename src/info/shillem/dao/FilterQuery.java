@@ -48,5 +48,10 @@ public class FilterQuery<E extends Enum<E> & BaseField> extends Query<E> {
     public Map.Entry<E, Object> getFirstFilter() {
         return filters.entrySet().iterator().next();
     }
+    
+    @Override
+    public String toString() {
+        return filters.toString();
+    }
 
 }

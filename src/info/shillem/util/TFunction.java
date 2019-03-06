@@ -3,7 +3,7 @@ package info.shillem.util;
 import java.util.function.Function;
 
 @FunctionalInterface
-public interface ThrowableFunction<T, R> extends Function<T, R> {
+public interface TFunction<T, R> extends Function<T, R> {
 
     @Override
     default R apply(T t) {
