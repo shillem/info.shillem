@@ -2,31 +2,23 @@ package info.shillem.domino.factory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 
-import info.shillem.domino.util.DominoFactory;
 import info.shillem.domino.util.DominoSilo;
-import lotus.domino.NotesException;
 import lotus.domino.Session;
 
-public class DominoFactoryImpl implements DominoFactory {
+abstract class AbstractDominoFactory implements DominoFactory {
 
     private final Session session;
     private final Consumer<Session> sessionOnRecycle;
     private final Map<String, DominoSilo> silos;
 
-    public DominoFactoryImpl(Session session) throws NotesException {
+    AbstractDominoFactory(Session session) {
         this(session, null);
     }
-    
-    public DominoFactoryImpl(
-            Session session, Consumer<Session> sessionOnRecycle) throws NotesException {
-        Objects.requireNonNull(session, "Session cannot be null");
-        
-        session.setConvertMime(false);
-        session.setTrackMillisecInJavaDates(true);
-        
+
+    AbstractDominoFactory(
+            Session session, Consumer<Session> sessionOnRecycle) {
         this.session = session;
         this.sessionOnRecycle = sessionOnRecycle;
         this.silos = new HashMap<>();
@@ -34,12 +26,12 @@ public class DominoFactoryImpl implements DominoFactory {
 
     @Override
     public void addDominoSilo(DominoSilo silo) {
-        if (!containsDominoSilo(silo.getName())) {
+        silos.computeIfAbsent(silo.getName(), (key) -> {
             silo.setSession(session);
-            silos.put(silo.getName(), silo);
-        }
+            return silo;
+        });
     }
-    
+
     @Override
     public boolean containsDominoSilo(String name) {
         return silos.containsKey(name);
@@ -47,12 +39,12 @@ public class DominoFactoryImpl implements DominoFactory {
 
     @Override
     public DominoSilo getDominoSilo(String name) {
-        DominoSilo silo = silos.get(name); 
-        
+        DominoSilo silo = silos.get(name);
+
         if (silo == null) {
             throw new IllegalArgumentException("No configured silo with name " + name);
         }
-        
+
         return silo;
     }
 
@@ -64,7 +56,7 @@ public class DominoFactoryImpl implements DominoFactory {
     @Override
     public void recycle() {
         silos.values().forEach(DominoSilo::recycle);
-        
+
         if (sessionOnRecycle != null) {
             sessionOnRecycle.accept(session);
         }

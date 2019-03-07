@@ -1,14 +1,16 @@
 package info.shillem.domino.util;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Vector;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+import info.shillem.util.TFunction;
 import lotus.domino.Database;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
@@ -24,6 +26,8 @@ public class SingleDominoSilo implements DominoSilo {
     private Consumer<Entry<String, Database>> databaseConsumer;
 
     private Database databaseHandle;
+    private boolean documentLockingEnabled;
+    
     private Map<String, View> viewHandles;
     private Map<String, List<String>> viewColumnNames;
 
@@ -45,6 +49,8 @@ public class SingleDominoSilo implements DominoSilo {
             if (databaseHandle == null) {
                 throw new NullPointerException("Unable to open database " + databasePath);
             }
+            
+            documentLockingEnabled = databaseHandle.isDocumentLockingEnabled();
         }
 
         return databaseHandle;
@@ -123,21 +129,18 @@ public class SingleDominoSilo implements DominoSilo {
             viewColumnNames = new HashMap<>();
         }
 
-        List<String> columnNames = viewColumnNames.get(viewPath.getName());
+        return viewColumnNames.computeIfAbsent(viewPath.getName(),
+                (TFunction<String, List<String>>) key -> ((Vector<?>) getView(
+                        viewPath, ViewAccessPolicy.CACHE)
+                                .getColumnNames())
+                                        .stream()
+                                        .map(String::valueOf)
+                                        .collect(Collectors.toList()));
+    }
 
-        if (columnNames == null) {
-            columnNames = new ArrayList<>();
-
-            View vw = getView(viewPath, ViewAccessPolicy.CACHE);
-
-            for (Object columnName : vw.getColumnNames()) {
-                columnNames.add(String.valueOf(columnName));
-            }
-
-            viewColumnNames.put(viewPath.getName(), columnNames);
-        }
-
-        return columnNames;
+    @Override
+    public boolean isDocumentLockingEnabled() {
+        return documentLockingEnabled;
     }
 
     @Override

@@ -106,7 +106,7 @@ public enum DominoUtil {
             } else {
                 List<?> values = item.getValues();
 
-                if (values == null) {
+                if (values == null || values.isEmpty()) {
                     return null;
                 }
 
@@ -314,18 +314,6 @@ public enum DominoUtil {
         } finally {
             recycle(dateTime);
         }
-    }
-
-    public static void setEncouragedOptions(Document doc) throws NotesException {
-        Objects.requireNonNull(doc, "Document cannot be null");
-
-        doc.setPreferJavaDates(true);
-    }
-
-    public static void setEncouragedOptions(ViewEntry entry) throws NotesException {
-        Objects.requireNonNull(entry, "Entry cannot be null");
-
-        entry.setPreferJavaDates(true);
     }
 
     public static void setNameValue(Document doc, String itemName, Object value)

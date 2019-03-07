@@ -10,6 +10,7 @@ Import-Package: com.google.gson,
  info.shillem.dao,
  info.shillem.dao.lang,
  info.shillem.dto,
+ info.shillem.lang,
  info.shillem.util,
  lotus.domino
 Automatic-Module-Name: info.shillem.util

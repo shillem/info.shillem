@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Vector;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -26,10 +28,12 @@ import com.google.gson.reflect.TypeToken;
 
 import info.shillem.dao.Query;
 import info.shillem.dao.UrlQuery;
+import info.shillem.dao.lang.DaoErrorCode;
 import info.shillem.dao.lang.DaoException;
 import info.shillem.dao.lang.DaoRecordException;
 import info.shillem.dao.lang.DaoResolutionException;
-import info.shillem.domino.util.DominoFactory;
+import info.shillem.domino.factory.DominoFactory;
+import info.shillem.domino.util.DeletionType;
 import info.shillem.domino.util.DominoSilo;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.domino.util.MimeContentType;
@@ -43,12 +47,16 @@ import info.shillem.dto.JsonValue;
 import info.shillem.util.CastUtil;
 import info.shillem.util.IOUtil;
 import info.shillem.util.StringUtil;
+import info.shillem.util.TFunction;
 import lotus.domino.Base;
 import lotus.domino.Database;
+import lotus.domino.DateTime;
+import lotus.domino.DbDirectory;
 import lotus.domino.Document;
 import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
 import lotus.domino.NotesException;
+import lotus.domino.Session;
 import lotus.domino.Stream;
 import lotus.domino.View;
 import lotus.domino.ViewEntry;
@@ -59,6 +67,12 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     private static class GsonLoader {
         private static final Gson INSTANCE = new GsonBuilder().create();
     }
+
+    private static final Pattern DOC_NOTES_URL_PATTERN = Pattern.compile("^notes:\\/\\/"
+            + "(?<host>\\w+)(?>@\\w+)*\\/"
+            + "(?<db>(?>_{2})?(?>(?<replicaId>\\w{32}|\\w{16})|[\\w\\/]+)(?>\\.nsf)?)(?>\\/(?>0|\\w{32}))?\\/"
+            + "(?<documentId>\\w+)(?>\\?OpenDocument)?$",
+            Pattern.CASE_INSENSITIVE);
 
     protected final DominoFactory factory;
 
@@ -77,15 +91,24 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    protected Document createDocument(Database database) throws NotesException {
-        Document doc = database.createDocument();
-
-        DominoUtil.setEncouragedOptions(doc);
-
-        return doc;
+    protected Document createDocument(DominoSilo silo) throws NotesException {
+        return factory.setDefaults(silo.getDatabase().createDocument());
     }
 
-    protected Optional<Document> getDocumentById(Database database, String id)
+    protected boolean deleteDocument(DominoSilo silo, Document doc, DeletionType deletion)
+            throws DaoException, NotesException {
+        if (silo.isDocumentLockingEnabled()) {
+            if (!doc.lock()) {
+                throw new DaoException("Unable to acquire lock", DaoErrorCode.DEFAULT);
+            }
+
+            doc.lock();
+        }
+
+        return doc.removePermanently(deletion.isHard());
+    }
+
+    private Optional<Document> getDocumentById(Database database, String id)
             throws NotesException {
         Objects.requireNonNull(id, "Id cannot be null");
 
@@ -97,9 +120,12 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             return Optional.empty();
         }
 
-        DominoUtil.setEncouragedOptions(doc);
+        return Optional.of(factory.setDefaults(doc));
+    }
 
-        return Optional.of(doc);
+    protected Optional<Document> getDocumentById(DominoSilo silo, String id)
+            throws NotesException {
+        return getDocumentById(silo.getDatabase(), id);
     }
 
     protected Optional<Document> getDocumentByKey(View view, Object key, ViewMatch match)
@@ -118,16 +144,14 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
 
         Document doc = view.getDocumentByKey(
-                keys instanceof Vector ? keys : new Vector<>(keys),
+                keys instanceof Vector ? (Vector<?>) keys : new Vector<>(keys),
                 match.isExact());
 
         if (doc == null) {
             return Optional.empty();
         }
 
-        DominoUtil.setEncouragedOptions(doc);
-
-        return Optional.of(doc);
+        return Optional.of(factory.setDefaults(doc));
     }
 
     protected String getDocumentItemName(E field) {
@@ -142,12 +166,14 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throw new IllegalArgumentException("Key(s) cannot be empty");
         }
 
-        return view.getAllEntriesByKey(keys, match.isExact());
+        return view.getAllEntriesByKey(
+                keys instanceof Vector ? (Vector<?>) keys : new Vector<>(keys),
+                match.isExact());
     }
 
     protected void pullDocument(Document doc, T wrapper, Query<E> query)
             throws DaoException, NotesException {
-        DominoUtil.setEncouragedOptions(doc);
+        factory.setDefaults(doc);
 
         for (E field : query.getSchema()) {
             pullItem(field, doc, wrapper, query.getLocale());
@@ -165,7 +191,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
     protected void pullEntry(ViewEntry entry, T wrapper, Query<E> query, List<String> columns)
             throws NotesException {
-        DominoUtil.setEncouragedOptions(entry);
+        factory.setDefaults(entry);
 
         for (E field : query.getSchema()) {
             String fieldName = getDocumentItemName(field);
@@ -199,13 +225,15 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         } else if (JsonValue.class.isAssignableFrom(type)) {
             wrapper.presetValue(field, pullItemJsonValue(field, doc));
         } else if (field.getProperties().isList()) {
-            wrapper.presetValue(field,
-                    DominoUtil.getItemValues(
-                            doc, getDocumentItemName(field), (value) -> pullValue(type, value)));
+            wrapper.presetValue(field, DominoUtil.getItemValues(
+                    doc,
+                    getDocumentItemName(field),
+                    (TFunction<Object, ?>) (value) -> pullValue(type, value)));
         } else {
-            wrapper.presetValue(field,
-                    DominoUtil.getItemValue(
-                            doc, getDocumentItemName(field), (value) -> pullValue(type, value)));
+            wrapper.presetValue(field, DominoUtil.getItemValue(
+                    doc,
+                    getDocumentItemName(field),
+                    (TFunction<Object, ?>) (value) -> pullValue(type, value)));
         }
     }
 
@@ -275,7 +303,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    private <V> V pullValue(Class<V> type, Object value) {
+    private <V> V pullValue(Class<V> type, Object value) throws NotesException {
         if (type.isEnum()) {
             if (value instanceof String) {
                 return type.cast(StringUtil.enumFromString(type, (String) value));
@@ -304,6 +332,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             if (type == BigDecimal.class) {
                 return type.cast(new BigDecimal(num.toString()));
             }
+        } else if (type == Date.class && value instanceof DateTime) {
+            return type.cast(((DateTime) value).toJavaDate());
         }
 
         return type.cast(value);
@@ -362,7 +392,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
                 doc.replaceItemValue(itemName, values);
             } finally {
-                factory.getSession().recycle(values);
+                DominoUtil.recycle(values);
             }
         } else {
             Object transformedValue = pushValue(value);
@@ -515,19 +545,43 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
     protected Optional<Document> resolveDocumentUrl(String url)
             throws DaoException, NotesException {
-        Base base = factory.getSession().resolve(url);
-
-        if (base == null) {
-            return Optional.empty();
+        if (Objects.requireNonNull(url, "Url cannot be null").isEmpty()) {
+            throw new IllegalArgumentException("Url cannot be empty");
         }
 
-        if (base instanceof Document) {
-            DominoUtil.setEncouragedOptions((Document) base);
+        Matcher matcher = DOC_NOTES_URL_PATTERN.matcher(url);
 
-            return Optional.of((Document) base);
+        if (!matcher.matches()) {
+            throw new DaoResolutionException(url);
         }
 
-        throw new DaoResolutionException(url);
+        String host = matcher.group("host");
+        String db = matcher.group("db");
+        String replicaId = matcher.group("replicaId");
+        String documentId = matcher.group("documentId");
+
+        // TODO This handle should be better managed
+        // It cannot be recycled because it could be a silo database used elsewhere
+        Session session = factory.getSession();
+        Database database = null;
+
+        if (Objects.isNull(replicaId)) {
+            database = session.getDatabase(host, db);
+        } else {
+            DbDirectory dir = null;
+
+            try {
+                dir = session.getDbDirectory(host);
+
+                database = dir.openDatabaseByReplicaID(replicaId);
+            } catch (NotesException e) {
+                throw new DaoException(e);
+            } finally {
+                DominoUtil.recycle(dir);
+            }
+        }
+
+        return getDocumentById(database, documentId);
     }
 
     protected void update(List<T> wrappers, DominoSilo silo) throws DaoException, NotesException {
@@ -539,7 +593,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
 
             try {
-                doc = getDocumentById(silo.getDatabase(), wrapper.getId())
+                doc = getDocumentById(silo, wrapper.getId())
                         .orElseThrow(() -> DaoRecordException.asMissing(wrapper.getId()));
 
                 checkTimestampAlignment(wrapper, doc);

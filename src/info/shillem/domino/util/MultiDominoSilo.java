@@ -69,6 +69,12 @@ public class MultiDominoSilo implements DominoSilo {
         throw new UnsupportedOperationException(
                 "Use get(<DominoSilo.getName()>).getViewColumnNames(<id>)");
     }
+    
+    @Override
+    public boolean isDocumentLockingEnabled() {
+        throw new UnsupportedOperationException(
+                "Use get(<DominoSilo.getName()>).isDocumentLockingEnabled()");
+    }
 
     @Override
     public void recycle() {

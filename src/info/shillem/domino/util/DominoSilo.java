@@ -21,6 +21,8 @@ public interface DominoSilo {
 
     List<String> getViewColumnNames(ViewPath viewPath) throws NotesException;
 
+    boolean isDocumentLockingEnabled();
+
     void recycle();
 
     void setSession(Session session);
