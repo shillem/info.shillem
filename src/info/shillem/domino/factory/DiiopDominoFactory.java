@@ -52,7 +52,7 @@ public class DiiopDominoFactory extends AbstractDominoFactory {
         options = builder.options;
 
         getSession().setConvertMime(
-                options.contains(Option.DO_NOT_CONVERT_MIME));
+                !options.contains(Option.DO_NOT_CONVERT_MIME));
     }
 
     @Override

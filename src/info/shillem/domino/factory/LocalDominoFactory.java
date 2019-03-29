@@ -52,7 +52,7 @@ public class LocalDominoFactory extends AbstractDominoFactory {
         options = builder.options;
 
         getSession().setConvertMime(
-                options.contains(Option.DO_NOT_CONVERT_MIME));
+                !options.contains(Option.DO_NOT_CONVERT_MIME));
         getSession().setTrackMillisecInJavaDates(
                 options.contains(Option.TRACK_MILLISEC_IN_JAVA_DATES));
     }
