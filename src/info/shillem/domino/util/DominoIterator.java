@@ -3,19 +3,19 @@ package info.shillem.domino.util;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
-import info.shillem.util.TFunction;
 import lotus.domino.Base;
 
 class DominoIterator<T extends Base> implements AutoCloseable, Iterator<T> {
 
-    private final TFunction<T, T> advancer;
+    private final Function<T, T> advancer;
 
     private T current;
     private T next;
 
-    DominoIterator(Supplier<T> starter, TFunction<T, T> advancer) {
+    DominoIterator(Supplier<T> starter, Function<T, T> advancer) {
         this.advancer = Objects.requireNonNull(advancer);
 
         this.next = Objects.requireNonNull(starter).get();

@@ -15,8 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import info.shillem.util.TFunction;
-import info.shillem.util.TPredicate;
+import info.shillem.util.Unthrow;
 import lotus.domino.Base;
 import lotus.domino.DateTime;
 import lotus.domino.Document;
@@ -223,7 +222,7 @@ public enum DominoUtil {
         Objects.requireNonNull(entity, "Entity cannot be null");
 
         return getMimeEntityHeaderValAndParams(
-                entity, (TPredicate<MIMEHeader>) h -> h.getHeaderVal().equals("attachment"))
+                entity, h -> Unthrow.on(() -> h.getHeaderVal().equals("attachment")))
                         .map(s -> {
                             Matcher m = Pattern.compile("filename=['\"]?([^'\"\\s]+)").matcher(s);
                             m.find();
@@ -243,7 +242,7 @@ public enum DominoUtil {
                     .stream()
                     .map(MIMEHeader.class::cast)
                     .filter(matcher)
-                    .map((TFunction<MIMEHeader, String>) MIMEHeader::getHeaderValAndParams)
+                    .map((h) -> Unthrow.on(() -> h.getHeaderValAndParams()))
                     .findFirst();
         } finally {
             recycle(headers);

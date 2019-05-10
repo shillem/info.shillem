@@ -1,6 +1,7 @@
 package info.shillem.domino.util;
 
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,9 +9,9 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Vector;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
-import info.shillem.util.TFunction;
+import info.shillem.util.CastUtil;
+import info.shillem.util.Unthrow;
 import lotus.domino.Database;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
@@ -27,7 +28,7 @@ public class SingleDominoSilo implements DominoSilo {
 
     private Database databaseHandle;
     private boolean documentLockingEnabled;
-    
+
     private Map<String, View> viewHandles;
     private Map<String, List<String>> viewColumnNames;
 
@@ -49,7 +50,7 @@ public class SingleDominoSilo implements DominoSilo {
             if (databaseHandle == null) {
                 throw new NullPointerException("Unable to open database " + databasePath);
             }
-            
+
             documentLockingEnabled = databaseHandle.isDocumentLockingEnabled();
         }
 
@@ -130,12 +131,12 @@ public class SingleDominoSilo implements DominoSilo {
         }
 
         return viewColumnNames.computeIfAbsent(viewPath.getName(),
-                (TFunction<String, List<String>>) key -> ((Vector<?>) getView(
-                        viewPath, ViewAccessPolicy.CACHE)
-                                .getColumnNames())
-                                        .stream()
-                                        .map(String::valueOf)
-                                        .collect(Collectors.toList()));
+                key -> Unthrow.on(() -> {
+                    Vector<String> columnNames = CastUtil.toAnyVector(
+                            getView(viewPath, ViewAccessPolicy.CACHE).getColumnNames());
+                
+                    return new ArrayList<>(columnNames);
+                }));
     }
 
     @Override

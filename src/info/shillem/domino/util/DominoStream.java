@@ -6,8 +6,8 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import info.shillem.util.TFunction;
-import info.shillem.util.TSupplier;
+import info.shillem.util.Unthrow.ThrowableFunction;
+import info.shillem.util.Unthrow.ThrowableSupplier;
 import lotus.domino.Base;
 import lotus.domino.Document;
 import lotus.domino.DocumentCollection;
@@ -30,8 +30,8 @@ public class DominoStream {
         Objects.requireNonNull(coll, "Collection cannot be null");
         Objects.requireNonNull(order, "Order cannot be null");
 
-        TSupplier<Document> starter;
-        TFunction<Document, Document> advancer;
+        ThrowableSupplier<Document> starter;
+        ThrowableFunction<Document, Document> advancer;
 
         if (order == ViewNavigation.FORWARD) {
             starter = coll::getFirstDocument;
@@ -54,8 +54,8 @@ public class DominoStream {
         Objects.requireNonNull(view, "View cannot be null");
         Objects.requireNonNull(order, "Order cannot be null");
 
-        TSupplier<Document> starter;
-        TFunction<Document, Document> advancer;
+        ThrowableSupplier<Document> starter;
+        ThrowableFunction<Document, Document> advancer;
 
         if (order == ViewNavigation.FORWARD) {
             starter = view::getFirstDocument;
@@ -81,8 +81,8 @@ public class DominoStream {
         Objects.requireNonNull(coll, "View entry collection cannot be null");
         Objects.requireNonNull(order, "Order cannot be null");
 
-        TSupplier<ViewEntry> starter;
-        TFunction<ViewEntry, ViewEntry> advancer;
+        ThrowableSupplier<ViewEntry> starter;
+        ThrowableFunction<ViewEntry, ViewEntry> advancer;
 
         if (order == ViewNavigation.FORWARD) {
             starter = coll::getFirstEntry;
@@ -109,8 +109,8 @@ public class DominoStream {
         Objects.requireNonNull(filter, "View entry filter cannot be null");
         Objects.requireNonNull(order, "Order cannot be null");
 
-        TSupplier<ViewEntry> starter = null;
-        TFunction<ViewEntry, ViewEntry> advancer = null;
+        ThrowableSupplier<ViewEntry> starter = null;
+        ThrowableFunction<ViewEntry, ViewEntry> advancer = null;
 
         if (order == ViewNavigation.FORWARD) {
             switch (filter) {

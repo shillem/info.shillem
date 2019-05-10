@@ -47,7 +47,7 @@ import info.shillem.dto.JsonValue;
 import info.shillem.util.CastUtil;
 import info.shillem.util.IOUtil;
 import info.shillem.util.StringUtil;
-import info.shillem.util.TFunction;
+import info.shillem.util.Unthrow;
 import lotus.domino.Base;
 import lotus.domino.Database;
 import lotus.domino.DateTime;
@@ -228,12 +228,12 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             wrapper.presetValue(field, DominoUtil.getItemValues(
                     doc,
                     getDocumentItemName(field),
-                    (TFunction<Object, ?>) (value) -> pullValue(type, value)));
+                    (value) -> Unthrow.on(() -> pullValue(type, value))));
         } else {
             wrapper.presetValue(field, DominoUtil.getItemValue(
                     doc,
                     getDocumentItemName(field),
-                    (TFunction<Object, ?>) (value) -> pullValue(type, value)));
+                    (value) -> Unthrow.on(() -> pullValue(type, value))));
         }
     }
 
