@@ -220,20 +220,27 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throws DaoException, NotesException {
         Class<? extends Serializable> type = field.getProperties().getType();
 
-        if (AttachmentMap.class.isAssignableFrom(type)) {
-            wrapper.presetValue(field, pullItemAttachmentMap(field, doc));
-        } else if (JsonValue.class.isAssignableFrom(type)) {
-            wrapper.presetValue(field, pullItemJsonValue(field, doc));
-        } else if (field.getProperties().isList()) {
-            wrapper.presetValue(field, DominoUtil.getItemValues(
-                    doc,
-                    getDocumentItemName(field),
-                    (value) -> Unthrow.on(() -> pullValue(type, value))));
-        } else {
-            wrapper.presetValue(field, DominoUtil.getItemValue(
-                    doc,
-                    getDocumentItemName(field),
-                    (value) -> Unthrow.on(() -> pullValue(type, value))));
+        try {
+            if (AttachmentMap.class.isAssignableFrom(type)) {
+                wrapper.presetValue(field, pullItemAttachmentMap(field, doc));
+            } else if (JsonValue.class.isAssignableFrom(type)) {
+                wrapper.presetValue(field, pullItemJsonValue(field, doc));
+            } else if (field.getProperties().isList()) {
+                wrapper.presetValue(field, DominoUtil.getItemValues(
+                        doc,
+                        getDocumentItemName(field),
+                        (value) -> Unthrow.on(() -> pullValue(type, value))));
+            } else {
+                wrapper.presetValue(field, DominoUtil.getItemValue(
+                        doc,
+                        getDocumentItemName(field),
+                        (value) -> Unthrow.on(() -> pullValue(type, value))));
+            }
+        } catch (ClassCastException e) {
+            throw new DaoException(String.format(
+                    "Unable to pull item %s from document %s", field.name(), doc.getNoteID()),
+                    DaoErrorCode.DEFAULT,
+                    e);
         }
     }
 

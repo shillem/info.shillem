@@ -1,5 +1,7 @@
 package info.shillem.dao.lang;
 
+import java.util.Objects;
+
 import info.shillem.lang.ErrorCode;
 import info.shillem.lang.ErrorCodedException;
 
@@ -28,7 +30,7 @@ public class DaoException extends Exception implements ErrorCodedException {
     }
 
     public DaoException(String message, ErrorCode code, Throwable cause) {
-        super(code.toString(), cause);
+        super(message, cause);
 
         this.code = code;
     }
@@ -40,6 +42,11 @@ public class DaoException extends Exception implements ErrorCodedException {
     @Override
     public ErrorCode getCode() {
         return code;
+    }
+    
+    @Override
+    public boolean isCode(ErrorCode code) {
+        return Objects.equals(code, this.code);
     }
 
 }
