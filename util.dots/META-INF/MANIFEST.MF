@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Shillem Util for DOTS
+Bundle-SymbolicName: info.shillem.util.dots;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Import-Package: info.shillem.domino.util,
+ info.shillem.util,
+ lotus.domino,
+ org.apache.commons.cli,
+ org.eclipse.core.runtime.preferences,
+ org.osgi.framework,
+ org.osgi.service.prefs
+Bundle-Vendor: Shillem Volpato
+Export-Package: info.shillem.util.dots,
+ info.shillem.util.dots.lang
+Require-Bundle: com.ibm.dots
