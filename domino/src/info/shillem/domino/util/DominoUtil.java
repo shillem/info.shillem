@@ -22,9 +22,11 @@ import lotus.domino.Document;
 import lotus.domino.Item;
 import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
+import lotus.domino.NotesError;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.ViewEntry;
+import lotus.domino.ViewNavigator;
 
 public enum DominoUtil {
     ;
@@ -312,6 +314,17 @@ public enum DominoUtil {
             doc.replaceItemValue(itemName, dateTime);
         } finally {
             recycle(dateTime);
+        }
+    }
+
+    public static void setGuidance(ViewNavigator nav, int maxEntries, int readMode)
+            throws NotesException {
+        try {
+            nav.setCacheGuidance(maxEntries, readMode);
+        } catch (NotesException e) {
+            if (e.id != NotesError.NOTES_ERR_NOT_IMPLEMENTED) {
+                throw e;
+            }
         }
     }
 

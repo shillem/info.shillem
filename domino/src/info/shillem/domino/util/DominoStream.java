@@ -51,6 +51,10 @@ public class DominoStream {
                 .onClose(() -> Unthrow.on(iterator::close));
     }
 
+    public static Stream<Document> stream(View view) {
+        return stream(view, ViewNavigation.FORWARD);
+    }
+
     public static Stream<Document> stream(View view, ViewNavigation order) {
         Objects.requireNonNull(view, "View cannot be null");
         Objects.requireNonNull(order, "Order cannot be null");
@@ -67,10 +71,6 @@ public class DominoStream {
         }
 
         return stream(new DocumentIterator(starter, advancer));
-    }
-
-    public static Stream<Document> stream(View view) {
-        return stream(view, ViewNavigation.FORWARD);
     }
 
     public static Stream<ViewEntry> stream(ViewEntryCollection coll) {
@@ -127,15 +127,17 @@ public class DominoStream {
 
                     ViewEntry entry = nav.getCurrent();
 
+                    DominoUtil.setGuidance(nav, 300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+
                     if (entry.isCategory()) {
                         return entry;
                     }
-                    
-                    nav.setCacheGuidance(300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+
+                    ViewEntry nextEntry = nav.getNextCategory();
 
                     DominoUtil.recycle(entry);
 
-                    return nav.getNextCategory();
+                    return nextEntry;
                 };
                 advancer = nav::getNextCategory;
                 break;
@@ -147,15 +149,17 @@ public class DominoStream {
 
                     ViewEntry entry = nav.getCurrent();
 
+                    DominoUtil.setGuidance(nav, 300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+
                     if (entry.isDocument()) {
                         return entry;
                     }
-                    
-                    nav.setCacheGuidance(300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+
+                    ViewEntry nextEntry = nav.getNextDocument();
 
                     DominoUtil.recycle(entry);
 
-                    return nav.getNextDocument();
+                    return nextEntry;
                 };
                 advancer = nav::getNextDocument;
                 break;
@@ -174,15 +178,17 @@ public class DominoStream {
 
                     ViewEntry entry = nav.getCurrent();
 
+                    DominoUtil.setGuidance(nav, 300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+
                     if (entry.isCategory()) {
                         return entry;
                     }
-                    
-                    nav.setCacheGuidance(300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+
+                    ViewEntry nextEntry = nav.getPrevCategory();
 
                     DominoUtil.recycle(entry);
 
-                    return nav.getPrevCategory();
+                    return nextEntry;
                 };
                 advancer = nav::getPrevCategory;
                 break;
@@ -194,15 +200,17 @@ public class DominoStream {
 
                     ViewEntry entry = nav.getCurrent();
 
+                    DominoUtil.setGuidance(nav, 300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+
                     if (entry.isDocument()) {
                         return entry;
                     }
-                    
-                    nav.setCacheGuidance(300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+
+                    ViewEntry nextEntry = nav.getPrevDocument();
 
                     DominoUtil.recycle(entry);
 
-                    return nav.getPrevDocument();
+                    return nextEntry;
                 };
                 advancer = nav::getPrevDocument;
                 break;
