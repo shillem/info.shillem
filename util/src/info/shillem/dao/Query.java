@@ -25,7 +25,7 @@ public class Query<E extends Enum<E> & BaseField> {
     private final Set<E> schema;
 
     protected Query(QueryBuilder<E, ?, ?> builder) {
-        cached = builder.isFetchCached();
+        cached = builder.isCached();
         databaseUrl = builder.isFetchDatabaseUrl();
         locale = builder.getLocale();
         maxCount = builder.getMaxCount();
@@ -44,7 +44,7 @@ public class Query<E extends Enum<E> & BaseField> {
         return schema;
     }
 
-    public boolean isFetchCached() {
+    public boolean isCached() {
         return cached;
     }
 

@@ -12,7 +12,7 @@ import info.shillem.dto.BaseField;
 public abstract class AbstractQueryBuilder<E extends Enum<E> & BaseField, B extends QueryBuilder<E, B, T>, T extends Query<E>>
         implements QueryBuilder<E, B, T> {
 
-    private boolean cache;
+    private boolean cached;
     private boolean databaseUrl;
     private Locale locale;
     private int maxCount;
@@ -63,13 +63,6 @@ public abstract class AbstractQueryBuilder<E extends Enum<E> & BaseField, B exte
     }
 
     @Override
-    public B fetchCached(boolean flag) {
-        this.cache = flag;
-
-        return autocast();
-    }
-
-    @Override
     public B fetchDatabaseUrl(boolean flag) {
         this.databaseUrl = flag;
 
@@ -92,13 +85,20 @@ public abstract class AbstractQueryBuilder<E extends Enum<E> & BaseField, B exte
     }
 
     @Override
-    public boolean isFetchCached() {
-        return cache;
+    public boolean isCached() {
+        return cached;
     }
 
     @Override
     public boolean isFetchDatabaseUrl() {
         return databaseUrl;
+    }
+
+    @Override
+    public B setCache(boolean flag) {
+        this.cached = flag;
+
+        return autocast();
     }
 
     @Override

@@ -15,7 +15,7 @@ public interface QueryBuilder<E extends Enum<E> & BaseField, B extends QueryBuil
 
     B fetch(Set<E> fields);
 
-    B fetchCached(boolean flag);
+    B setCache(boolean flag);
 
     B fetchDatabaseUrl(boolean flag);
 
@@ -25,7 +25,7 @@ public interface QueryBuilder<E extends Enum<E> & BaseField, B extends QueryBuil
 
     Set<E> getSchema();
 
-    boolean isFetchCached();
+    boolean isCached();
 
     boolean isFetchDatabaseUrl();
 
