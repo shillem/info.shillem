@@ -6,6 +6,7 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import info.shillem.util.Unthrow;
 import info.shillem.util.Unthrow.ThrowableFunction;
 import info.shillem.util.Unthrow.ThrowableSupplier;
 import lotus.domino.Base;
@@ -41,13 +42,13 @@ public class DominoStream {
             advancer = coll::getPrevDocument;
         }
 
-        return stream(new DominoIterator<>(starter, advancer));
+        return stream(new DocumentIterator(starter, advancer));
     }
 
     private static <T extends Base> Stream<T> stream(DominoIterator<T> iterator) {
         return StreamSupport
                 .stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
-                .onClose(iterator::close);
+                .onClose(() -> Unthrow.on(iterator::close));
     }
 
     public static Stream<Document> stream(View view, ViewNavigation order) {
@@ -65,7 +66,7 @@ public class DominoStream {
             advancer = view::getPrevDocument;
         }
 
-        return stream(new DominoIterator<>(starter, advancer));
+        return stream(new DocumentIterator(starter, advancer));
     }
 
     public static Stream<Document> stream(View view) {
@@ -82,7 +83,7 @@ public class DominoStream {
         Objects.requireNonNull(order, "Order cannot be null");
 
         ThrowableSupplier<ViewEntry> starter;
-        ThrowableFunction<ViewEntry, ViewEntry> advancer;
+        ThrowableSupplier<ViewEntry> advancer;
 
         if (order == ViewNavigation.FORWARD) {
             starter = coll::getFirstEntry;
@@ -92,7 +93,7 @@ public class DominoStream {
             advancer = coll::getPrevEntry;
         }
 
-        return stream(new DominoIterator<>(starter, advancer));
+        return stream(new ViewEntryIterator(starter, advancer));
     }
 
     public static Stream<ViewEntry> stream(ViewNavigator nav) {
@@ -110,7 +111,7 @@ public class DominoStream {
         Objects.requireNonNull(order, "Order cannot be null");
 
         ThrowableSupplier<ViewEntry> starter = null;
-        ThrowableFunction<ViewEntry, ViewEntry> advancer = null;
+        ThrowableSupplier<ViewEntry> advancer = null;
 
         if (order == ViewNavigation.FORWARD) {
             switch (filter) {
@@ -119,7 +120,6 @@ public class DominoStream {
                 advancer = nav::getNext;
                 break;
             case CATEGORY:
-                starter = nav::getFirst;
                 starter = () -> {
                     if (!nav.gotoFirst()) {
                         return null;
@@ -130,20 +130,34 @@ public class DominoStream {
                     if (entry.isCategory()) {
                         return entry;
                     }
+                    
+                    nav.setCacheGuidance(300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
 
                     DominoUtil.recycle(entry);
 
                     return nav.getNextCategory();
                 };
-                advancer = (entry) -> nav.getNextCategory();
+                advancer = nav::getNextCategory;
                 break;
             case DOCUMENT:
-                starter = () -> nav.gotoFirstDocument() ? nav.getCurrent() : null;
-                advancer = (entry) -> nav.getNextDocument();
-                break;
-            case SIBLING:
-                starter = nav::getFirst;
-                advancer = nav::getNextSibling;
+                starter = () -> {
+                    if (!nav.gotoFirst()) {
+                        return null;
+                    }
+
+                    ViewEntry entry = nav.getCurrent();
+
+                    if (entry.isDocument()) {
+                        return entry;
+                    }
+                    
+                    nav.setCacheGuidance(300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+
+                    DominoUtil.recycle(entry);
+
+                    return nav.getNextDocument();
+                };
+                advancer = nav::getNextDocument;
                 break;
             }
         } else {
@@ -163,25 +177,39 @@ public class DominoStream {
                     if (entry.isCategory()) {
                         return entry;
                     }
+                    
+                    nav.setCacheGuidance(300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
 
                     DominoUtil.recycle(entry);
 
                     return nav.getPrevCategory();
                 };
-                advancer = (entry) -> nav.getPrevCategory();
+                advancer = nav::getPrevCategory;
                 break;
             case DOCUMENT:
-                starter = () -> nav.gotoLastDocument() ? nav.getCurrent() : null;
-                advancer = (entry) -> nav.getPrevDocument();
-                break;
-            case SIBLING:
-                starter = nav::getLast;
-                advancer = nav::getPrevSibling;
+                starter = () -> {
+                    if (!nav.gotoLast()) {
+                        return null;
+                    }
+
+                    ViewEntry entry = nav.getCurrent();
+
+                    if (entry.isDocument()) {
+                        return entry;
+                    }
+                    
+                    nav.setCacheGuidance(300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+
+                    DominoUtil.recycle(entry);
+
+                    return nav.getPrevDocument();
+                };
+                advancer = nav::getPrevDocument;
                 break;
             }
         }
 
-        return stream(new DominoIterator<>(starter, advancer));
+        return stream(new ViewEntryIterator(starter, advancer));
     }
 
 }
