@@ -53,6 +53,7 @@ import lotus.domino.Database;
 import lotus.domino.DateTime;
 import lotus.domino.DbDirectory;
 import lotus.domino.Document;
+import lotus.domino.Item;
 import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
 import lotus.domino.NotesException;
@@ -92,7 +93,19 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected Document createDocument(DominoSilo silo) throws NotesException {
-        return factory.setDefaults(silo.getDatabase().createDocument());
+        return createDocument(silo, null);
+    }
+    
+    protected Document createDocument(DominoSilo silo, String formName) throws NotesException {
+        Document doc = factory.setDefaults(silo.getDatabase().createDocument());
+        
+        if (formName != null) {
+            Item itm = doc.replaceItemValue("Form", formName);
+            
+            DominoUtil.recycle(itm);
+        }
+        
+        return doc;
     }
 
     protected boolean deleteDocument(DominoSilo silo, Document doc, DeletionType deletion)
@@ -156,6 +169,13 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
     protected String getDocumentItemName(E field) {
         return field.name();
+    }
+
+    protected ViewEntryCollection getViewEntriesByKey(
+            View view, Object key, ViewMatch match) throws NotesException {
+        Objects.requireNonNull(key, "Key cannot be null");
+
+        return getViewEntriesByKeys(view, Arrays.asList(key), match);
     }
 
     protected ViewEntryCollection getViewEntriesByKeys(
@@ -368,6 +388,56 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
+    protected void create(T wrapper, DominoSilo silo) throws DaoException, NotesException {
+        create(wrapper, silo, null);
+    }
+    
+    protected void create(T wrapper, DominoSilo silo, String formName)
+            throws DaoException, NotesException {
+        if (!wrapper.isNew()) {
+            throw new IllegalArgumentException(
+                    "Creation cannot be performed on an existing record");
+        }
+        
+        Document doc = null;
+        
+        try {
+            doc = createDocument(silo, formName);
+            
+            pushWrapper(wrapper, doc);
+            
+            doc.save();
+            
+            wrapper.setId(doc.getUniversalID());
+            wrapper.commit(DominoUtil.getLastModified(doc));
+        } finally {
+            DominoUtil.recycle(doc);
+        }
+    }
+    
+    protected void update(T wrapper, DominoSilo silo) throws DaoException, NotesException {
+        if (wrapper.isNew()) {
+            throw new IllegalArgumentException("Update cannot be performed on a new record");
+        }
+        
+        Document doc = null;
+
+        try {
+            doc = getDocumentById(silo, wrapper.getId())
+                    .orElseThrow(() -> DaoRecordException.asMissing(wrapper.getId()));
+
+            checkTimestampAlignment(wrapper, doc);
+
+            pushWrapper(wrapper, doc);
+
+            doc.save();
+
+            wrapper.commit(DominoUtil.getLastModified(doc));
+        } finally {
+            DominoUtil.recycle(doc);
+        }
+    }
+
     protected void pushWrapperField(E field, T wrapper, Document doc) throws NotesException {
         Class<? extends Serializable> type = field.getProperties().getType();
 
@@ -540,14 +610,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    protected Optional<Document> resolveDocument(Query<E> query)
+    protected Optional<Document> resolveDocument(UrlQuery<E> query)
             throws DaoException, NotesException {
-        if (query instanceof UrlQuery) {
-            return resolveDocumentUrl(((UrlQuery<E>) query).getUrl());
-        }
-
-        throw new UnsupportedOperationException(
-                query.getClass().getName() + " is not supported");
+        return resolveDocumentUrl(((UrlQuery<E>) query).getUrl());
     }
 
     protected Optional<Document> resolveDocumentUrl(String url)
@@ -589,31 +654,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
 
         return getDocumentById(database, documentId);
-    }
-
-    protected void update(List<T> wrappers, DominoSilo silo) throws DaoException, NotesException {
-        Document doc = null;
-
-        for (T wrapper : wrappers) {
-            if (wrapper.isNew()) {
-                throw new IllegalStateException("Update cannot be performed on a new object");
-            }
-
-            try {
-                doc = getDocumentById(silo, wrapper.getId())
-                        .orElseThrow(() -> DaoRecordException.asMissing(wrapper.getId()));
-
-                checkTimestampAlignment(wrapper, doc);
-
-                pushWrapper(wrapper, doc);
-
-                doc.save();
-
-                wrapper.commit(DominoUtil.getLastModified(doc));
-            } finally {
-                DominoUtil.recycle(doc);
-            }
-        }
     }
 
     protected T wrapDocument(Document doc, Supplier<T> supplier, Query<E> query)
