@@ -11,10 +11,10 @@ import info.shillem.dto.BaseField;
 
 public class SearchQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
-    public static class Builder<E extends Enum<E> & BaseField>
-            extends AbstractQueryBuilder<E, Builder<E>, SearchQuery<E>> {
+    public static class Builder<E extends Enum<E> & BaseField> extends QueryBuilder<E, Builder<E>> {
 
         private final Deque<Piece> deque = new ArrayDeque<Piece>();
+        private int maxCount;
 
         private Builder<E> addLogicalOperator(LogicalOperator operator) {
             Piece piece = deque.peekLast();
@@ -34,7 +34,6 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends Query<E> {
             return addLogicalOperator(LogicalOperator.AND);
         }
 
-        @Override
         public SearchQuery<E> build() {
             if (deque.isEmpty()) {
                 throw new IllegalStateException("Search query cannot be empty");
@@ -55,10 +54,20 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends Query<E> {
             throw new IllegalStateException("Condition not allowed when preceded by " + piece);
         }
 
+        public int getMaxCount() {
+            return maxCount;
+        }
+
         public Builder<E> or() {
             return addLogicalOperator(LogicalOperator.OR);
         }
 
+        public Builder<E> setMaxCount(int maxCount) {
+            this.maxCount = maxCount;
+
+            return this;
+        }
+        
         public Builder<E> wrap() {
             Piece piece = deque.peekLast();
 
@@ -135,14 +144,6 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
     }
 
-    public enum LogicalOperator implements Piece {
-        AND, OR;
-    }
-
-    public interface Piece {
-
-    }
-
     public static class FieldValue<E extends Enum<E> & BaseField> extends Condition<E> {
 
         private final Object value;
@@ -193,6 +194,14 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
     }
 
+    public enum LogicalOperator implements Piece {
+        AND, OR;
+    }
+
+    public interface Piece {
+
+    }
+
     public enum Wrapper implements Piece {
         INSTANCE {
             @Override
@@ -203,11 +212,17 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends Query<E> {
     }
 
     private final List<Piece> pieces;
+    private final int maxCount;
 
     private SearchQuery(Builder<E> builder) {
         super(builder);
 
         pieces = new ArrayList<>(builder.deque);
+        maxCount = builder.getMaxCount();
+    }
+    
+    public int getMaxCount() {
+        return maxCount;
     }
     
     public List<Piece> getPieces() {

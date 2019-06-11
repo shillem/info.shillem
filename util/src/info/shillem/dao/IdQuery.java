@@ -8,20 +8,18 @@ import info.shillem.util.StringUtil;
 
 public class IdQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
-    public static class Builder<E extends Enum<E> & BaseField>
-            extends AbstractQueryBuilder<E, Builder<E>, IdQuery<E>> {
+    public static class Builder<E extends Enum<E> & BaseField> extends QueryBuilder<E, Builder<E>> {
 
         private String id;
 
         public Builder(String id) {
             if (StringUtil.isEmpty(id)) {
-                throw new IllegalArgumentException("The id is invalid");
+                throw new IllegalArgumentException("Invalid id");
             }
 
             this.id = id;
         }
 
-        @Override
         public IdQuery<E> build() {
             return new IdQuery<>(this);
         }

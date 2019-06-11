@@ -8,16 +8,14 @@ import info.shillem.dto.BaseField;
 
 public class UrlQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
-    public static class Builder<E extends Enum<E> & BaseField>
-            extends AbstractQueryBuilder<E, Builder<E>, UrlQuery<E>> {
+    public static class Builder<E extends Enum<E> & BaseField> extends QueryBuilder<E, Builder<E>> {
 
         private String url;
 
         public Builder(String url) {
-            this.url = Objects.requireNonNull(url, "The URL cannot be null");
+            this.url = Objects.requireNonNull(url, "URL cannot be null");
         }
 
-        @Override
         public UrlQuery<E> build() {
             return new UrlQuery<>(this);
         }

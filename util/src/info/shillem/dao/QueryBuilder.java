@@ -1,36 +1,83 @@
 package info.shillem.dao;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import info.shillem.dto.BaseField;
 
-public interface QueryBuilder<E extends Enum<E> & BaseField, B extends QueryBuilder<E, B, T>, T extends Query<E>> {
+abstract class QueryBuilder<E extends Enum<E> & BaseField, T extends QueryBuilder<E, T>> {
 
-    T build();
+    private boolean databaseUrl;
+    private Locale locale;
+    private Set<E> schema;
 
-    B fetch(E field);
-    
-    B fetch(E[] field);
+    @SuppressWarnings("unchecked")
+    private T autocast() {
+        return (T) this;
+    }
 
-    B fetch(Set<E> fields);
+    public T fetch(E field) {
+        Objects.requireNonNull(field, "Field cannot be null");
 
-    B setCache(boolean flag);
+        if (schema == null) {
+            schema = new HashSet<>();
+        }
 
-    B fetchDatabaseUrl(boolean flag);
+        schema.add(field);
 
-    Locale getLocale();
+        return autocast();
+    }
 
-    int getMaxCount();
+    public T fetch(E[] fields) {
+        Objects.requireNonNull(fields, "Fields cannot be null");
 
-    Set<E> getSchema();
+        if (schema == null) {
+            schema = new HashSet<>();
+        }
 
-    boolean isCached();
+        Stream.of(fields).forEach(schema::add);
 
-    boolean isFetchDatabaseUrl();
+        return autocast();
+    }
 
-    B setLocale(Locale locale);
+    public T fetch(Set<E> fields) {
+        Objects.requireNonNull(fields, "Fields cannot be null");
 
-    B setMaxCount(int maxCount);
+        if (schema == null) {
+            schema = new HashSet<>();
+        }
+
+        schema.addAll(fields);
+
+        return autocast();
+    }
+
+    public T fetchDatabaseUrl(boolean flag) {
+        this.databaseUrl = flag;
+
+        return autocast();
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public Set<E> getSchema() {
+        return schema != null ? schema : Collections.emptySet();
+    }
+
+    public boolean isFetchDatabaseUrl() {
+        return databaseUrl;
+    }
+
+    public T setLocale(Locale locale) {
+        this.locale = locale;
+
+        return autocast();
+    }
 
 }

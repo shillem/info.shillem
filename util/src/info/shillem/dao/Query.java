@@ -2,33 +2,27 @@ package info.shillem.dao;
 
 import java.util.Locale;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import info.shillem.dto.BaseField;
 
 public class Query<E extends Enum<E> & BaseField> {
 
     public static class Builder<E extends Enum<E> & BaseField>
-            extends AbstractQueryBuilder<E, Builder<E>, Query<E>> {
+            extends QueryBuilder<E, Builder<E>> {
 
-        @Override
         public Query<E> build() {
             return new Query<>(this);
         }
 
     }
 
-    private final boolean cached;
     private final boolean databaseUrl;
     private final Locale locale;
-    private final int maxCount;
     private final Set<E> schema;
 
-    protected Query(QueryBuilder<E, ?, ?> builder) {
-        cached = builder.isCached();
+    protected Query(QueryBuilder<E, ?> builder) {
         databaseUrl = builder.isFetchDatabaseUrl();
         locale = builder.getLocale();
-        maxCount = builder.getMaxCount();
         schema = builder.getSchema();
     }
 
@@ -36,28 +30,12 @@ public class Query<E extends Enum<E> & BaseField> {
         return locale;
     }
 
-    public int getMaxCount() {
-        return maxCount;
-    }
-
     public Set<E> getSchema() {
         return schema;
     }
 
-    public boolean isCached() {
-        return cached;
-    }
-
     public boolean isFetchDatabaseUrl() {
         return databaseUrl;
-    }
-
-    public <T> Stream<T> limitStream(Stream<T> stream) {
-        if (getMaxCount() > 0) {
-            return stream.limit(getMaxCount());
-        }
-
-        return stream;
     }
 
 }
