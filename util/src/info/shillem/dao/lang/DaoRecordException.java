@@ -18,7 +18,7 @@ public class DaoRecordException extends DaoException {
     private Object value;
 
     private DaoRecordException(String message, ErrorCode code) {
-        super(message, code);
+        super(message, code, false, false);
     }
 
     public BaseField getField() {

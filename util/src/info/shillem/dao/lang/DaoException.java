@@ -28,6 +28,13 @@ public class DaoException extends Exception implements ErrorCodedException {
 
         this.code = code;
     }
+    
+    public DaoException(
+            String message, ErrorCode code, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, null, false, false);
+        
+        this.code = code;
+    }
 
     public DaoException(String message, ErrorCode code, Throwable cause) {
         super(message, cause);
