@@ -2,32 +2,33 @@ package info.shillem.domino.factory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Objects;
 
 import info.shillem.domino.util.DominoSilo;
 import lotus.domino.Session;
 
 abstract class AbstractDominoFactory implements DominoFactory {
 
-    private final Session session;
-    private final Consumer<Session> sessionOnRecycle;
+    private static final ThreadLocal<Session> thread = new ThreadLocal<>();
+    
     private final Map<String, DominoSilo> silos;
-
+    
     AbstractDominoFactory(Session session) {
-        this(session, null);
-    }
-
-    AbstractDominoFactory(
-            Session session, Consumer<Session> sessionOnRecycle) {
-        this.session = session;
-        this.sessionOnRecycle = sessionOnRecycle;
+        Objects.requireNonNull(session, "Session cannot be null");
+        
+        if (!session.isValid()) {
+            throw new IllegalArgumentException("Session must be valid");
+        }
+        
+        thread.set(session);
+        
         this.silos = new HashMap<>();
     }
 
     @Override
     public void addDominoSilo(DominoSilo silo) {
         silos.computeIfAbsent(silo.getName(), (key) -> {
-            silo.setSession(session);
+            silo.setSession(getSession());
             return silo;
         });
     }
@@ -50,16 +51,12 @@ abstract class AbstractDominoFactory implements DominoFactory {
 
     @Override
     public Session getSession() {
-        return session;
+        return thread.get();
     }
 
     @Override
     public void recycle() {
         silos.values().forEach(DominoSilo::recycle);
-
-        if (sessionOnRecycle != null) {
-            sessionOnRecycle.accept(session);
-        }
     }
 
 }

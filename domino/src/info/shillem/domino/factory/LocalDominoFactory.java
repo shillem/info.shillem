@@ -3,7 +3,6 @@ package info.shillem.domino.factory;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import lotus.domino.Document;
 import lotus.domino.NotesException;
@@ -15,16 +14,10 @@ public class LocalDominoFactory extends AbstractDominoFactory {
     public static class Builder {
 
         private final Session session;
-        private final Consumer<Session> sessionOnRecycle;
         private final Set<Option> options;
 
         public Builder(Session session) {
-            this(session, null);
-        }
-
-        public Builder(Session session, Consumer<Session> sessionOnRecycle) {
             this.session = Objects.requireNonNull(session, "Session cannot be null");
-            this.sessionOnRecycle = sessionOnRecycle;
             this.options = new HashSet<>();
         }
 
@@ -47,7 +40,7 @@ public class LocalDominoFactory extends AbstractDominoFactory {
     private final Set<Option> options;
 
     private LocalDominoFactory(Builder builder) throws NotesException {
-        super(builder.session, builder.sessionOnRecycle);
+        super(builder.session);
 
         options = builder.options;
 
@@ -55,6 +48,20 @@ public class LocalDominoFactory extends AbstractDominoFactory {
                 !options.contains(Option.DO_NOT_CONVERT_MIME));
         getSession().setTrackMillisecInJavaDates(
                 options.contains(Option.TRACK_MILLISEC_IN_JAVA_DATES));
+    }
+
+    @Override
+    public boolean isRemote() {
+        return false;
+    }
+
+    @Override
+    public DominoFactory newInstance() throws NotesException {
+        Builder builder = new Builder(getSession());
+
+        options.forEach(builder::addOption);
+
+        return new LocalDominoFactory(builder);
     }
 
     @Override

@@ -7,19 +7,23 @@ import lotus.domino.Session;
 import lotus.domino.ViewEntry;
 
 public interface DominoFactory {
-
-    void addDominoSilo(DominoSilo silo);
     
+    void addDominoSilo(DominoSilo silo);
+
     boolean containsDominoSilo(String name);
 
     DominoSilo getDominoSilo(String name);
+
+    Session getSession();
+
+    boolean isRemote();
+
+    DominoFactory newInstance() throws NotesException;
+
+    void recycle();
+
+    Document setDefaults(Document doc) throws NotesException;
     
-	Session getSession();
-	
-	void recycle();
-	
-	Document setDefaults(Document doc) throws NotesException;
-	
-	ViewEntry setDefaults(ViewEntry entry) throws NotesException;
+    ViewEntry setDefaults(ViewEntry entry) throws NotesException;
 
 }
