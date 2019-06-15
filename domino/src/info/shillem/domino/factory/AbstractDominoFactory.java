@@ -8,9 +8,8 @@ import info.shillem.domino.util.DominoSilo;
 import lotus.domino.Session;
 
 abstract class AbstractDominoFactory implements DominoFactory {
-
-    private static final ThreadLocal<Session> thread = new ThreadLocal<>();
     
+    private final Session session;
     private final Map<String, DominoSilo> silos;
     
     AbstractDominoFactory(Session session) {
@@ -20,8 +19,7 @@ abstract class AbstractDominoFactory implements DominoFactory {
             throw new IllegalArgumentException("Session must be valid");
         }
         
-        thread.set(session);
-        
+        this.session = session;        
         this.silos = new HashMap<>();
     }
 
@@ -51,7 +49,7 @@ abstract class AbstractDominoFactory implements DominoFactory {
 
     @Override
     public Session getSession() {
-        return thread.get();
+        return session;
     }
 
     @Override
