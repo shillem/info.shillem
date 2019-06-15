@@ -28,10 +28,8 @@ import com.google.gson.reflect.TypeToken;
 
 import info.shillem.dao.Query;
 import info.shillem.dao.UrlQuery;
-import info.shillem.dao.lang.DaoErrorCode;
 import info.shillem.dao.lang.DaoException;
 import info.shillem.dao.lang.DaoRecordException;
-import info.shillem.dao.lang.DaoResolutionException;
 import info.shillem.domino.factory.DominoFactory;
 import info.shillem.domino.util.DeletionType;
 import info.shillem.domino.util.DominoSilo;
@@ -95,16 +93,16 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     protected Document createDocument(DominoSilo silo) throws NotesException {
         return createDocument(silo, null);
     }
-    
+
     protected Document createDocument(DominoSilo silo, String formName) throws NotesException {
         Document doc = factory.setDefaults(silo.getDatabase().createDocument());
-        
+
         if (formName != null) {
             Item itm = doc.replaceItemValue("Form", formName);
-            
+
             DominoUtil.recycle(itm);
         }
-        
+
         return doc;
     }
 
@@ -112,7 +110,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throws DaoException, NotesException {
         if (silo.isDocumentLockingEnabled()) {
             if (!doc.lock()) {
-                throw new DaoException("Unable to acquire lock", DaoErrorCode.DEFAULT);
+                throw new RuntimeException("Unable to acquire lock");
             }
 
             doc.lock();
@@ -257,9 +255,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                         (value) -> Unthrow.on(() -> pullValue(type, value))));
             }
         } catch (ClassCastException e) {
-            throw new DaoException(String.format(
+            throw new RuntimeException(String.format(
                     "Unable to pull item %s from document %s", field.name(), doc.getNoteID()),
-                    DaoErrorCode.DEFAULT,
                     e);
         }
     }
@@ -295,7 +292,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
                 return am;
             } catch (IllegalAccessException | InstantiationException e) {
-                throw new DaoException(e);
+                throw new RuntimeException(e);
             } finally {
                 DominoUtil.recycle(attachments);
             }
@@ -391,35 +388,35 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     protected void create(T wrapper, DominoSilo silo) throws DaoException, NotesException {
         create(wrapper, silo, null);
     }
-    
+
     protected void create(T wrapper, DominoSilo silo, String formName)
             throws DaoException, NotesException {
         if (!wrapper.isNew()) {
             throw new IllegalArgumentException(
                     "Creation cannot be performed on an existing record");
         }
-        
+
         Document doc = null;
-        
+
         try {
             doc = createDocument(silo, formName);
-            
+
             pushWrapper(wrapper, doc);
-            
+
             doc.save();
-            
+
             wrapper.setId(doc.getUniversalID());
             wrapper.commit(DominoUtil.getLastModified(doc));
         } finally {
             DominoUtil.recycle(doc);
         }
     }
-    
+
     protected void update(T wrapper, DominoSilo silo) throws DaoException, NotesException {
         if (wrapper.isNew()) {
             throw new IllegalArgumentException("Update cannot be performed on a new record");
         }
-        
+
         Document doc = null;
 
         try {
@@ -624,7 +621,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         Matcher matcher = DOC_NOTES_URL_PATTERN.matcher(url);
 
         if (!matcher.matches()) {
-            throw new DaoResolutionException(url);
+            throw DaoRecordException.asMissing(url);
         }
 
         String host = matcher.group("host");
@@ -647,7 +644,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
                 database = dir.openDatabaseByReplicaID(replicaId);
             } catch (NotesException e) {
-                throw new DaoException(e);
+                throw new RuntimeException(e);
             } finally {
                 DominoUtil.recycle(dir);
             }

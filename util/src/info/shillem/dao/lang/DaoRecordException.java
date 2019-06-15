@@ -4,115 +4,70 @@ import java.util.Date;
 
 import info.shillem.dao.Query;
 import info.shillem.dto.BaseField;
-import info.shillem.lang.ErrorCode;
 
 public class DaoRecordException extends DaoException {
 
     private static final long serialVersionUID = 1L;
 
-    private String id;
-    private Query<?> query;
-    private Date storedDate;
-    private String referenceId;
-    private BaseField field;
-    private Object value;
-
-    private DaoRecordException(String message, ErrorCode code) {
-        super(message, code, false, false);
-    }
-
-    public BaseField getField() {
-        return field;
-    }
-
-    public String getId() {
-        return id;
+    private DaoRecordException(DaoErrorCode code) {
+        super(code);
     }
     
-    public Query<?> getQuery() {
-        return query;
-    }
-
-    public String getReferenceId() {
-        return referenceId;
-    }
-
-    public Date getStoredDate() {
-        return storedDate;
-    }
-
-    public Object getValue() {
-        return value;
-    }
-
-    public DaoRecordException setReferenceId(String referenceId) {
-        this.referenceId = referenceId;
-
+    public DaoRecordException setReferenceId(String value) {
+        setProperty("referenceId", value);
+        
         return this;
     }
 
     public static DaoRecordException asDirty(String id, Date inMemoryDate, Date storedDate) {
-        DaoRecordException exception = new DaoRecordException(String.format(
-                "The in-memory resource %s with saved date %s has already been updated on %s"
-                        + " and therefore needs to be refreshed",
-                id, inMemoryDate, storedDate),
-                DaoErrorCode.DIRTY_RECORD);
+        DaoRecordException exception = new DaoRecordException(DaoErrorCode.DIRTY_RECORD);
 
-        exception.id = id;
-        exception.storedDate = storedDate;
+        exception.setProperty("id", id);
+        exception.setProperty("inMemoryDate", inMemoryDate);
+        exception.setProperty("storedDate", storedDate);
 
         return exception;
     }
 
     public static DaoRecordException asDuplicate(BaseField field, Object value) {
-        DaoRecordException exception = new DaoRecordException(
-                String.format("The resource with field %s and value %s is duplicate", field, value),
-                DaoErrorCode.DUPLICATE_RECORD);
+        DaoRecordException exception = new DaoRecordException(DaoErrorCode.DUPLICATE_RECORD);
 
-        exception.field = field;
-        exception.value = value;
+        exception.setProperty("field", field);
+        exception.setProperty("value", value);
 
         return exception;
     }
 
     public static DaoRecordException asInvalidValue(BaseField field, Object value) {
-        DaoRecordException exception = new DaoRecordException(
-                String.format("The resource with field %s and value %s is invalid", field, value),
-                DaoErrorCode.INVALID_FIELD_VALUE);
+        DaoRecordException exception = new DaoRecordException(DaoErrorCode.INVALID_FIELD_VALUE);
 
-        exception.field = field;
-        exception.value = value;
+        exception.setProperty("field", field);
+        exception.setProperty("value", value);
 
         return exception;
     }
-
+    
     public static DaoRecordException asMissing(BaseField field, Object value) {
-        DaoRecordException exception = new DaoRecordException(
-                String.format("The resource with field %s and value %s is missing", field, value),
-                DaoErrorCode.MISSING_RECORD);
-
-        exception.field = field;
-        exception.value = value;
-
+        DaoRecordException exception = new DaoRecordException(DaoErrorCode.MISSING_RECORD);
+        
+        exception.setProperty("field", field);
+        exception.setProperty("value", value);
+        
         return exception;
     }
 
     public static DaoRecordException asMissing(Query<?> query) {
-        DaoRecordException exception = new DaoRecordException(
-                String.format("The resource with query %s is missing", query),
-                DaoErrorCode.MISSING_RECORD);
-        
-        exception.query = query;
-        
+        DaoRecordException exception = new DaoRecordException(DaoErrorCode.MISSING_RECORD);
+
+        exception.setProperty("query", query);
+
         return exception;
     }
-    
-    public static DaoRecordException asMissing(String id) {
-        DaoRecordException exception = new DaoRecordException(
-                String.format("The resource with id %s is missing", id),
-                DaoErrorCode.MISSING_RECORD);
 
-        exception.id = id;
+    public static DaoRecordException asMissing(String identifier) {
+        DaoRecordException exception = new DaoRecordException(DaoErrorCode.MISSING_RECORD);
+
+        exception.setProperty("identifier", identifier);
 
         return exception;
     }
