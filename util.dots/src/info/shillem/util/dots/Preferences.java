@@ -139,6 +139,12 @@ public class Preferences {
 
     public synchronized void readPropertiesOnDisk() {
         IEclipsePreferences preferences = Platform.getPreferences(pluginId);
+        
+        try {
+            preferences.sync();
+        } catch (BackingStoreException e) {
+            throw new RuntimeException(e);
+        }
 
         properties
                 .values()
@@ -188,7 +194,9 @@ public class Preferences {
     }
 
     private Object valueFromPreferences(Property prop, IEclipsePreferences preferences) {
-        Optional<String> opt = Optional.ofNullable(preferences.get(prop.getName(), null));
+        Optional<String> opt = Optional
+                .ofNullable(preferences.get(prop.getName(), null))
+                .filter((s) -> !s.isEmpty());
 
         if (String.class.isAssignableFrom(prop.type)) {
             return opt.orElse((String) prop.defaultValue);
