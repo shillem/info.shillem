@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<imageresource xmlns="http://www.lotus.com/dxl" name="puzzle-icon-32.png" publicaccess="false" refresh="true">
+  <jpeg>
+iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACx
+jwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAMuSURBVFhHtZdLKHVRFMf/51x5J5KbJJl45Vm3
+LspAHgNhIBPEkIGkTBW+SF0jEyFKijKREAYGpIQMGCiSlDCTGHi/7mftFp/73X3O1r33/CZ7rbVP
+56y9z9prra25P4GCx8dHjI6OYnl5GTc3N0hOTkZjYyNqamr4Cd9ROvD29oaWlhbs7++z5R/Nzc1o
+bW1lzTd0Hg1ZXFyUfpyYmJjA5eUla76hdGBnZ4clb97f37G7u8uabygdoI+YQb/IH5QO5OXlseSN
+pmmm879B6UBtbS0iIyNZ86SwsBCpqams+YbHKbi9vcXa2hpOT0/x8vIibK+vr1hZWRHj/8THx6Oo
+qIg1ICwsDOnp6SguLkZ4eDhbzfl2YGZmBkNDQ3h4eBAT/hAdHY3Ozk6Ul5ezxRjhwPj4OIaHh9kU
+GHRdR29vLyorK9kiRzs+PnbX19fj4+ODTYEjIiICCwsLiI2NZYs3+uzsrCUfJ+7v77G0tMSaHP3g
+4IBFa1C9XycvreTu7o4lOco8YDWfwaqLjJaSkoKCggJxtgPJV/64urrC5uamKGw/07e2vr7uTkhI
++M5olBZWV1fR19cngshfaIGZmZk4PDz8riu0yJ6eHrFgw36AvG1vbxcOWUFwcDCmpqaMY4BSbFZW
+FmuBh1L95OSkeRBmZGSwZA1HR0fmDlh9RKnKGjpAjejW1hZr1lBSUiJ3gFKzy+USHbBV5ObmoqGh
+AbbPbf6zvb0tavnT0xP29vbQ39+PjY0NftQ/4uLi0NXVJaKezn9iYiLq6upEuQ4JCYFWXV3tvri4
+4MeNoYCsqKhATEwMzs7OMD8/j+vra541Jj8/X9wpjDANwi+ampowPT0txqqqKrS1tWFubs7vfpDQ
+bTYbi3Kys7PR0dEhMtpPoqKiMDAwgNDQULbIUb1fT0pKYlEOrZhqhQy73S4aUzNU79dLS0tZlENB
+ZIZqvqysjCU5OvVsVCyMUAXo+fk5S97Q4hwOB2tyRAwMDg4a9vfUsj0/P7PmycnJieHVzOl0iqZU
+hYgs2kaqTBRsaWlpCAoKEpME7QDdC2SMjY159JN01nNyctDd3Y2RkZFf3A2Av6YiMbq90VjKAAAA
+AElFTkSuQmCC
+</jpeg>
+  <item name="$MimeType" sign="true">
+    <text>image/png</text>
+  </item>
+</imageresource>

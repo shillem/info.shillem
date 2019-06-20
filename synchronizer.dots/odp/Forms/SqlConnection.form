@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.lotus.com/dxl" name="SqlConnection" nocompose="true" publicaccess="false" renderpassthrough="true">
+  <code event="windowtitle">
+    <formula>@If(@IsNewDoc;
+	"New Sql Connection";
+	"Sql Connection:" + title
+)</formula>
+  </code>
+  <body>
+    <richtext>
+      <pardef id="1" hide="notes web"/>
+      <par def="1">
+        <run>
+          <font size="8pt" color="red"/>
+          <sharedfieldref name="uuid"/>
+        </run>
+      </par>
+      <pardef id="2"/>
+      <par def="2">
+        <run>
+          <font size="8pt"/>
+        </run>
+      </par>
+      <table widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
+        <tablecolumn width="2in"/>
+        <tablecolumn width="5in"/>
+        <tablerow>
+          <tablecell borderwidth="0px 0px 1px" bgcolor="#f7f7f7">
+            <pardef id="4" keepwithnext="true" keeptogether="true"/>
+            <par def="4">
+              <run>
+                <font size="8pt" style="bold"/>Title</run>
+              <run>
+                <font size="8pt" style="bold" color="red"/> *</run>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px 0px 1px">
+            <pardef id="5" keepwithnext="true" keeptogether="true"/>
+            <par def="5">
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="title">
+                  <code event="inputvalidation">
+                    <formula>@If(@ThisValue="";
+	@Failure("Title is mandatory");
+	@Success
+)</formula>
+                  </code>
+                </field>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+            <par def="4">
+              <run>
+                <font size="8pt" style="bold"/>Description:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="1px 0px">
+            <par def="5">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="description"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+              <run>
+                <font size="8pt" style="bold"/>
+              </run>
+            </par>
+          </tablecell>
+        </tablerow>
+      </table>
+      <par def="2">
+        <run>
+          <font size="8pt"/>
+        </run>
+      </par>
+      <table widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
+        <tablecolumn width="2in"/>
+        <tablecolumn width="5in"/>
+        <tablerow>
+          <tablecell borderwidth="0px 0px 1px" bgcolor="#f7f7f7">
+            <par def="4">
+              <run>
+                <font size="8pt" style="bold"/>Driver</run>
+              <run>
+                <font size="8pt" style="bold" color="red"/> *</run>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px 0px 1px">
+            <par def="5">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="driver">
+                  <code event="defaultvalue">
+                    <formula>@If(@ThisValue="";
+	@Failure("Driver is mandatory");
+	@Success
+)</formula>
+                  </code>
+                </field>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+            <par def="4">
+              <run>
+                <font size="8pt" style="bold"/>URL</run>
+              <run>
+                <font size="8pt" style="bold" color="red"/> *</run>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="1px 0px">
+            <par def="5">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="url">
+                  <code event="inputvalidation">
+                    <formula>@If(@ThisValue="";
+	@Failure("URL is mandatory");
+	@Success
+)</formula>
+                  </code>
+                </field>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
+            </par>
+          </tablecell>
+        </tablerow>
+      </table>
+      <par def="2">
+        <run>
+          <font size="8pt"/>
+        </run>
+      </par>
+    </richtext>
+  </body>
+</form>

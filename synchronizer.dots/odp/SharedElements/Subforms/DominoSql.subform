@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<subform xmlns="http://www.lotus.com/dxl" name="DominoSql" renderpassthrough="true">
+  <globals>
+    <code event="options">
+      <lotusscript>Option Public
+
+</lotusscript>
+    </code>
+    <code event="declarations">
+      <lotusscript>Dim nl As String
+
+</lotusscript>
+    </code>
+    <code event="initialize">
+      <lotusscript>Sub Initialize
+	
+	Let nl = Chr(13) &amp; Chr(10) 
+	
+End Sub</lotusscript>
+    </code>
+  </globals>
+  <body>
+    <richtext>
+      <pardef id="1"/>
+      <par def="1">
+        <run>
+          <font size="8pt"/>
+        </run>
+      </par>
+      <table cellbordercolor="black" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
+        <tablecolumn width="2in"/>
+        <tablecolumn width="5in"/>
+        <tablerow>
+          <tablecell borderwidth="0px 0px 1px" bgcolor="#f7f7f7">
+            <pardef id="3" hide="edit previewedit" keepwithnext="true" keeptogether="true"/>
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>INSERT INTO</run>
+              <actionhotspot hotspotstyle="none">
+                <run>
+                  <font size="8pt" style="bold underline" color="blue"/>
+                </run>
+              </actionhotspot>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+            <pardef id="4" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+            <par def="4">
+              <run>
+                <font size="8pt" style="bold"/>
+              </run>
+              <actionhotspot hotspotstyle="none">
+                <run>
+                  <font size="8pt" style="bold underline" color="blue"/>INSERT INTO</run>
+                <code event="click">
+                  <lotusscript>Sub Click(Source As Button)
+	
+	Dim wks As New NotesUIWorkspace
+	Dim doc As NotesDocument
+	Dim labels As Variant
+	Dim values As Variant
+	Dim s As String, l1 As String, l2 As String
+	
+	Dim itm As NotesItem
+	
+	Set doc = wks.CurrentDocument.Document
+	
+	If (doc.GetFirstItem("fieldOperation").Text = "RIGHT_TO_LEFT") Then
+		Let labels = doc.GetItemValue("dsp_right")
+		Let values = doc.GetItemValue("dsp_left")
+	Else
+		Let labels = doc.GetItemValue("dsp_left")
+		Let values = doc.GetItemValue("dsp_right")
+	End If
+	
+	For i=0 To Ubound(values)
+		Let l1 = l1 &amp; values(i)
+		Let l2 = l2 &amp; "? "
+		
+		If i &lt; Ubound(values) Then
+			Let l1 = l1 &amp; ", "
+			Let l2 = l2 &amp; ", "
+		End If
+	Next
+	
+	Set itm = doc.GetFirstItem("query_stmt_insert")
+	
+	Let s = "(" &amp; l1 &amp; ")" &amp; nl &amp; "VALUES" &amp; nl &amp; "(" &amp; l2 &amp; ")"
+	
+	If (itm.Text = "") Then
+		Let itm.Values = s
+	Else
+		Let itm.Values = itm.Text &amp; nl &amp; "--NEW" &amp; nl &amp; s
+	End If
+	
+	Call wks.CurrentDocument.Refresh
+	
+End Sub</lotusscript>
+                </code>
+              </actionhotspot>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px 0px 1px">
+            <pardef id="5" keepwithnext="true" keeptogether="true"/>
+            <par def="5">
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_stmt_insert"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+              <run>
+                <font size="8pt" style="bold"/>
+              </run>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="1px 0px">
+            <pardef id="6" keepwithnext="true" keeptogether="true"/>
+            <par def="6">
+              <run>
+                <font size="8pt" style="bold"/>
+              </run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="1px 0px">
+            <par def="5">
+              <run>
+                <font size="8pt" style="bold"/>
+              </run>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="0px 0px 1px" bgcolor="#f7f7f7">
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>MERGE INTO</run>
+              <actionhotspot hotspotstyle="none">
+                <run>
+                  <font size="8pt" style="bold underline" color="blue"/>
+                </run>
+              </actionhotspot>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+            <par def="4">
+              <run>
+                <font size="8pt" style="bold"/>
+              </run>
+              <actionhotspot hotspotstyle="none">
+                <run>
+                  <font size="8pt" style="bold underline" color="blue"/>MERGE INTO</run>
+                <code event="click">
+                  <lotusscript>Sub Click(Source As Button)
+	
+	Dim wks As New NotesUIWorkspace
+	Dim doc As NotesDocument
+	Dim labels As Variant
+	Dim values As Variant
+	Dim s As String
+	
+	Dim itm As NotesItem
+	
+	Set doc = wks.CurrentDocument.Document
+	Let labels = doc.GetItemValue("dsp_to")
+	Let values = doc.GetItemValue("dsp_from")
+	
+	For i=0 To Ubound(values)
+		Let s = s &amp; "? AS " &amp; labels(i)
+		
+		If i &lt; Ubound(values) Then
+			Let s = s &amp; "," &amp; Chr(13) &amp; Chr(10)
+		End If
+	Next
+	
+	Set itm = doc.GetFirstItem("query_stmt_merge")
+	
+	Let s = "USING (SELECT" &amp; Chr(13) + Chr(10) + s + ") AS source ON (source. = dest.)"
+	
+	If (itm.Text = "") Then
+		Let itm.Values = s
+	Else
+		Let itm.Values = itm.Text + Chr(13) + Chr(10) + "--NEW" + Chr(13) + Chr(10) + s
+	End If
+	
+	Call wks.CurrentDocument.Refresh
+	
+End Sub</lotusscript>
+                </code>
+              </actionhotspot>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px 0px 1px">
+            <par def="5">
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_stmt_merge"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+              <run>
+                <font size="8pt" style="bold"/>
+              </run>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>WHEN MATCHED THEN</run>
+              <actionhotspot hotspotstyle="none">
+                <run>
+                  <font size="8pt" style="bold underline" color="blue"/>
+                </run>
+              </actionhotspot>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+            <par def="4">
+              <run>
+                <font size="8pt" style="bold"/>
+              </run>
+              <actionhotspot hotspotstyle="none">
+                <run>
+                  <font size="8pt" style="bold underline" color="blue"/>WHEN MATCHED THEN</run>
+                <code event="click">
+                  <lotusscript>Sub Click(Source As Button)
+	
+	Dim wks As New NotesUIWorkspace
+	Dim doc As NotesDocument
+	Dim labels As Variant
+	Dim values As Variant
+	
+	Dim t As String	
+	Dim s As String
+	
+	Dim itm As NotesItem
+	
+	Set doc = wks.CurrentDocument.Document
+	
+'	Let t = doc.GetFirstItem("stmt_merge").Text
+'	Let t = Right(t, Len(t) - Instr(1, t, ") AS", 5) - 4)
+	Let t = "source"
+	
+	Let labels = doc.GetItemValue("dsp_to")
+	Let values = doc.GetItemValue("dsp_from")
+	
+	For i=0 To Ubound(values)
+		Let s = s &amp; labels(i) &amp; " = " &amp; t &amp; "." &amp; labels(i)
+		
+		If i  &lt; Ubound(values) Then
+			Let s = s &amp; "," &amp; Chr(13) &amp; Chr(10)
+		End If
+	Next
+	
+	Set itm = doc.GetFirstItem("query_stmt_matched")
+	
+	Let s = "UPDATE SET " &amp; s
+	
+	If (itm.Text = "") Then
+		Let itm.Values = s
+	Else
+		Let itm.Values = itm.Text + Chr(13) + Chr(10) + "--NEW" + Chr(13) + Chr(10) + s
+	End If
+	
+	Call wks.CurrentDocument.Refresh
+	
+End Sub</lotusscript>
+                </code>
+              </actionhotspot>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="1px 0px">
+            <par def="5">
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_stmt_matched"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+              <run>
+                <font size="8pt" style="bold" color="gray"/>
+              </run>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>WHEN NOT MATCHED THEN</run>
+              <actionhotspot hotspotstyle="none">
+                <run>
+                  <font size="8pt" style="bold underline" color="blue"/>
+                </run>
+              </actionhotspot>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+            <par def="4">
+              <run>
+                <font size="8pt" style="bold"/>
+              </run>
+              <actionhotspot hotspotstyle="none">
+                <run>
+                  <font size="8pt" style="bold underline" color="blue"/>WHEN NOT MATCHED THEN</run>
+                <code event="click">
+                  <lotusscript>Sub Click(Source As Button)
+	
+	Dim wks As New NotesUIWorkspace
+	Dim doc As NotesDocument
+	Dim labels As Variant
+	Dim values As Variant
+	
+	Dim t As String
+	Dim s As String, s1 As String, s2 As String
+	
+	Dim itm As NotesItem
+	
+	Set doc = wks.CurrentDocument.Document
+	
+'	Let t = doc.GetFirstItem("stmt_merge").Text
+'	Let t = Right(t, Len(t) - Instr(1, t, ") AS", 5) - 4)
+	Let t = "source"
+	
+	Let labels = doc.GetItemValue("dsp_to")
+	Let values = doc.GetItemValue("dsp_from")
+	
+	For i=0 To Ubound(values)
+		Let s1 = s1 &amp; labels(i)
+		
+		If i  &lt; Ubound(values) Then
+			Let s1 = s1 &amp; ", "
+		End If
+	Next
+	
+	Let s = "INSERT (" &amp; s1 &amp; ")" &amp; Chr(13) &amp; Chr(10)
+	
+	For i=0 To Ubound(values)
+		Let s2 = s2 &amp; t &amp; "." &amp; labels(i)
+		
+		If i  &lt; Ubound(values) Then
+			Let s2 = s2 &amp; ", "
+		End If
+	Next
+	
+	Let s =  s &amp; "VALUES (" &amp; s2 &amp; ");"
+	
+	Set itm = doc.GetFirstItem("query_stmt_unmatched")
+	
+	If (itm.Text = "") Then
+		Let itm.Values = s
+	Else
+		Let itm.Values = itm.Text + Chr(13) + Chr(10) + "--NEW" + Chr(13) + Chr(10) + s
+	End If
+	
+	Call wks.CurrentDocument.Refresh
+	
+End Sub</lotusscript>
+                </code>
+              </actionhotspot>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="1px 0px">
+            <par def="5">
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_stmt_unmatched"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+              <run>
+                <font size="8pt" style="bold" color="gray"/>
+              </run>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+            <par def="6">
+              <run>
+                <font size="8pt" style="bold" color="gray"/>Statement:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="1px 0px">
+            <par def="5">
+              <run>
+                <font size="8pt" color="gray"/>
+                <field showdelimiters="false" type="text" kind="computed" name="query_stmt">
+                  <code event="defaultvalue">
+                    <formula>list := "INSERT INTO|insert":"MERGE INTO|merge":"WHEN MATCHED THEN|matched":"WHEN NOT MATCHED THEN|unmatched";
+ths := "";
+
+@For(i := 1; i &lt;= @Elements(list); i := i + 1;
+	fieldValue := @GetField("query_stmt_" + @Right(list[i];"|"));
+
+	@If(fieldValue="";
+		"";
+		ths := ths + @Left(list[i];"|") + @NewLine + fieldValue + @NewLine
+	)
+);
+
+ths</formula>
+                  </code>
+                </field>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+              <run>
+                <font size="8pt" style="bold"/>
+              </run>
+            </par>
+          </tablecell>
+        </tablerow>
+      </table>
+      <pardef id="2" firstlineleftmargin="1in" hide="notes web"/>
+      <par def="2">
+        <run>
+          <font size="8pt"/>
+        </run>
+      </par>
+    </richtext>
+  </body>
+  <item name="queryTimeout" summary="false" sign="true">
+    <number>0</number>
+  </item>
+</subform>
