@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import info.shillem.util.CastUtil;
 import info.shillem.util.Unthrow;
 import lotus.domino.Base;
 import lotus.domino.DateTime;
@@ -30,6 +31,9 @@ import lotus.domino.ViewNavigator;
 
 public enum DominoUtil {
     ;
+    
+    private static final Pattern MIME_FILENAME = Pattern.compile(
+            "filename=['\"]*([^'\"]+)['\"]*", Pattern.CASE_INSENSITIVE);
 
     private static final Vector<String> MIME_FILTERED_HEADERS = new Vector<>();
 
@@ -224,27 +228,26 @@ public enum DominoUtil {
         Objects.requireNonNull(entity, "Entity cannot be null");
 
         return getMimeEntityHeaderValAndParams(
-                entity, h -> Unthrow.on(() -> h.getHeaderVal().equals("attachment")))
+                entity, h -> Unthrow.on(() -> h.contains("attachment")))
                         .map(s -> {
-                            Matcher m = Pattern.compile("filename=['\"]?([^'\"\\s]+)").matcher(s);
+                            Matcher m = MIME_FILENAME.matcher(s);
                             m.find();
                             return m.group(1);
                         });
     }
 
     public static Optional<String> getMimeEntityHeaderValAndParams(
-            MIMEEntity entity, Predicate<MIMEHeader> matcher) throws NotesException {
+            MIMEEntity entity, Predicate<String> matcher) throws NotesException {
         Objects.requireNonNull(entity, "Entity cannot be null");
         Objects.requireNonNull(matcher, "Matcher cannot be null");
 
-        Vector<?> headers = entity.getHeaderObjects();
+        Vector<MIMEHeader> headers = CastUtil.toAnyVector(entity.getHeaderObjects());
 
         try {
             return headers
                     .stream()
-                    .map(MIMEHeader.class::cast)
+                    .map((h) -> Unthrow.on(() -> h.getHeaderValAndParams(false, true)))
                     .filter(matcher)
-                    .map((h) -> Unthrow.on(() -> h.getHeaderValAndParams()))
                     .findFirst();
         } finally {
             recycle(headers);
