@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.ibm.dots.task">
+      <task
+            class="info.shillem.synchronizer.dots.SynchronizerTask"
+            description="Two-way Domino/SQL synchronizer"
+            id="SynchronizerTask"
+            runOnStart="false">
+				<run every="1" unit="minute"></run>
+      </task>
+   </extension>
+   <extension
+         point="com.ibm.dots.configuration">
+      <initializer
+            class="info.shillem.synchronizer.dots.SynchronizerInitializer">
+      </initializer>
+      <form
+            dxlpath="res/configuration.dxl">
+      </form>
+   </extension>
+
+</plugin>

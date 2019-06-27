@@ -101,7 +101,6 @@ public class Preferences {
 
     private final String pluginId;
     private final Map<String, Property> properties;
-    private boolean readOnce;
 
     public Preferences(String pluginId, Set<Property> properties) {
         this.pluginId = Objects.requireNonNull(pluginId, "Plug-in id cannot be null");
@@ -161,32 +160,26 @@ public class Preferences {
 
                     prop.setValue(value);
                 });
-
-        readOnce = true;
     }
 
     public synchronized void savePropertiesOnDisk() {
-        if (!readOnce) {
-            throw new PreferencesException(
-                    "Properties cannot be saved on disk"
-                            + " unless readPropertiesOnDisk gets called at least once before");
-        }
-
         IEclipsePreferences preferences = Platform.getPreferences(pluginId);
 
-        properties
-                .values()
-                .stream()
-                .filter(Property::isStoredOnDisk)
-                .forEach((prop) -> {
-                    String value = valueToPreferences(prop);
-
-                    if (!value.equals(preferences.get(prop.getName(), ""))) {
-                        preferences.put(prop.getName(), value);
-                    }
-                });
-
         try {
+            preferences.sync();
+
+            properties
+            .values()
+            .stream()
+            .filter(Property::isStoredOnDisk)
+            .forEach((prop) -> {
+                String value = valueToPreferences(prop);
+                
+                if (!value.equals(preferences.get(prop.getName(), ""))) {
+                    preferences.put(prop.getName(), value);
+                }
+            });
+            
             preferences.flush();
         } catch (BackingStoreException e) {
             throw new RuntimeException(e);
