@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<subform xmlns="http://www.lotus.com/dxl" name="SQL_TO_DOMINO" renderpassthrough="true">
+  <body>
+    <richtext>
+      <pardef id="1"/>
+      <par def="1"/>
+      <table cellbordercolor="black" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
+        <tablecolumn width="2in"/>
+        <tablecolumn width="5in"/>
+        <tablerow>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <pardef id="3" align="right" keepwithnext="true" keeptogether="true"/>
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>Query Timeout:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px">
+            <pardef id="4" keepwithnext="true" keeptogether="true"/>
+            <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="number" kind="editable" name="query_timeout">
+                  <numberformat format="general" varying="true" digits="2" punctuated="false" parens="false" percent="false" bytes="false"/>
+                  <code event="defaultvalue">
+                    <formula>5</formula>
+                  </code>
+                  <code event="inputtranslation">
+                    <formula>@If(@ThisValue &gt; 0;
+	@ThisValue;
+	1
+)</formula>
+                  </code>
+                </field>
+              </run>
+              <run>
+                <font size="8pt"/>s</run>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>WITH:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px">
+            <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_stmt_with"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <pardef id="5" align="right" hide="edit previewedit" keepwithnext="true" keeptogether="true"/>
+            <par def="5">
+              <run>
+                <font size="8pt" style="bold"/>SELECT</run>
+              <actionhotspot hotspotstyle="none"/>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+            <pardef id="6" align="right" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+            <par def="6">
+              <actionhotspot hotspotstyle="none">
+                <run>
+                  <font size="8pt" style="bold underline" color="blue"/>SELECT</run>
+                <code event="click">
+                  <lotusscript>Sub Click(Source As Button)
+	
+	Dim wks As New NotesUIWorkspace
+	Dim doc As NotesDocument
+	
+	Dim labels As Variant
+	Dim values As Variant
+	Dim s As String
+	
+	Dim itm As NotesItem
+	
+	Set doc = wks.CurrentDocument.Document
+	
+	If (doc.GetFirstItem("fieldOperation").Text = "LEFT_TO_RIGHT") Then
+		Let values = doc.GetItemValue("displayMappingLeft")
+		Let labels = doc.GetItemValue("displayMappingRight")
+	Else
+		Let values = doc.GetItemValue("displayMappingRight")
+		Let labels = doc.GetItemValue("displayMappingLeft")
+	End If
+	
+	For i=0 To Ubound(values)
+		Let s = s + GetName(values(i), values(i)) + " AS " + GetName(labels(i), values(i))
+		
+		If i  &lt; Ubound(values) Then
+			Let s = s + "," + Chr(13) + Chr(10)
+		End If
+	Next
+	
+	Set itm = doc.GetFirstItem("query_stmt_select")
+	
+	If (itm.Text = "") Then
+		Let itm.Values = s
+	Else
+		Let itm.Values = itm.Text + Chr(13) + Chr(10) + "--NEW" + Chr(13) + Chr(10) + s
+	End If
+	
+	Call wks.CurrentDocument.Refresh
+	
+End Sub
+</lotusscript>
+                </code>
+                <code event="GetName">
+                  <lotusscript>Function GetName(firstChoice As String, alternative As String) As String
+	
+	Dim v As Variant
+	
+	Let v = Split(firstChoice, ":")
+	
+	If (v(0) &lt;&gt; "") Then
+		Let GetName = v(0)
+		
+		Exit Function
+	End If
+	
+	Let v = Split(alternative, ":")
+	
+	Let GetName = v(0)
+	
+End Function
+</lotusscript>
+                </code>
+              </actionhotspot>
+              <run>
+                <font size="8pt" style="bold"/>:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px">
+            <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_stmt_select"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>FROM:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px">
+            <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_stmt_from"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>WHERE:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px">
+            <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_stmt_where"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>GROUP BY:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px">
+            <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_stmt_group"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>ORDER BY:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px">
+            <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_stmt_order"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold" color="gray"/>Statement:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px">
+            <par def="4">
+              <run>
+                <font size="8pt" color="gray"/>
+              </run>
+              <run>
+                <font size="8pt" color="gray"/>
+                <field showdelimiters="false" type="text" kind="computed" name="query_stmt">
+                  <code event="defaultvalue">
+                    <formula>@Implode(
+	@Trim(
+		@If(query_stmt_with="";"";"WITH":query_stmt_with):
+		"SELECT":query_stmt_select:
+		"FROM":query_stmt_from:
+		@If(query_stmt_where="";"";"WHERE":query_stmt_where):
+		@If(query_stmt_group="";"";"GROUP BY":query_stmt_group):
+		@If(query_stmt_order="";"";"ORDER BY":query_stmt_order)
+	);
+@NewLine)</formula>
+                  </code>
+                </field>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="10" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+            </par>
+          </tablecell>
+        </tablerow>
+      </table>
+      <pardef id="7" firstlineleftmargin="1in" hide="notes web"/>
+      <par def="7"/>
+    </richtext>
+  </body>
+  <item name="queryTimeout" summary="false" sign="true">
+    <number>0</number>
+  </item>
+  <item name="query_timeout" summary="false">
+    <number>0</number>
+  </item>
+</subform>

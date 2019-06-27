@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view xmlns="http://www.lotus.com/dxl" name="02. Programs" showinmenu="false" publicaccess="false" unreadmarks="none" onopengoto="lastopened" onrefresh="displayindicator" headers="beveled" opencollapsed="false" showresponsehierarchy="true" showmargin="true" shrinkrows="false" extendlastcolumn="false" showhierarchies="false" unreadcolor="black" rowlinecount="1" headerlinecount="1" rowspacing="1.25" bgcolor="white" totalscolor="black" headerbgcolor="white" boldunreadrows="false" evaluateactions="false" allownewdocuments="false" allowcustomizations="true" hidemarginborder="false" marginwidth="0px" marginbgcolor="white" gridstyle="solid" gridcolor="#efefef" uniquekeys="false">
+  <globals>
+    <code event="options">
+      <lotusscript>Option Public
+
+</lotusscript>
+    </code>
+    <code event="NewProgram">
+      <lotusscript>Sub NewProgram(nature As String)
+	
+	Dim wks As New NotesUIWorkspace
+	Dim s As New NotesSession
+	Dim doc As NotesDocument
+	
+	Set doc = s.CurrentDatabase.CreateDocument
+	Call doc.ReplaceItemValue("Form", "Program")
+	Call doc.ReplaceItemValue("nature", nature)
+	
+	Call wks.EditDocument(True, doc)
+	
+End Sub</lotusscript>
+    </code>
+  </globals>
+  <code event="selection">
+    <formula>SELECT Form="Program"</formula>
+  </code>
+  <code event="options">
+    <lotusscript>Use "View"
+
+</lotusscript>
+  </code>
+  <code event="postpaste">
+    <lotusscript>Sub Postpaste(Source As Notesuiview)
+	
+	Call ViewPaste(Source.Documents)
+	
+End Sub
+</lotusscript>
+  </code>
+  <actionbar bgcolor="#f0f0f0" bordercolor="black">
+    <actionbuttonstyle bgcolor="#f0f0f0"/>
+    <font size="9pt" color="system"/>
+    <border style="solid" width="0px 0px 1px" color="system"/>
+    <action title="New Sql To Domino" icon="30">
+      <code event="click">
+        <lotusscript>Sub Click(Source As Button)
+	
+	Call NewProgram("SQL_TO_DOMINO")
+	
+End Sub
+</lotusscript>
+      </code>
+    </action>
+    <action title="New Domino To Sql" icon="30">
+      <code event="click">
+        <lotusscript>Sub Click(Source As Button)
+	
+	Call NewProgram("DOMINO_TO_SQL")
+	
+End Sub
+</lotusscript>
+      </code>
+    </action>
+  </actionbar>
+  <column sort="ascending" hidedetailrows="false" itemname="$7" width="1" resizable="false" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" hidden="true">
+    <columnheader>
+      <font size="9pt" style="bold"/>
+    </columnheader>
+    <code event="value">
+      <formula>@TextToNumber(schedule)</formula>
+    </code>
+  </column>
+  <column align="center" sort="ascending" hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" categorized="true" twisties="true">
+    <font size="8pt" style="bold"/>
+    <columnheader title="Interval">
+      <font size="8pt" style="bold"/>
+    </columnheader>
+    <code event="value">
+      <formula>@If(
+	interval = "5":"15";	interval + " mins";
+	interval = "60";	 		"1 hour";
+	interval = "1440";		"1 day";
+	interval
+)</formula>
+    </code>
+  </column>
+  <column sort="ascending" hidedetailrows="false" itemname="order" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+    <font size="8pt"/>
+    <columnheader title="Order">
+      <font size="8pt" style="bold"/>
+    </columnheader>
+  </column>
+  <column hidedetailrows="false" itemname="title" width="15.2500" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+    <font size="8pt"/>
+    <columnheader title="Title">
+      <font size="8pt" style="bold"/>
+    </columnheader>
+  </column>
+  <column hidedetailrows="false" itemname="nature" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+    <font size="8pt"/>
+    <columnheader title="Nature">
+      <font size="8pt" style="bold"/>
+    </columnheader>
+  </column>
+  <column hidedetailrows="false" itemname="description" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" extwindowwidth="true">
+    <font size="8pt"/>
+    <columnheader title="Description">
+      <font size="8pt" style="bold"/>
+    </columnheader>
+  </column>
+  <column align="center" hidedetailrows="false" itemname="$2" width="3" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
+    <font size="8pt"/>
+    <columnheader align="center" title="Exec">
+      <font size="8pt" style="bold"/>
+    </columnheader>
+    <code event="value">
+      <formula>@If(
+	execution="ENABLED";	95;
+	execution="DRY_RUN"; 	94;
+	93
+)</formula>
+    </code>
+  </column>
+  <column align="center" hidedetailrows="false" itemname="$3" width="3" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
+    <font size="8pt"/>
+    <columnheader align="center" title="Status">
+      <font size="8pt" style="bold"/>
+    </columnheader>
+    <code event="value">
+      <formula>@If(
+	status="STARTED";	95;
+	93
+)</formula>
+    </code>
+  </column>
+  <column hidedetailrows="false" itemname="started" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" extwindowwidth="true">
+    <font size="8pt"/>
+    <columnheader title="Started">
+      <font size="8pt" style="bold"/>
+    </columnheader>
+  </column>
+  <column hidedetailrows="false" itemname="stopped" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" extwindowwidth="true">
+    <font size="8pt"/>
+    <columnheader title="Stopped">
+      <font size="8pt" style="bold"/>
+    </columnheader>
+  </column>
+  <sharedcolumnref name="uuid">
+    <column hidedetailrows="false" itemname="uuid" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+      <font size="8pt"/>
+      <columnheader title="UUID">
+        <font size="8pt" style="bold"/>
+      </columnheader>
+    </column>
+  </sharedcolumnref>
+</view>
