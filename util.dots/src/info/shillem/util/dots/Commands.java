@@ -2,6 +2,9 @@ package info.shillem.util.dots;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,6 +19,35 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.UnrecognizedOptionException;
 
 public class Commands {
+
+    public class Result {
+
+        private final String name;
+        private final String selector;
+        private final CommandLine cmd;
+
+        private Result(String name, String selector, CommandLine cmd) {
+            this.name = name;
+            this.selector = selector;
+            this.cmd = cmd;
+        }
+
+        public CommandLine getCommandLine() {
+            return cmd;
+        }
+
+        public String getTriggeredCommandName() {
+            return name;
+        }
+
+        public List<String> getTriggeredCommandValues() {
+            return Optional
+                    .ofNullable(cmd.getOptionValues(selector))
+                    .map(Arrays::asList)
+                    .orElse(Collections.emptyList());
+        }
+
+    }
 
     private final String title;
     private final Map<String, Option> instructions;
@@ -50,19 +82,21 @@ public class Commands {
         return out.toString();
     }
 
-    public String resolve(String[] args) throws ParseException {
+    public Result resolve(String[] args) throws ParseException {
         CommandLine cmd = parser.parse(options, args);
 
-        return instructions
-                .entrySet()
-                .stream()
-                .filter((e) -> cmd.hasOption(
-                        Optional
-                                .ofNullable(e.getValue().getLongOpt())
-                                .orElse(e.getValue().getOpt())))
-                .findFirst()
-                .map(Map.Entry::getKey)
-                .orElseThrow(() -> new UnrecognizedOptionException(cmd.getArgList().toString()));
+        for (Map.Entry<String, Option> entry : instructions.entrySet()) {
+            Option opt = entry.getValue();
+            String selector = Optional
+                    .ofNullable(opt.getLongOpt())
+                    .orElse(opt.getOpt());
+
+            if (cmd.hasOption(selector)) {
+                return new Result(entry.getKey(), selector, cmd);
+            }
+        }
+
+        throw new UnrecognizedOptionException(cmd.getArgList().toString());
     }
 
 }

@@ -1,6 +1,7 @@
 package info.shillem.util.dots;
 
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -31,7 +32,7 @@ public class TaskManager {
             this.progressMonitor = Objects.requireNonNull(
                     progressMonitor, "Progress monitor cannot be null");
         }
-        
+
         public String[] getArgs() {
             return args;
         }
@@ -43,9 +44,13 @@ public class TaskManager {
         public RunWhen getRunWhen() {
             return runWhen;
         }
-        
+
         public IServerTaskRunnable getTask() {
             return task;
+        }
+        
+        public boolean isInteractive() {
+            return runWhen == RunWhen.RunOnce;
         }
 
     }
@@ -102,12 +107,20 @@ public class TaskManager {
 
     private final Map<String, TaskStatus> statuses;
 
+    public TaskManager() {
+        this(new HashSet<>());
+    }
+
     public TaskManager(Set<TaskStatus> statuses) {
         Objects.requireNonNull(statuses, "Statuses cannot be null");
 
         this.statuses = statuses
                 .stream()
                 .collect(Collectors.toMap(TaskStatus::getId, (t) -> t));
+    }
+
+    public void addTaskStatus(TaskStatus status) {
+        statuses.computeIfAbsent(status.getId(), (key) -> status);
     }
 
     public TaskStatus getTaskStatus(String id) {
