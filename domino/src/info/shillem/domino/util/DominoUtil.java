@@ -31,7 +31,7 @@ import lotus.domino.ViewNavigator;
 
 public enum DominoUtil {
     ;
-    
+
     private static final Pattern MIME_FILENAME = Pattern.compile(
             "filename=['\"]*([^'\"]+)['\"]*", Pattern.CASE_INSENSITIVE);
 
@@ -91,6 +91,51 @@ public enum DominoUtil {
         return Arrays.asList(converter.apply(result));
     }
 
+    public static Boolean getItemBoolean(Document doc, String itemName)
+            throws NotesException {
+        return getItemValue(doc, itemName, (val) -> Boolean.valueOf((String) val));
+    }
+
+    public static List<Boolean> getItemBooleans(Document doc, String itemName)
+            throws NotesException {
+        return getItemValues(doc, itemName, (val) -> Boolean.valueOf((String) val));
+    }
+
+    public static Date getItemDate(Document doc, String itemName)
+            throws NotesException {
+        return getItemValue(doc, itemName, Date.class::cast);
+    }
+
+    public static List<Date> getItemDates(Document doc, String itemName)
+            throws NotesException {
+        return getItemValues(doc, itemName, Date.class::cast);
+    }
+
+    public static Integer getItemInteger(Document doc, String itemName)
+            throws NotesException {
+        return getItemValue(doc, itemName, (val) -> ((Number) val).intValue());
+    }
+
+    public static List<Integer> getItemIntegers(Document doc, String itemName)
+            throws NotesException {
+        return getItemValues(doc, itemName, (val) -> ((Number) val).intValue());
+    }
+
+    public static String getItemString(Document doc, String itemName)
+            throws NotesException {
+        return getItemValue(doc, itemName, String.class::cast);
+    }
+
+    public static List<String> getItemStrings(Document doc, String itemName)
+            throws NotesException {
+        return getItemValues(doc, itemName, String.class::cast);
+    }
+
+    public static Object getItemValue(Document doc, String itemName)
+            throws NotesException {
+        return getItemValue(doc, itemName, Object.class::cast);
+    }
+    
     public static <T> T getItemValue(Document doc, String itemName, Function<Object, T> converter)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
@@ -120,6 +165,11 @@ public enum DominoUtil {
         } finally {
             DominoUtil.recycle(item);
         }
+    }
+    
+    public static List<Object> getItemValues(Document doc, String itemName)
+            throws NotesException {
+        return getItemValues(doc, itemName, Object.class::cast);
     }
 
     public static <T> List<T> getItemValues(
