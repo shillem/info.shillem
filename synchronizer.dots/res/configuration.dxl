@@ -1,0 +1,137 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE database>
+<database xmlns='http://www.lotus.com/dxl' version='8.5' maintenanceversion='3.0'
+ replicaid='8525788E007517D9' path='C:\dev\javaddin\workspace\com.ibm.dots\res\osgiconf.ntf'
+ title='Osgiconf' increasemaxfields='true'>
+<databaseinfo dbid='8525788E007517D9' odsversion='51' diskspace='589824' percentused='84.375'
+ numberofdocuments='0'><datamodified><datetime dst='true'>20110524T221239,45-04</datetime></datamodified><designmodified
+><datetime dst='true'>20110611T181124,27-04</datetime></designmodified></databaseinfo>
+<form name='PluginPref' publicaccess='false' designerversion='8.5.3' bgcolor='#f7f7f7'
+ type='response' renderpassthrough='true'>
+<noteinfo noteid='16e' unid='A7581EC6ADE99D7F852578AC0079E4C5' sequence='1'>
+<created><datetime dst='true'>20110611T181124,21-04</datetime></created>
+<modified><datetime dst='true'>20110611T181124,27-04</datetime></modified>
+<revised><datetime dst='true'>20110611T181124,24-04</datetime></revised>
+<lastaccessed><datetime dst='true'>20110611T181124,26-04</datetime></lastaccessed>
+<addedtofile><datetime dst='true'>20110611T181124,26-04</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=David Taieb/OU=Cambridge/O=IBM</name></updatedby>
+<wassignedby><name>CN=David Taieb/OU=Cambridge/O=IBM</name></wassignedby>
+<globals><code event='options'><lotusscript>Option Public
+
+</lotusscript></code><code event='PickDatabase'><lotusscript>Sub PickDatabase(label As String)
+	
+	Dim s As NotesSession
+	Dim wks As New NotesUIWorkspace
+	
+	Dim nn As NotesName
+	Dim info As Variant
+	
+	Let info = wks.Prompt(13, "Open Application", "")
+	
+	If Isempty(info) Then
+		Exit Sub	
+	End If
+	
+	If info(0) = "" Then
+		Set s = New NotesSession
+		Set nn = New NotesName(s.UserName)
+		Let info(0) = nn.Common
+	Else
+		Set nn = New NotesName(info(0))
+		Let info(0) = nn.Common
+	End If
+	
+	Call wks.CurrentDocument.FieldSetText("pref_" &amp; label, info(0) &amp; "!!" &amp; info(1))
+	
+End Sub</lotusscript></code></globals><code event='windowtitle'><formula>Name</formula></code><code
+ event='querysave'><lotusscript>Sub Querysave(Source As Notesuidocument, Continue As Variant)
+	
+	Dim doc As NotesDocument
+	Dim mandatoryFields List As String
+	Dim fieldValue As Variant
+	
+	Let mandatoryFields("SYNCHRONIZER") = "Synchronizer"
+	
+	Set doc = Source.Document
+	
+	Forall n In mandatoryFields
+		Let fieldValue = doc.GetItemValue("pref_" + Listtag(n))(0)
+		
+		If fieldValue = "" Then
+			Messagebox n &amp; " is mandatory", 0 + 16, "Error"
+			
+			Let Continue = False
+			
+			Exit Sub
+		End If
+	End Forall
+	
+End Sub</lotusscript></code>
+<body><richtext>
+<pardef id='1' align='center'/>
+<par def='1'><run><font size='14pt' style='bold' name='user-interface' color='purple'/>Default OSGi Configuration for plugin </run><run
+><font size='14pt' color='purple' style='bold' name='user-interface'/><field
+ type='text' kind='computed' name='Name'><code event='defaultvalue'><formula
+>Name</formula></code></field></run><compositedata type='98' prevtype='65418'
+ nexttype='222' afterparcount='10' containertype='65418' aftercontainercount='1'
+ afterbegincount='3'>
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata><run><font size='14pt' style='bold' name='user-interface'
+ color='purple'/></run></par>
+<pardef id='2'/>
+<par def='2'/>
+<table widthtype='fixedleft' rowspacing='0.0500in' columnspacing='0.0500in'
+ refwidth='6.2000in'><tablecolumn width='2in'/><tablecolumn width='4in'/>
+<tablerow>
+<tablecell borderwidth='0px 0px 1px'>
+<pardef id='4' keepwithnext='true' keeptogether='true'/>
+<par def='4'><run><font size='8pt' style='bold' color='gray'/>Databases</run></par></tablecell>
+<tablecell borderwidth='0px 0px 1px'>
+<pardef id='5' keepwithnext='true' keeptogether='true'/>
+<par def='5'><run><font size='8pt'/></run></par></tablecell></tablerow>
+<tablerow>
+<tablecell borderwidth='1px 0px'>
+<pardef id='6' hide='read print preview' keepwithnext='true' keeptogether='true'/>
+<par def='6'><run><font size='8pt' style='bold'/></run><actionhotspot hotspotstyle='none'><run
+><font size='8pt' style='bold underline' color='blue'/>Synchronizer</run><code
+ event='click'><lotusscript>Sub Click(Source As Button)
+	
+	Call PickDatabase("SYNCHRONIZER")
+	
+End Sub
+</lotusscript></code></actionhotspot><run><font size='8pt' style='bold' color='red'/> *</run><run
+><font size='8pt' style='bold'/>:</run></par>
+<pardef id='7' hide='edit previewedit' keepwithnext='true' keeptogether='true'/>
+<par def='7'><run><font size='8pt' style='bold'/>Synchronizer </run><run><font
+ size='8pt' style='bold' color='red'/>*</run><run><font size='8pt' style='bold'/>:</run></par></tablecell>
+<tablecell borderwidth='1px 0px'>
+<par def='5'><run><font size='8pt'/><field showdelimiters='false' type='text'
+ kind='editable' name='pref_SYNCHRONIZER'/></run><compositedata type='98'
+ prevtype='65418' nexttype='222' afterparcount='7' containertype='65418' aftercontainercount='1'
+ afterbegincount='4'>
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata></par></tablecell></tablerow></table>
+<par def='2'><run><font size='8pt'/></run></par>
+<table widthtype='fixedleft' rowspacing='0.0500in' columnspacing='0.0500in'
+ refwidth='6.2000in'><tablecolumn width='2in'/><tablecolumn width='4in'/>
+<tablerow>
+<tablecell borderwidth='0px 0px 1px'>
+<par def='4'><run><font size='8pt' style='bold' color='gray'/>Execution</run></par></tablecell>
+<tablecell borderwidth='0px 0px 1px'>
+<par def='5'><run><font size='8pt'/></run></par></tablecell></tablerow>
+<tablerow>
+<tablecell borderwidth='1px 0px'>
+<pardef id='8' keepwithnext='true' keeptogether='true'/>
+<par def='8'><run><font size='8pt' style='bold'/>Enabled:</run></par></tablecell>
+<tablecell borderwidth='1px 0px'>
+<pardef id='9' keepwithnext='true' keeptogether='true'/>
+<par def='9'><run><font size='8pt'/><field showdelimiters='false' borderstyle='none'
+ lookupeachchar='false' lookupaddressonrefresh='false' type='keyword' allowmultivalues='true'
+ kind='editable' name='pref_ENABLED' listinputseparators='comma' listdisplayseparator='comma'><keywords
+ helperbutton='false' columns='1' ui='checkbox'><textlist><text>Yes|true</text></textlist></keywords></field></run><run
+><font size='8pt' style='bold'/></run></par></tablecell></tablerow></table>
+<pardef id='3' firstlineleftmargin='1in'/>
+<par def='3'/></richtext></body>
+<item name='$$ScriptName' summary='false' sign='true'><text>PluginPref</text></item></form>
+</database>
+
