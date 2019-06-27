@@ -29,13 +29,13 @@ import lotus.domino.View;
 
 public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
 
-    private final ProcessorHelper helper;
-    private final Supplier<T> recordSupplier;
-    private final ViewPath viewPath;
+    protected final ProcessorHelper helper;
+    protected final Supplier<T> recordSupplier;
+    protected final ViewPath viewPath;
 
     private boolean refreshView;
 
-    protected ProcessorSqlToDomino(ProcessorHelper helper, Supplier<T> recordSupplier) {
+    public ProcessorSqlToDomino(ProcessorHelper helper, Supplier<T> recordSupplier) {
         this.helper = Objects.requireNonNull(
                 helper, "Processor helper cannot be null");
         this.recordSupplier = Objects.requireNonNull(
@@ -169,15 +169,7 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
 
     }
 
-    protected String getKeyField() throws ProcessorException {
-        return helper.getFieldKey()
-                .orElseThrow(() -> new ProcessorException(
-                        "Cannot find document without a key field"));
-    }
-
     protected Optional<Document> findDocument(T record) throws ProcessorException {
-        String key = getKeyField();
-
         try {
             View view = getView();
 
@@ -187,7 +179,7 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
                 setRefreshView(false);
             }
 
-            Document doc = view.getDocumentByKey(record.getValue(key), true);
+            Document doc = view.getDocumentByKey(getDocumentKey(record), true);
 
             if (doc == null) {
                 return Optional.empty();
@@ -199,8 +191,18 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
         }
     }
 
+    protected Object getDocumentKey(T record) throws ProcessorException {
+        return record.getValue(getKeyField());
+    }
+
     protected final DominoSilo getDominoSilo() {
         return helper.getDominoFactory().getDominoSilo(helper.getId());
+    }
+
+    protected String getKeyField() throws ProcessorException {
+        return helper.getFieldKey()
+                .orElseThrow(() -> new ProcessorException(
+                        "Cannot find document without a key field"));
     }
 
     protected final View getView() {
@@ -254,7 +256,7 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
                 case DATE:
                     // There's a fix here because Domino doesn't read millisecs
                     record.setValue(destinationFieldName, transformValue(
-                            Optional.ofNullable(result.getTimestamp(destinationFieldName))
+                            Optional.ofNullable(result.getTimestamp(from.getName()))
                                     .map(t -> new java.util.Date(t.getTime() / 1000 * 1000))
                                     .orElse(null),
                             to.getType()));
@@ -262,17 +264,17 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
                     break;
                 case DOUBLE:
                     record.setValue(destinationFieldName, transformValue(
-                            result.getDouble(destinationFieldName), to.getType()));
+                            result.getDouble(from.getName()), to.getType()));
 
                     break;
                 case INTEGER:
                     record.setValue(destinationFieldName, transformValue(
-                            result.getInt(destinationFieldName), to.getType()));
+                            result.getInt(from.getName()), to.getType()));
 
                     break;
                 case STRING:
                     record.setValue(destinationFieldName, transformValue(
-                            result.getString(destinationFieldName), to.getType()));
+                            result.getString(from.getName()), to.getType()));
 
                     break;
                 }
