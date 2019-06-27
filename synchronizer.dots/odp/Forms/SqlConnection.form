@@ -6,27 +6,50 @@
 	"Sql Connection:" + title
 )</formula>
   </code>
+  <actionbar bgcolor="#f0f0f0" bordercolor="black">
+    <actionbuttonstyle bgcolor="#f0f0f0"/>
+    <font color="system"/>
+    <border style="solid" width="0px 0px 1px" color="system"/>
+    <action title="Categori_ze" showinbar="false" systemcommand="categorize"/>
+    <action title="_Edit Document" showinbar="false" systemcommand="edit"/>
+    <action title="_Send Document" showinbar="false" systemcommand="send"/>
+    <action title="_Forward" showinbar="false" systemcommand="forward"/>
+    <action title="_Move To Folder..." showinbar="false" systemcommand="movetofolder"/>
+    <action title="_Remove From Folder" showinbar="false" systemcommand="removefromfolder"/>
+    <action title="_Read" showinbar="false" systemcommand="markread"/>
+    <action title="_Unread" showinbar="false" systemcommand="markunread"/>
+    <action title="_Open in New Window" showinbar="false" systemcommand="openinnewwindow"/>
+    <action title="_Print..." showinbar="false" systemcommand="print"/>
+    <action title="_Delete" showinbar="false" systemcommand="delete"/>
+    <action title="_Document Properties" showinbar="false" systemcommand="properties"/>
+    <action title="C_ut" showinbar="false" systemcommand="cut"/>
+    <action title="_Copy" showinbar="false" systemcommand="copy"/>
+    <action title="Copy as Document _Link" showinbar="false" systemcommand="copyasdoclink"/>
+    <action title="Copy as _Table" showinbar="false" systemcommand="copyastable"/>
+    <action title="P_aste" showinbar="false" systemcommand="paste"/>
+    <action title="_Open" showinbar="false" systemcommand="open"/>
+    <action title="Bookmark" showinbar="false" systemcommand="bookmark"/>
+  </actionbar>
   <body>
     <richtext>
       <pardef id="1" hide="notes web"/>
       <par def="1">
         <run>
           <font size="8pt" color="red"/>
+        </run>
+        <run>
+          <font size="8pt" color="red"/>
           <sharedfieldref name="uuid"/>
         </run>
       </par>
       <pardef id="2"/>
-      <par def="2">
-        <run>
-          <font size="8pt"/>
-        </run>
-      </par>
+      <par def="2"/>
       <table widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
         <tablecolumn width="2in"/>
         <tablecolumn width="5in"/>
         <tablerow>
-          <tablecell borderwidth="0px 0px 1px" bgcolor="#f7f7f7">
-            <pardef id="4" keepwithnext="true" keeptogether="true"/>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <pardef id="4" align="right" keepwithnext="true" keeptogether="true"/>
             <par def="4">
               <run>
                 <font size="8pt" style="bold"/>Title</run>
@@ -36,9 +59,12 @@
                 <font size="8pt" style="bold"/>:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="0px 0px 1px">
+          <tablecell borderwidth="0px">
             <pardef id="5" keepwithnext="true" keeptogether="true"/>
             <par def="5">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="title">
@@ -57,13 +83,13 @@ Yg4BAIQAAAAAAAAAAAA=
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="4">
               <run>
                 <font size="8pt" style="bold"/>Description:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="5">
               <run>
                 <font size="8pt"/>
@@ -75,24 +101,18 @@ Yg4BAIQAAAAAAAAAAAA=
               <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
       </table>
-      <par def="2">
-        <run>
-          <font size="8pt"/>
-        </run>
-      </par>
+      <par def="2"/>
       <table widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
         <tablecolumn width="2in"/>
         <tablecolumn width="5in"/>
         <tablerow>
-          <tablecell borderwidth="0px 0px 1px" bgcolor="#f7f7f7">
-            <par def="4">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <pardef id="6" align="right" keepwithnext="true" keeptogether="true"/>
+            <par def="6">
               <run>
                 <font size="8pt" style="bold"/>Driver</run>
               <run>
@@ -101,7 +121,7 @@ Yg4BAIQAAAAAAAAAAAA=
                 <font size="8pt" style="bold"/>:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="0px 0px 1px">
+          <tablecell borderwidth="0px">
             <par def="5">
               <run>
                 <font size="8pt"/>
@@ -109,7 +129,7 @@ Yg4BAIQAAAAAAAAAAAA=
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="driver">
-                  <code event="defaultvalue">
+                  <code event="inputvalidation">
                     <formula>@If(@ThisValue="";
 	@Failure("Driver is mandatory");
 	@Success
@@ -120,15 +140,12 @@ Yg4BAIQAAAAAAAAAAAA=
               <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
-            <par def="4">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <par def="6">
               <run>
                 <font size="8pt" style="bold"/>URL</run>
               <run>
@@ -137,7 +154,7 @@ Yg4BAIQAAAAAAAAAAAA=
                 <font size="8pt" style="bold"/>:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="5">
               <run>
                 <font size="8pt"/>
@@ -156,18 +173,11 @@ Yg4BAIQAAAAAAAAAAAA=
               <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
       </table>
-      <par def="2">
-        <run>
-          <font size="8pt"/>
-        </run>
-      </par>
+      <par def="2"/>
     </richtext>
   </body>
 </form>

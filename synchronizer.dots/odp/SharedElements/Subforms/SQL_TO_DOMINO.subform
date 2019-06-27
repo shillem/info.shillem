@@ -1,27 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<subform xmlns="http://www.lotus.com/dxl" name="SqlDomino" renderpassthrough="true">
+<subform xmlns="http://www.lotus.com/dxl" name="SQL_TO_DOMINO" renderpassthrough="true">
   <body>
     <richtext>
       <pardef id="1"/>
-      <par def="1">
-        <run>
-          <font size="8pt"/>
-        </run>
-      </par>
+      <par def="1"/>
       <table cellbordercolor="black" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
         <tablecolumn width="2in"/>
         <tablecolumn width="5in"/>
         <tablerow>
-          <tablecell borderwidth="0px 0px 1px" bgcolor="#f7f7f7">
-            <pardef id="3" keepwithnext="true" keeptogether="true"/>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <pardef id="3" align="right" keepwithnext="true" keeptogether="true"/>
             <par def="3">
               <run>
                 <font size="8pt" style="bold"/>Query Timeout:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="0px 0px 1px">
+          <tablecell borderwidth="0px">
             <pardef id="4" keepwithnext="true" keeptogether="true"/>
             <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="number" kind="editable" name="query_timeout">
@@ -43,14 +42,17 @@
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="3">
               <run>
                 <font size="8pt" style="bold"/>WITH:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_with"/>
@@ -58,31 +60,21 @@
               <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
-            <pardef id="5" hide="edit previewedit" keepwithnext="true" keeptogether="true"/>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <pardef id="5" align="right" hide="edit previewedit" keepwithnext="true" keeptogether="true"/>
             <par def="5">
               <run>
                 <font size="8pt" style="bold"/>SELECT</run>
-              <actionhotspot hotspotstyle="none">
-                <run>
-                  <font size="8pt" style="bold underline" color="blue"/>
-                </run>
-              </actionhotspot>
+              <actionhotspot hotspotstyle="none"/>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
-            <pardef id="6" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+            <pardef id="6" align="right" hide="read print preview" keepwithnext="true" keeptogether="true"/>
             <par def="6">
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
               <actionhotspot hotspotstyle="none">
                 <run>
                   <font size="8pt" style="bold underline" color="blue"/>SELECT</run>
@@ -146,15 +138,19 @@ End Sub
 	
 	Let GetName = v(0)
 	
-End Function</lotusscript>
+End Function
+</lotusscript>
                 </code>
               </actionhotspot>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_select"/>
@@ -166,14 +162,17 @@ Yg4BAIQAAAAAAAAAAAA=
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="3">
               <run>
                 <font size="8pt" style="bold"/>FROM:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_from"/>
@@ -185,14 +184,17 @@ Yg4BAIQAAAAAAAAAAAA=
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="3">
               <run>
                 <font size="8pt" style="bold"/>WHERE:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_where"/>
@@ -204,14 +206,17 @@ Yg4BAIQAAAAAAAAAAAA=
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="3">
               <run>
                 <font size="8pt" style="bold"/>GROUP BY:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_group"/>
@@ -219,21 +224,21 @@ Yg4BAIQAAAAAAAAAAAA=
               <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="3">
               <run>
                 <font size="8pt" style="bold"/>ORDER BY:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_order"/>
@@ -245,48 +250,46 @@ Yg4BAIQAAAAAAAAAAAA=
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="3">
               <run>
                 <font size="8pt" style="bold" color="gray"/>Statement:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="4">
+              <run>
+                <font size="8pt" color="gray"/>
+              </run>
               <run>
                 <font size="8pt" color="gray"/>
                 <field showdelimiters="false" type="text" kind="computed" name="query_stmt">
                   <code event="defaultvalue">
                     <formula>@Implode(
-	@If(query_stmt_with="";"";"WITH":query_stmt_with):
-	"SELECT":query_stmt_select:
-	"FROM":query_stmt_from:
-	@If(query_stmt_where="";"";"WHERE":query_stmt_where):
-	@If(query_stmt_group="";"";"GROUP BY":query_stmt_group):
-	@If(query_stmt_order="";"";"ORDER BY":query_stmt_order);
+	@Trim(
+		@If(query_stmt_with="";"";"WITH":query_stmt_with):
+		"SELECT":query_stmt_select:
+		"FROM":query_stmt_from:
+		@If(query_stmt_where="";"";"WHERE":query_stmt_where):
+		@If(query_stmt_group="";"";"GROUP BY":query_stmt_group):
+		@If(query_stmt_order="";"";"ORDER BY":query_stmt_order)
+	);
 @NewLine)</formula>
                   </code>
                 </field>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="10" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
       </table>
-      <pardef id="2" firstlineleftmargin="1in" hide="notes web"/>
-      <par def="2">
-        <run>
-          <font size="8pt"/>
-        </run>
-      </par>
+      <pardef id="7" firstlineleftmargin="1in" hide="notes web"/>
+      <par def="7"/>
     </richtext>
   </body>
-  <item name="queryTimeout" summary="false">
+  <item name="queryTimeout" summary="false" sign="true">
     <number>0</number>
   </item>
   <item name="query_timeout" summary="false">

@@ -19,20 +19,20 @@ AAAAAAAAAADuDvAAAAAAAAAAAA==
   <item name="$LargeSummary">
     <text>0</text>
   </item>
-  <item name="$Flags">
-    <text>J7z</text>
-  </item>
   <item name="$LaunchXPageRunOnServer">
     <text>0</text>
   </item>
-  <item name="$FlagsNoRefresh">
-    <text>rt</text>
+  <item name="$Daos">
+    <text>0</text>
   </item>
   <item name="$TITLE">
     <text>Synchronizer (1)
 #1Synchronizer</text>
   </item>
-  <item name="$Daos">
-    <text>0</text>
+  <item name="$Flags">
+    <text>Jz7</text>
+  </item>
+  <item name="$FlagsNoRefresh">
+    <text>trv</text>
   </item>
 </note>

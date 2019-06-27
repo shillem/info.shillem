@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<subform xmlns="http://www.lotus.com/dxl" name="DominoSql" renderpassthrough="true">
+<subform xmlns="http://www.lotus.com/dxl" name="DOMINO_TO_SQL" renderpassthrough="true">
   <globals>
     <code event="options">
       <lotusscript>Option Public
@@ -22,33 +22,22 @@ End Sub</lotusscript>
   <body>
     <richtext>
       <pardef id="1"/>
-      <par def="1">
-        <run>
-          <font size="8pt"/>
-        </run>
-      </par>
+      <par def="1"/>
       <table cellbordercolor="black" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
         <tablecolumn width="2in"/>
         <tablecolumn width="5in"/>
         <tablerow>
-          <tablecell borderwidth="0px 0px 1px" bgcolor="#f7f7f7">
-            <pardef id="3" hide="edit previewedit" keepwithnext="true" keeptogether="true"/>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <pardef id="3" align="right" hide="edit previewedit" keepwithnext="true" keeptogether="true"/>
             <par def="3">
               <run>
                 <font size="8pt" style="bold"/>INSERT INTO</run>
-              <actionhotspot hotspotstyle="none">
-                <run>
-                  <font size="8pt" style="bold underline" color="blue"/>
-                </run>
-              </actionhotspot>
+              <actionhotspot hotspotstyle="none"/>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
-            <pardef id="4" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+            <pardef id="4" align="right" hide="read print preview" keepwithnext="true" keeptogether="true"/>
             <par def="4">
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
               <actionhotspot hotspotstyle="none">
                 <run>
                   <font size="8pt" style="bold underline" color="blue"/>INSERT INTO</run>
@@ -95,16 +84,20 @@ End Sub</lotusscript>
 	
 	Call wks.CurrentDocument.Refresh
 	
-End Sub</lotusscript>
+End Sub
+</lotusscript>
                 </code>
               </actionhotspot>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="0px 0px 1px">
+          <tablecell borderwidth="0px">
             <pardef id="5" keepwithnext="true" keeptogether="true"/>
             <par def="5">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_insert"/>
@@ -112,46 +105,28 @@ End Sub</lotusscript>
               <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px">
-            <pardef id="6" keepwithnext="true" keeptogether="true"/>
-            <par def="6">
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
-            </par>
+          <tablecell borderwidth="0px">
+            <pardef id="6" align="right" keepwithnext="true" keeptogether="true"/>
+            <par def="6"/>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
-            <par def="5">
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
-            </par>
+          <tablecell borderwidth="0px">
+            <par def="5"/>
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="0px 0px 1px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="3">
               <run>
                 <font size="8pt" style="bold"/>MERGE INTO</run>
-              <actionhotspot hotspotstyle="none">
-                <run>
-                  <font size="8pt" style="bold underline" color="blue"/>
-                </run>
-              </actionhotspot>
+              <actionhotspot hotspotstyle="none"/>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
             <par def="4">
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
               <actionhotspot hotspotstyle="none">
                 <run>
                   <font size="8pt" style="bold underline" color="blue"/>MERGE INTO</run>
@@ -190,15 +165,19 @@ Yg4BAIQAAAAAAAAAAAA=
 	
 	Call wks.CurrentDocument.Refresh
 	
-End Sub</lotusscript>
+End Sub
+</lotusscript>
                 </code>
               </actionhotspot>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="0px 0px 1px">
+          <tablecell borderwidth="0px">
             <par def="5">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_merge"/>
@@ -206,29 +185,19 @@ End Sub</lotusscript>
               <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="3">
               <run>
                 <font size="8pt" style="bold"/>WHEN MATCHED THEN</run>
-              <actionhotspot hotspotstyle="none">
-                <run>
-                  <font size="8pt" style="bold underline" color="blue"/>
-                </run>
-              </actionhotspot>
+              <actionhotspot hotspotstyle="none"/>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
             <par def="4">
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
               <actionhotspot hotspotstyle="none">
                 <run>
                   <font size="8pt" style="bold underline" color="blue"/>WHEN MATCHED THEN</run>
@@ -274,15 +243,19 @@ Yg4BAIQAAAAAAAAAAAA=
 	
 	Call wks.CurrentDocument.Refresh
 	
-End Sub</lotusscript>
+End Sub
+</lotusscript>
                 </code>
               </actionhotspot>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="5">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_matched"/>
@@ -290,29 +263,19 @@ End Sub</lotusscript>
               <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt" style="bold" color="gray"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="3">
               <run>
                 <font size="8pt" style="bold"/>WHEN NOT MATCHED THEN</run>
-              <actionhotspot hotspotstyle="none">
-                <run>
-                  <font size="8pt" style="bold underline" color="blue"/>
-                </run>
-              </actionhotspot>
+              <actionhotspot hotspotstyle="none"/>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
             <par def="4">
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
               <actionhotspot hotspotstyle="none">
                 <run>
                   <font size="8pt" style="bold underline" color="blue"/>WHEN NOT MATCHED THEN</run>
@@ -368,15 +331,19 @@ Yg4BAIQAAAAAAAAAAAA=
 	
 	Call wks.CurrentDocument.Refresh
 	
-End Sub</lotusscript>
+End Sub
+</lotusscript>
                 </code>
               </actionhotspot>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="5">
+              <run>
+                <font size="8pt"/>
+              </run>
               <run>
                 <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_unmatched"/>
@@ -384,21 +351,21 @@ End Sub</lotusscript>
               <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt" style="bold" color="gray"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
         <tablerow>
-          <tablecell borderwidth="1px 0px" bgcolor="#f7f7f7">
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="6">
               <run>
                 <font size="8pt" style="bold" color="gray"/>Statement:</run>
             </par>
           </tablecell>
-          <tablecell borderwidth="1px 0px">
+          <tablecell borderwidth="0px">
             <par def="5">
+              <run>
+                <font size="8pt" color="gray"/>
+              </run>
               <run>
                 <font size="8pt" color="gray"/>
                 <field showdelimiters="false" type="text" kind="computed" name="query_stmt">
@@ -419,22 +386,15 @@ ths</formula>
                   </code>
                 </field>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="10" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt" style="bold"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
       </table>
-      <pardef id="2" firstlineleftmargin="1in" hide="notes web"/>
-      <par def="2">
-        <run>
-          <font size="8pt"/>
-        </run>
-      </par>
+      <pardef id="7" firstlineleftmargin="1in" hide="notes web"/>
+      <par def="7"/>
     </richtext>
   </body>
   <item name="queryTimeout" summary="false" sign="true">

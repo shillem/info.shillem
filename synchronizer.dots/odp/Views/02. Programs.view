@@ -6,8 +6,8 @@
 
 </lotusscript>
     </code>
-    <code event="NewDocument">
-      <lotusscript>Sub NewDocument(SubformName As String)
+    <code event="NewProgram">
+      <lotusscript>Sub NewProgram(nature As String)
 	
 	Dim wks As New NotesUIWorkspace
 	Dim s As New NotesSession
@@ -15,7 +15,7 @@
 	
 	Set doc = s.CurrentDatabase.CreateDocument
 	Call doc.ReplaceItemValue("Form", "Program")
-	Call doc.ReplaceItemValue("Subform", SubformName)
+	Call doc.ReplaceItemValue("nature", nature)
 	
 	Call wks.EditDocument(True, doc)
 	
@@ -35,28 +35,31 @@ End Sub</lotusscript>
 	
 	Call ViewPaste(Source.Documents)
 	
-End Sub</lotusscript>
+End Sub
+</lotusscript>
   </code>
   <actionbar bgcolor="#f0f0f0" bordercolor="black">
     <actionbuttonstyle bgcolor="#f0f0f0"/>
-    <font color="system"/>
-    <border style="solid" width="0px 0px 1px"/>
+    <font size="9pt" color="system"/>
+    <border style="solid" width="0px 0px 1px" color="system"/>
     <action title="New Sql To Domino" icon="30">
       <code event="click">
         <lotusscript>Sub Click(Source As Button)
 	
-	Call NewDocument("SqlDomino")
+	Call NewProgram("SQL_TO_DOMINO")
 	
-End Sub</lotusscript>
+End Sub
+</lotusscript>
       </code>
     </action>
     <action title="New Domino To Sql" icon="30">
       <code event="click">
         <lotusscript>Sub Click(Source As Button)
 	
-	Call NewDocument("DominoSql")
+	Call NewProgram("DOMINO_TO_SQL")
 	
-End Sub</lotusscript>
+End Sub
+</lotusscript>
       </code>
     </action>
   </actionbar>
@@ -70,33 +73,33 @@ End Sub</lotusscript>
   </column>
   <column align="center" sort="ascending" hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" categorized="true" twisties="true">
     <font size="8pt" style="bold"/>
-    <columnheader title="Schedule">
+    <columnheader title="Interval">
       <font size="8pt" style="bold"/>
     </columnheader>
     <code event="value">
       <formula>@If(
-	schedule = "5":"15";	schedule + " mins";
-	schedule = "60";	 		"1 hour";
-	schedule = "1440";		"1 day";
-	" undefined"
+	interval = "5":"15";	interval + " mins";
+	interval = "60";	 		"1 hour";
+	interval = "1440";		"1 day";
+	interval
 )</formula>
     </code>
   </column>
-  <column sort="ascending" hidedetailrows="false" itemname="order" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+  <column sort="ascending" hidedetailrows="false" itemname="order" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
     <font size="8pt"/>
     <columnheader title="Order">
       <font size="8pt" style="bold"/>
     </columnheader>
   </column>
-  <column hidedetailrows="false" itemname="title" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+  <column hidedetailrows="false" itemname="title" width="15.2500" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
     <font size="8pt"/>
     <columnheader title="Title">
       <font size="8pt" style="bold"/>
     </columnheader>
   </column>
-  <column hidedetailrows="false" itemname="Subform" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+  <column hidedetailrows="false" itemname="nature" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
     <font size="8pt"/>
-    <columnheader title="Type">
+    <columnheader title="Nature">
       <font size="8pt" style="bold"/>
     </columnheader>
   </column>
@@ -108,7 +111,7 @@ End Sub</lotusscript>
   </column>
   <column align="center" hidedetailrows="false" itemname="$2" width="3" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
     <font size="8pt"/>
-    <columnheader title="Exec">
+    <columnheader align="center" title="Exec">
       <font size="8pt" style="bold"/>
     </columnheader>
     <code event="value">
@@ -121,7 +124,7 @@ End Sub</lotusscript>
   </column>
   <column align="center" hidedetailrows="false" itemname="$3" width="3" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
     <font size="8pt"/>
-    <columnheader title="Status">
+    <columnheader align="center" title="Status">
       <font size="8pt" style="bold"/>
     </columnheader>
     <code event="value">
