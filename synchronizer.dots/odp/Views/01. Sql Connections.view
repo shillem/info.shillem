@@ -19,11 +19,12 @@ End Sub
   <code event="queryopendocument">
     <lotusscript>Sub Queryopendocument(Source As Notesuiview, Continue As Variant)
 	
-End Sub</lotusscript>
+End Sub
+</lotusscript>
   </code>
   <actionbar bgcolor="#f0f0f0" bordercolor="black">
     <actionbuttonstyle bgcolor="#f0f0f0"/>
-    <font color="system"/>
+    <font size="9pt" color="system"/>
     <border style="solid" width="0px 0px 1px"/>
     <action title="New SQL Connection" icon="30">
       <code event="click">

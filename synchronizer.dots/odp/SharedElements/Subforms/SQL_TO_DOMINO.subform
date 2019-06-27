@@ -2,7 +2,7 @@
 <subform xmlns="http://www.lotus.com/dxl" name="SQL_TO_DOMINO" renderpassthrough="true">
   <body>
     <richtext>
-      <pardef id="1"/>
+      <pardef id="1" hide="notes web"/>
       <par def="1"/>
       <table cellbordercolor="black" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
         <tablecolumn width="2in"/>
@@ -101,10 +101,10 @@ Yg4BAIQAAAAAAAAAAAA=
 	End If
 	
 	For i=0 To Ubound(values)
-		Let s = s + GetName(values(i), values(i)) + " AS " + GetName(labels(i), values(i))
+		Let s = s &amp; GetName(values(i), values(i))
 		
 		If i  &lt; Ubound(values) Then
-			Let s = s + "," + Chr(13) + Chr(10)
+			Let s = s &amp; "," &amp; Chr(13) &amp; Chr(10)
 		End If
 	Next
 	
@@ -113,7 +113,7 @@ Yg4BAIQAAAAAAAAAAAA=
 	If (itm.Text = "") Then
 		Let itm.Values = s
 	Else
-		Let itm.Values = itm.Text + Chr(13) + Chr(10) + "--NEW" + Chr(13) + Chr(10) + s
+		Let itm.Values = itm.Text &amp; Chr(13) &amp; Chr(10) &amp; "--NEW" &amp; Chr(13) &amp; Chr(10) &amp; s
 	End If
 	
 	Call wks.CurrentDocument.Refresh

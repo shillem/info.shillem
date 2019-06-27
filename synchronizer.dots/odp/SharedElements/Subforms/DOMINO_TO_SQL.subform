@@ -21,7 +21,7 @@ End Sub</lotusscript>
   </globals>
   <body>
     <richtext>
-      <pardef id="1"/>
+      <pardef id="1" hide="notes web"/>
       <par def="1"/>
       <table cellbordercolor="black" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
         <tablecolumn width="2in"/>
