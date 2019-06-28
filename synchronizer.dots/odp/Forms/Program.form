@@ -842,21 +842,19 @@ Yg4BAIQAAAAAAAAAAAA=
         </tablerow>
         <tablerow tablabel="Query">
           <tablecell borderwidth="0px">
-            <pardef id="30" hide="notes web" keepwithnext="true" keeptogether="true"/>
-            <par def="30"/>
-            <pardef id="31" keepwithnext="true" keeptogether="true"/>
+            <par def="6"/>
             <subformref>
               <code event="value">
                 <formula>nature</formula>
               </code>
             </subformref>
-            <par def="31"/>
+            <par def="8"/>
           </tablecell>
         </tablerow>
         <tablerow tablabel="Processor">
           <tablecell borderwidth="0px">
-            <pardef id="32" leftmargin="0" hide="notes web" keepwithnext="true" keeptogether="true"/>
-            <par def="32"/>
+            <pardef id="30" leftmargin="0" hide="notes web" keepwithnext="true" keeptogether="true"/>
+            <par def="30"/>
             <table cellbordercolor="black" leftmargin="0" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
               <tablecolumn width="2in"/>
               <tablecolumn width="5in"/>
@@ -864,7 +862,16 @@ Yg4BAIQAAAAAAAAAAAA=
                 <tablecell borderwidth="0px" bgcolor="#f7f7f7">
                   <par def="4">
                     <run>
-                      <font size="8pt" style="bold"/>Class Name:</run>
+                      <font size="8pt" style="bold"/>Builder Class Name (</run>
+                    <popup hotspotstyle="highlight">
+                      <popuptext>Allows to specify an optional and customized version of the default process builder for finer control over the syncing process</popuptext>
+                      <run>
+                        <font size="8pt" style="bold"/>?</run>
+                    </popup>
+                    <run>
+                      <font size="8pt" style="bold"/>)</run>
+                    <run>
+                      <font size="8pt" style="bold"/>:</run>
                   </par>
                 </tablecell>
                 <tablecell borderwidth="0px">
@@ -874,7 +881,7 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                      <field showdelimiters="false" type="text" kind="editable" name="processorClassName"/>
+                      <field showdelimiters="false" type="text" kind="editable" name="processorBuilderClassName"/>
                     </run>
                     <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
@@ -887,14 +894,14 @@ Yg4BAIQAAAAAAAAAAAA=
                   <par def="4">
                     <run>
                       <font size="8pt" style="bold"/>Variables (</run>
-                    <popup>
+                    <popup hotspotstyle="highlight">
                       <popuptext>Define variables that will be accessible during the execution. Define the variable name followed by the equal sign and then the value (e.g. name=value).
 
 Preexisting variable names include:
 
 Form=Adds the form item with the specified value for every new document</popuptext>
                       <run>
-                        <font size="8pt" style="bold underline" color="blue"/>?</run>
+                        <font size="8pt" style="bold"/>?</run>
                     </popup>
                     <run>
                       <font size="8pt" style="bold"/>):</run>
@@ -981,9 +988,18 @@ Yg4BAIQAAAAAAAAAAAA=
             <table widthtype="fitmargins" cellbordercolor="black" leftmargin="0" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
               <tablecolumn width="100%"/>
               <tablerow>
+                <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+                  <pardef id="31" keepwithnext="true" keeptogether="true"/>
+                  <par def="31">
+                    <run>
+                      <font size="8pt" style="bold"/>Last Execution:</run>
+                  </par>
+                </tablecell>
+              </tablerow>
+              <tablerow>
                 <tablecell borderwidth="0px">
-                  <pardef id="33" keepwithnext="true" keeptogether="true"/>
-                  <par def="33">
+                  <pardef id="32" keepwithnext="true" keeptogether="true"/>
+                  <par def="32">
                     <run>
                       <font size="8pt"/>
                     </run>
