@@ -2,12 +2,15 @@ package info.shillem.synchronizer.dots;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -17,7 +20,6 @@ import info.shillem.domino.util.DominoUtil;
 import info.shillem.synchronizer.util.Field;
 import info.shillem.synchronizer.util.FieldPair;
 import info.shillem.synchronizer.util.RecordPolicy;
-import info.shillem.util.StringUtil;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.RichTextItem;
@@ -42,6 +44,7 @@ public class Program {
         private FieldPair fieldDeletion;
         private FieldPair fieldKey;
         private List<FieldPair> fieldPairs;
+        private Map<String, FieldPair> fieldTemporary;
         private Nature nature;
         private String notesUrl;
         private boolean printSummary;
@@ -73,19 +76,6 @@ public class Program {
 
         public Program build() {
             return new Program(this);
-        }
-
-        private FieldPair getFieldPairFromFrom(
-                String fromName, List<FieldPair> pairList) {
-            if (StringUtil.isEmpty(fromName)) {
-                return null;
-            }
-
-            return pairList
-                    .stream()
-                    .filter((pair) -> pair.getFrom().getName().equals(fromName))
-                    .findFirst()
-                    .orElse(null);
         }
 
         private void setConnectionPreferences(Document programDoc, Document connectionDoc)
@@ -152,10 +142,10 @@ public class Program {
         }
 
         private void setMappingPreferences(Document doc) throws NotesException {
-            FieldOperation fieldOperation = DominoUtil.getItemValue(
-                    doc, "fieldOperation", (val) -> FieldOperation.valueOf((String) val));
+            FieldEvaluation fieldEvaluation = DominoUtil.getItemValue(
+                    doc, "fieldEvaluation", (val) -> FieldEvaluation.valueOf((String) val));
 
-            fieldPairs = DominoUtil.getItemValues(doc, "mapping", (val) -> {
+            Map<String, FieldPair> fieldPairs = DominoUtil.getItemValues(doc, "mapping", (val) -> {
                 Matcher m = FIELD_MAPPING_PATTERN.matcher((String) val);
 
                 if (!m.matches()) {
@@ -167,19 +157,33 @@ public class Program {
                 Field pf2 = new Field(
                         m.group(3), Field.Type.valueOf(m.group(4)));
 
-                return fieldOperation == Program.FieldOperation.LEFT_TO_RIGHT
+                return fieldEvaluation == Program.FieldEvaluation.LEFT_TO_RIGHT
                         ? new FieldPair(pf1, pf2)
                         : new FieldPair(pf2, pf1);
             })
                     .stream()
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toMap((p) -> p.getFrom().getName(), Function.identity()));
 
-            fieldDeletion = getFieldPairFromFrom(
-                    DominoUtil.getItemString(doc, "deletionControlField"), fieldPairs);
-
-            fieldKey = getFieldPairFromFrom(
-                    DominoUtil.getItemString(doc, "keyControlField"), fieldPairs);
+            fieldDeletion = Optional
+                    .ofNullable(DominoUtil.getItemString(doc, "deletionControlField"))
+                    .map(fieldPairs::get)
+                    .orElse(null);
+            
+            fieldKey = Optional
+                    .ofNullable(DominoUtil.getItemString(doc, "keyField"))
+                    .map(fieldPairs::get)
+                    .orElse(null);
+            
+            List<String> tempFieldNames = DominoUtil.getItemStrings(doc, "temporaryFields");
+            fieldTemporary = fieldPairs.entrySet()
+                    .stream()
+                    .filter((e) -> tempFieldNames.contains(e.getKey()))
+                    .collect(Collectors.toMap(
+                            (e) -> e.getValue().getDestinationFieldName(),
+                            (e) -> e.getValue()));
+            
+            this.fieldPairs = new ArrayList<>(fieldPairs.values());
         }
 
         public static String getConnectionName(Document doc) throws NotesException {
@@ -192,7 +196,7 @@ public class Program {
 
     }
 
-    public enum FieldOperation {
+    public enum FieldEvaluation {
         LEFT_TO_RIGHT, RIGHT_TO_LEFT
     }
 
@@ -215,6 +219,7 @@ public class Program {
     private final FieldPair fieldDeletion;
     private final FieldPair fieldKey;
     private final List<FieldPair> fieldList;
+    private final Map<String, FieldPair> fieldTemporary;
     private final Integer intervalInMinutes;
     private final Nature nature;
     private final String notesUrl;
@@ -240,7 +245,8 @@ public class Program {
         databasePath = builder.databasePath;
         fieldDeletion = builder.fieldDeletion;
         fieldKey = builder.fieldKey;
-        fieldList = builder.fieldPairs;
+        fieldList = Collections.unmodifiableList(builder.fieldPairs);
+        fieldTemporary = Collections.unmodifiableMap(builder.fieldTemporary);
         intervalInMinutes = builder.intervalInMinutes;
         lastSuccessfullyStarted = builder.lastSuccessfullyStarted;
         lastSuccessfullyStopped = builder.lastSuccessfullyStopped;
@@ -281,6 +287,10 @@ public class Program {
 
     public List<FieldPair> getFieldPairs() {
         return fieldList;
+    }
+    
+    public Map<String, FieldPair> getFieldTemporary() {
+        return fieldTemporary;
     }
 
     public String getId() {
@@ -355,16 +365,16 @@ public class Program {
         return lastSuccessfullyStarted.plusMinutes(intervalInMinutes).isBefore(now);
     }
 
-    public boolean isRunning() {
-        return status == Program.Status.STARTED;
-    }
-
     public boolean isPrintSummary() {
         return printSummary;
     }
 
     public boolean isRunMode(RunMode mode) {
         return runMode == mode;
+    }
+
+    public boolean isRunning() {
+        return status == Program.Status.STARTED;
     }
 
     public synchronized boolean setAsStarted(Session session) {
@@ -433,9 +443,9 @@ public class Program {
                         session, doc, "stopped", Program.toDate(lastSuccessfullyStopped));
             } else {
                 lastSuccessfullyStarted = getLastSuccessfullyStartedDate(doc);
-                
+
                 lastSuccessfullyStopped = LocalDateTime.now();
-                
+
                 DominoUtil.setDate(
                         session, doc, "stopped", Program.toDate(lastSuccessfullyStopped));
             }

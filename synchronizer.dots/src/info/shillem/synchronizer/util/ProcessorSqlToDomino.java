@@ -112,6 +112,9 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
                             if (doc != null && !helper.isMode(Mode.TEST)) {
                                 deleteDocument(doc);
 
+                                helper.logVerboseMessage(() -> Unthrow.on(
+                                        () -> "Deleted record " + record.getValue(getKeyField())));
+
                                 setRefreshView(true);
                             }
 
@@ -121,7 +124,7 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
                         }
 
                         if (doc == null) {
-                            doc = initializeDocument();
+                            doc = initializeDocument(record);
 
                             record.setNew(true);
                         }
@@ -134,12 +137,16 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
                             continue;
                         }
 
-                        if (helper.isMode(Mode.VERBOSE) && tracker.getTouched() < 100) {
-                            helper.logMessage("Record: " + record.getValue(getKeyField()));
+                        helper.logVerboseMessage(() -> Unthrow.on(() -> {
+                            StringBuilder summary = new StringBuilder(
+                                    (record.isNew() ? "New" : "Updated")
+                                            + " record " + record.getValue(getKeyField()));
 
-                            changes.forEach((name, change) -> helper.logMessage(
-                                    String.format("\t%s %s", name, change)));
-                        }
+                            changes.forEach((name, change) -> summary.append(
+                                    String.format("\n\t%s %s", name, change)));
+
+                            return summary.toString();
+                        }));
 
                         if (!helper.isMode(Mode.TEST)) {
                             doc.save();
@@ -213,7 +220,7 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
         }
     }
 
-    protected Document initializeDocument() throws ProcessorException {
+    protected Document initializeDocument(T record) throws ProcessorException {
         try {
             Document doc = helper.getDominoFactory().setDefaults(
                     getDominoSilo().getDatabase().createDocument());
@@ -292,6 +299,11 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
         for (FieldPair pair : helper.getFieldPairs()) {
             Field to = pair.getTo();
             String destinationFieldName = pair.getDestinationFieldName();
+            
+            if (helper.getFieldTemporary().containsKey(destinationFieldName)) {
+                continue;
+            }
+            
             Object recordValue = record.getValue(destinationFieldName);
 
             try {

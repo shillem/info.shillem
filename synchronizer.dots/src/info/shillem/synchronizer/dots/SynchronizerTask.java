@@ -368,7 +368,7 @@ public class SynchronizerTask extends AbstractServerTask {
         }
 
         try {
-            Processor<Record> processor;
+            Processor<? extends Record> processor;
 
             try {
                 helper = new ProcessorHelper.Builder(
@@ -426,8 +426,16 @@ public class SynchronizerTask extends AbstractServerTask {
 
             helper.logMessage(summary);
         } catch (ProcessorException e) {
+            Optional
+                    .ofNullable(helper)
+                    .ifPresent((h) -> h.logException(e));
+
             logMessage(e.getMessage());
         } catch (Exception e) {
+            Optional
+                    .ofNullable(helper)
+                    .ifPresent((h) -> h.logException(e));
+
             logException(e);
         } finally {
             if (helper == null) {

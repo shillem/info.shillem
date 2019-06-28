@@ -2,12 +2,14 @@ package info.shillem.synchronizer.util;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import info.shillem.domino.factory.DominoFactory;
 import info.shillem.synchronizer.dots.Program;
@@ -103,7 +105,11 @@ public class ProcessorHelper {
     }
 
     public List<FieldPair> getFieldPairs() {
-        return new ArrayList<>(program.getFieldPairs());
+        return program.getFieldPairs();
+    }
+
+    public Map<String, FieldPair> getFieldTemporary() {
+        return program.getFieldTemporary();
     }
 
     public String getId() {
@@ -154,8 +160,19 @@ public class ProcessorHelper {
         return modes.contains(m);
     }
 
+    public void logException(Throwable e) {
+        Arrays.stream(e.getStackTrace())
+                .forEach((line) -> log.append("\n" + line));
+    }
+
     public void logMessage(String message) {
         log.append("\n" + Instant.now().atZone(ZoneOffset.systemDefault()) + " " + message);
+    }
+
+    public void logVerboseMessage(Supplier<String> message) {
+        if (isMode(Mode.VERBOSE) && tracker.getTouched() < 250) {
+            logMessage(message.get());
+        }
     }
 
 }
