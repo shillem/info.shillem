@@ -225,9 +225,9 @@ Yg4BAIQAAAAAAAAAAAA=
                       <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="runMode">
                         <keywords columns="3" ui="dialoglist">
                           <textlist>
-                            <text>Disabled|DISABLED</text>
-                            <text>Enabled|ENABLED</text>
-                            <text>Dry Run|DRY_RUN</text>
+                            <text>DISABLED</text>
+                            <text>ENABLED</text>
+                            <text>DRY_RUN</text>
                           </textlist>
                         </keywords>
                         <code event="defaultvalue">
@@ -486,35 +486,47 @@ Yg4BAIQAAAAAAAAAAAA=
                 <tablecell borderwidth="0px" bgcolor="#f7f7f7">
                   <par def="4">
                     <run>
-                      <font size="8pt" style="bold"/>Operation:</run>
+                      <font size="8pt" style="bold"/>Fields</run>
+                    <actionhotspot hotspotstyle="none"/>
+                    <run>
+                      <font size="8pt" style="bold"/>:</run>
                   </par>
                 </tablecell>
                 <tablecell borderwidth="0px">
-                  <par def="5">
-                    <run>
-                      <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
-                      <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="fieldOperation">
-                        <keywords recalconchange="true" columns="1" ui="dialoglist">
-                          <textlist>
-                            <text>Left &gt; Right|LEFT_TO_RIGHT</text>
-                            <text>Right &gt; Left|RIGHT_TO_LEFT</text>
-                          </textlist>
-                        </keywords>
-                        <code event="defaultvalue">
-                          <formula>"LEFT_TO_RIGHT"</formula>
-                        </code>
-                        <code event="declarations">
-                          <lotusscript>Dim EnteringValue As String
-Const FieldName = "fieldOperation"
+                  <pardef id="11" hide="notes web" keepwithnext="true" keeptogether="true"/>
+                  <par def="11"/>
+                  <table widthtype="fitmargins" leftmargin="0" refwidth="5in">
+                    <tablecolumn width="50%"/>
+                    <tablecolumn width="50%"/>
+                    <tablerow>
+                      <tablecell columnspan="2" borderwidth="0px" bgcolor="#f7f7f7">
+                        <pardef id="14" align="center" keepwithnext="true" keeptogether="true"/>
+                        <par def="14">
+                          <border outsidewidth="5px"/>
+                          <run>
+                            <font size="8pt" style="bold"/>
+                          </run>
+                          <run>
+                            <font size="8pt" style="bold"/>
+                            <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="fieldEvaluation">
+                              <keywords recalconchange="true" columns="1" ui="dialoglist">
+                                <textlist>
+                                  <text>Left &gt; Right|LEFT_TO_RIGHT</text>
+                                  <text>Right &gt; Left|RIGHT_TO_LEFT</text>
+                                </textlist>
+                              </keywords>
+                              <code event="defaultvalue">
+                                <formula>"LEFT_TO_RIGHT"</formula>
+                              </code>
+                              <code event="declarations">
+                                <lotusscript>Dim EnteringValue As String
+Const FieldName = "fieldEvaluation"
 
 
 </lotusscript>
-                        </code>
-                        <code event="entering">
-                          <lotusscript>Sub Entering(Source As Field)
+                              </code>
+                              <code event="entering">
+                                <lotusscript>Sub Entering(Source As Field)
 	
 	Dim wks As New NotesUIWorkspace
 	
@@ -522,9 +534,9 @@ Const FieldName = "fieldOperation"
 	
 End Sub
 </lotusscript>
-                        </code>
-                        <code event="exiting">
-                          <lotusscript>Sub Exiting(Source As Field)
+                              </code>
+                              <code event="exiting">
+                                <lotusscript>Sub Exiting(Source As Field)
 	
 	Dim wks As New NotesUIWorkspace
 	
@@ -534,41 +546,9 @@ End Sub
 	
 End Sub
 </lotusscript>
-                        </code>
-                      </field>
-                    </run>
-                  </par>
-                </tablecell>
-              </tablerow>
-              <tablerow>
-                <tablecell borderwidth="0px" bgcolor="#f7f7f7">
-                  <par def="4">
-                    <run>
-                      <font size="8pt" style="bold"/>Mapping</run>
-                    <actionhotspot hotspotstyle="none"/>
-                    <run>
-                      <font size="8pt" style="bold"/>:</run>
-                  </par>
-                </tablecell>
-                <tablecell borderwidth="0px">
-                  <pardef id="11" hide="notes web" keepwithnext="true" keeptogether="true"/>
-                  <par def="11"/>
-                  <table widthtype="fitmargins" leftmargin="0" rowspacing="0.1000in" refwidth="5in">
-                    <tablecolumn width="50%"/>
-                    <tablecolumn width="50%"/>
-                    <tablerow>
-                      <tablecell borderwidth="0px 1px 0px 0px" bgcolor="#f7f7f7">
-                        <pardef id="13" align="center" keepwithnext="true" keeptogether="true"/>
-                        <par def="13">
-                          <run>
-                            <font size="8pt" style="bold"/>Left</run>
-                        </par>
-                      </tablecell>
-                      <tablecell borderwidth="0px 0px 0px 1px" bgcolor="#f7f7f7">
-                        <pardef id="14" align="center" keepwithnext="true" keeptogether="true"/>
-                        <par def="14">
-                          <run>
-                            <font size="8pt" style="bold"/>Right</run>
+                              </code>
+                            </field>
+                          </run>
                         </par>
                       </tablecell>
                     </tablerow>
@@ -576,13 +556,14 @@ End Sub
                       <tablecell borderwidth="0px 1px 0px 0px">
                         <pardef id="15" align="center" hide="notes web" keepwithnext="true" keeptogether="true"/>
                         <par def="15"/>
-                        <table widthtype="fitmargins" leftmargin="0" rowspacing="0.0500in" refwidth="2.5000in">
+                        <table widthtype="fitmargins" leftmargin="0" refwidth="2.5000in">
                           <tablecolumn width="50%"/>
                           <tablecolumn width="50%"/>
                           <tablerow>
                             <tablecell borderwidth="0px">
                               <pardef id="17" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
                               <par def="17">
+                                <border outsidewidth="5px"/>
                                 <run>
                                   <font size="8pt" style="bold underline"/>Name</run>
                               </par>
@@ -590,6 +571,7 @@ End Sub
                             <tablecell borderwidth="0px">
                               <pardef id="18" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
                               <par def="18">
+                                <border outsidewidth="5px"/>
                                 <run>
                                   <font size="8pt" style="bold underline"/>Type</run>
                               </par>
@@ -636,13 +618,14 @@ Yg4BAIQAAAAAAAAAAAA=
                       <tablecell borderwidth="0px 0px 0px 1px">
                         <pardef id="20" align="center" hide="notes web" keepwithnext="true" keeptogether="true"/>
                         <par def="20"/>
-                        <table widthtype="fitmargins" leftmargin="0.0104in" rowspacing="0.0500in" refwidth="2.4903in">
+                        <table widthtype="fitmargins" leftmargin="0.0104in" refwidth="2.4903in">
                           <tablecolumn width="50%"/>
                           <tablecolumn width="50%"/>
                           <tablerow>
                             <tablecell borderwidth="0px">
                               <pardef id="22" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
                               <par def="22">
+                                <border outsidewidth="5px"/>
                                 <run>
                                   <font size="8pt" style="bold underline"/>Name</run>
                               </par>
@@ -650,6 +633,7 @@ Yg4BAIQAAAAAAAAAAAA=
                             <tablecell borderwidth="0px">
                               <pardef id="23" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
                               <par def="23">
+                                <border outsidewidth="5px"/>
                                 <run>
                                   <font size="8pt" style="bold underline"/>Type</run>
                               </par>
@@ -696,16 +680,20 @@ Yg4BAIQAAAAAAAAAAAA=
                     </tablerow>
                     <tablerow>
                       <tablecell columnspan="2" borderwidth="0px">
-                        <pardef id="26" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-                        <par def="26">
+                        <pardef id="25" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+                        <par def="25">
+                          <border outsidewidth="5px"/>
                           <actionhotspot hotspotstyle="none">
                             <code event="click">
-                              <formula>@If((selectLeft="" &amp; selectRight="") |  typeLeft="" | typeRight="";
+                              <formula>$selectLeft := @Trim(selectLeft);
+$selectRight := @Trim(selectRight);
+
+@If(($selectLeft="" &amp; $selectRight="") |  typeLeft="" | typeRight="";
 	@Do(@Prompt([Ok];@DbTitle;"All left and right fields must be filled out.");@Return(""));
 	""
 );
 
-$key := selectLeft + ":" + typeLeft + "|" + selectRight + ":" + typeRight;
+$key := $selectLeft + ":" + typeLeft + "|" + $selectRight + ":" + typeRight;
 @SetField("mapping";@Unique(@If(@Elements(mapping) = 0;$key;mapping:$key)));
 @SetField("selectLeft";"");
 @SetField("selectRight";"");
@@ -736,12 +724,13 @@ $key := selectLeft + ":" + typeLeft + "|" + selectRight + ":" + typeRight;
                     </tablerow>
                     <tablerow>
                       <tablecell borderwidth="0px 1px 0px 0px">
-                        <pardef id="27" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
+                        <pardef id="26" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
                           <code event="hidewhen">
                             <formula>@Elements(mapping) = 0</formula>
                           </code>
                         </pardef>
-                        <par def="27">
+                        <par def="26">
+                          <border outsidewidth="5px 0px 0px"/>
                           <run>
                             <font size="8pt" color="gray"/>
                           </run>
@@ -753,18 +742,19 @@ $key := selectLeft + ":" + typeLeft + "|" + selectRight + ":" + typeRight;
                               </code>
                             </field>
                           </run>
-                          <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
+                          <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="13" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
                         </par>
                       </tablecell>
                       <tablecell borderwidth="0px 0px 0px 1px">
-                        <pardef id="28" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
+                        <pardef id="27" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
                           <code event="hidewhen">
                             <formula>@Elements(mapping) = 0</formula>
                           </code>
                         </pardef>
-                        <par def="28">
+                        <par def="27">
+                          <border outsidewidth="5px 0px 0px"/>
                           <run>
                             <font size="8pt" color="gray"/>
                           </run>
@@ -776,7 +766,7 @@ Yg4BAIQAAAAAAAAAAAA=
                               </code>
                             </field>
                           </run>
-                          <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
+                          <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="13" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
                         </par>
@@ -799,7 +789,7 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                      <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="keyControlField">
+                      <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="keyField">
                         <keywords recalcchoices="true" columns="1" ui="dialoglist">
                           <formula>@If(fieldOperation="LEFT_TO_RIGHT";
  @Left(@Left(mapping;"|");":");
@@ -837,6 +827,32 @@ Yg4BAIQAAAAAAAAAAAA=
                   </par>
                 </tablecell>
               </tablerow>
+              <tablerow>
+                <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+                  <par def="4">
+                    <run>
+                      <font size="8pt" style="bold"/>Temporary Fields:</run>
+                  </par>
+                </tablecell>
+                <tablecell borderwidth="0px">
+                  <par def="5">
+                    <run>
+                      <font size="8pt"/>
+                    </run>
+                    <run>
+                      <font size="8pt"/>
+                      <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" allowmultivalues="true" kind="editable" name="temporaryFields" listinputseparators="comma" listdisplayseparator="comma">
+                        <keywords recalcchoices="true" columns="1" ui="dialoglist">
+                          <formula>@If(fieldOperation="LEFT_TO_RIGHT";
+ @Left(@Left(mapping;"|");":");
+ @Right(@Right(mapping;"|");":")
+)</formula>
+                        </keywords>
+                      </field>
+                    </run>
+                  </par>
+                </tablecell>
+              </tablerow>
             </table>
           </tablecell>
         </tablerow>
@@ -853,8 +869,8 @@ Yg4BAIQAAAAAAAAAAAA=
         </tablerow>
         <tablerow tablabel="Processor">
           <tablecell borderwidth="0px">
-            <pardef id="30" leftmargin="0" hide="notes web" keepwithnext="true" keeptogether="true"/>
-            <par def="30"/>
+            <pardef id="29" leftmargin="0" hide="notes web" keepwithnext="true" keeptogether="true"/>
+            <par def="29"/>
             <table cellbordercolor="black" leftmargin="0" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
               <tablecolumn width="2in"/>
               <tablecolumn width="5in"/>
@@ -989,17 +1005,17 @@ Yg4BAIQAAAAAAAAAAAA=
               <tablecolumn width="100%"/>
               <tablerow>
                 <tablecell borderwidth="0px" bgcolor="#f7f7f7">
-                  <pardef id="31" keepwithnext="true" keeptogether="true"/>
-                  <par def="31">
+                  <pardef id="30" align="center" keepwithnext="true" keeptogether="true"/>
+                  <par def="30">
                     <run>
-                      <font size="8pt" style="bold"/>Last Execution:</run>
+                      <font size="8pt" style="bold"/>Last Execution</run>
                   </par>
                 </tablecell>
               </tablerow>
               <tablerow>
                 <tablecell borderwidth="0px">
-                  <pardef id="32" keepwithnext="true" keeptogether="true"/>
-                  <par def="32">
+                  <pardef id="31" keepwithnext="true" keeptogether="true"/>
+                  <par def="31">
                     <run>
                       <font size="8pt"/>
                     </run>
@@ -1027,6 +1043,45 @@ Yg4BAIQAAAAAAAAAAAA=
       <par def="3"/>
     </richtext>
   </body>
+  <item name="$$fieldOperation" summary="false" sign="true">
+    <text>'++LotusScript Development Environment:2:5:(Options):0:66
+
+'++LotusScript Development Environment:2:5:(Forward):0:1
+Declare Sub Entering(Source As Field)
+Declare Sub Exiting(Source As Field)
+
+'++LotusScript Development Environment:2:5:(Declarations):0:2
+Dim EnteringValue As String
+Const FieldName = "fieldOperation"
+
+
+'++LotusScript Development Environment:2:2:Entering:1:12
+Sub Entering(Source As Field)
+	
+	Dim wks As New NotesUIWorkspace
+	
+	Let EnteringValue = wks.CurrentDocument.FieldGetText(FieldName)
+	
+End Sub
+'++LotusScript Development Environment:2:2:Exiting:1:12
+Sub Exiting(Source As Field)
+	
+	Dim wks As New NotesUIWorkspace
+	
+	If EnteringValue &lt;&gt; wks.CurrentDocument.FieldGetText(FieldName) Then
+		Messagebox "After operation value change statement fields must be reviewed", 0 + 48
+	End If
+	
+End Sub
+'++LotusScript Development Environment:2:2:BindEvents:1:129
+Private Sub BindEvents ( Byval ObjectName_ As String )
+	Static Source As FIELD
+	Set Source = Bind(Objectname_)
+	On Event ENTERING From Source Call ENTERING
+	On Event EXITING From Source Call EXITING
+End Sub<break/>
+    </text>
+  </item>
   <item name="queryTimeout" summary="false">
     <number>0</number>
   </item>

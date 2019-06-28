@@ -40,7 +40,7 @@ End Sub
   </code>
   <actionbar bgcolor="#f0f0f0" bordercolor="black">
     <actionbuttonstyle bgcolor="#f0f0f0"/>
-    <font size="9pt" color="system"/>
+    <font color="system"/>
     <border style="solid" width="0px 0px 1px" color="system"/>
     <action title="New Sql To Domino" icon="30">
       <code event="click">
@@ -68,7 +68,7 @@ End Sub
       <font size="9pt" style="bold"/>
     </columnheader>
     <code event="value">
-      <formula>@TextToNumber(schedule)</formula>
+      <formula>@TextToNumber(interval)</formula>
     </code>
   </column>
   <column align="center" sort="ascending" hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" categorized="true" twisties="true">
@@ -109,20 +109,13 @@ End Sub
       <font size="8pt" style="bold"/>
     </columnheader>
   </column>
-  <column align="center" hidedetailrows="false" itemname="$2" width="3" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
+  <column align="center" hidedetailrows="false" itemname="runMode" width="9" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false">
     <font size="8pt"/>
-    <columnheader align="center" title="Exec">
+    <columnheader align="center" title="Run Mode">
       <font size="8pt" style="bold"/>
     </columnheader>
-    <code event="value">
-      <formula>@If(
-	execution="ENABLED";	95;
-	execution="DRY_RUN"; 	94;
-	93
-)</formula>
-    </code>
   </column>
-  <column align="center" hidedetailrows="false" itemname="$3" width="3" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
+  <column align="center" hidedetailrows="false" itemname="$3" width="5" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
     <font size="8pt"/>
     <columnheader align="center" title="Status">
       <font size="8pt" style="bold"/>

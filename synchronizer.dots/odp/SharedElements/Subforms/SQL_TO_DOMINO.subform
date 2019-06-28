@@ -12,7 +12,7 @@
             <pardef id="3" align="right" keepwithnext="true" keeptogether="true"/>
             <par def="3">
               <run>
-                <font size="8pt" style="bold"/>Query Timeout:</run>
+                <font size="8pt" style="bold"/>WITH:</run>
             </par>
           </tablecell>
           <tablecell borderwidth="0px">
@@ -23,41 +23,9 @@
               </run>
               <run>
                 <font size="8pt"/>
-                <field showdelimiters="false" type="number" kind="editable" name="query_timeout">
-                  <numberformat format="general" varying="true" digits="2" punctuated="false" parens="false" percent="false" bytes="false"/>
-                  <code event="defaultvalue">
-                    <formula>5</formula>
-                  </code>
-                  <code event="inputtranslation">
-                    <formula>@If(@ThisValue &gt; 0;
-	@ThisValue;
-	1
-)</formula>
-                  </code>
-                </field>
-              </run>
-              <run>
-                <font size="8pt"/>s</run>
-            </par>
-          </tablecell>
-        </tablerow>
-        <tablerow>
-          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
-            <par def="3">
-              <run>
-                <font size="8pt" style="bold"/>WITH:</run>
-            </par>
-          </tablecell>
-          <tablecell borderwidth="0px">
-            <par def="4">
-              <run>
-                <font size="8pt"/>
-              </run>
-              <run>
-                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_with"/>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
             </par>
@@ -253,7 +221,9 @@ Yg4BAIQAAAAAAAAAAAA=
           <tablecell borderwidth="0px" bgcolor="#f7f7f7">
             <par def="3">
               <run>
-                <font size="8pt" style="bold" color="gray"/>Statement:</run>
+                <font size="8pt" style="bold" color="gray"/>Statement</run>
+              <run>
+                <font size="8pt" style="bold" color="gray"/>:</run>
             </par>
           </tablecell>
           <tablecell borderwidth="0px">
@@ -281,6 +251,38 @@ Yg4BAIQAAAAAAAAAAAA=
               <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="10" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+            </par>
+          </tablecell>
+        </tablerow>
+        <tablerow>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>Timeout:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px">
+            <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="number" kind="editable" name="query_timeout">
+                  <numberformat format="general" varying="true" digits="2" punctuated="false" parens="false" percent="false" bytes="false"/>
+                  <code event="defaultvalue">
+                    <formula>5</formula>
+                  </code>
+                  <code event="inputtranslation">
+                    <formula>@If(@ThisValue &gt; 0;
+	@ThisValue;
+	1
+)</formula>
+                  </code>
+                </field>
+              </run>
+              <run>
+                <font size="8pt"/> seconds</run>
             </par>
           </tablecell>
         </tablerow>
