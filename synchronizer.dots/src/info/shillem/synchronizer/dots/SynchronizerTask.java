@@ -380,7 +380,7 @@ public class SynchronizerTask extends AbstractServerTask {
                                 .build();
 
                 processor = Optional
-                        .ofNullable(program.getProcessorClassName())
+                        .ofNullable(program.getProcessorBuilderClassName())
                         .map((name) -> Unthrow.on(() -> SynchronizerActivator
                                 .getProcessorBuilder(name)))
                         .orElseGet(() -> {
@@ -427,6 +427,8 @@ public class SynchronizerTask extends AbstractServerTask {
             helper.logMessage(summary);
         } catch (ProcessorException e) {
             logMessage(e.getMessage());
+        } catch (Exception e) {
+            logException(e);
         } finally {
             if (helper == null) {
                 program.setAsStopped(getSession(), "Program threw an exception", aborted);

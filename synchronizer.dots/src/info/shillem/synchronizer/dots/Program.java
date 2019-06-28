@@ -45,7 +45,7 @@ public class Program {
         private Nature nature;
         private String notesUrl;
         private boolean printSummary;
-        private String processorClassName;
+        private String processorBuilderClassName;
         private RecordPolicy processorRecordPolicy;
         private Map<String, String> processorVariables;
         private String queryStatement;
@@ -118,7 +118,7 @@ public class Program {
                     .ofNullable(DominoUtil.getItemBoolean(doc, "printSummary"))
                     .orElse(false);
 
-            processorClassName = DominoUtil.getItemString(doc, "processorClassName");
+            processorBuilderClassName = DominoUtil.getItemString(doc, "processorBuilderClassName");
 
             processorRecordPolicy = DominoUtil.getItemValue(
                     doc, "processorRecordPolicy", (val) -> RecordPolicy.valueOf((String) val));
@@ -219,7 +219,7 @@ public class Program {
     private final Nature nature;
     private final String notesUrl;
     private final boolean printSummary;
-    private final String processorClassName;
+    private final String processorBuilderClassName;
     private final RecordPolicy processorRecordPolicy;
     private final Map<String, String> processorVariables;
     private final String queryStatement;
@@ -247,7 +247,7 @@ public class Program {
         nature = builder.nature;
         notesUrl = builder.notesUrl;
         printSummary = builder.printSummary;
-        processorClassName = builder.processorClassName;
+        processorBuilderClassName = builder.processorBuilderClassName;
         processorRecordPolicy = builder.processorRecordPolicy;
         processorVariables = builder.processorVariables;
         queryStatement = builder.queryStatement;
@@ -295,8 +295,8 @@ public class Program {
         return nature;
     }
 
-    public String getProcessorClassName() {
-        return processorClassName;
+    public String getProcessorBuilderClassName() {
+        return processorBuilderClassName;
     }
 
     public RecordPolicy getProcessorRecordPolicy() {
