@@ -12,10 +12,6 @@ public class FieldPair {
 		this.to = Objects.requireNonNull(to, "To cannot be null");
 	}
 	
-	public String getDestinationFieldName() {
-	    return to.getName().isEmpty() ? from.getName() : to.getName();
-	}
-	
 	public Field getFrom() {
 		return from;
 	}

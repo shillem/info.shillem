@@ -153,9 +153,11 @@ public class Program {
                 }
 
                 Field pf1 = new Field(
-                        m.group(1), Field.Type.valueOf(m.group(2)));
+                        Optional.ofNullable(m.group(1)).orElse(m.group(3)),
+                        Field.Type.valueOf(m.group(2)));
                 Field pf2 = new Field(
-                        m.group(3), Field.Type.valueOf(m.group(4)));
+                        Optional.ofNullable(m.group(3)).orElse(m.group(1)),
+                        Field.Type.valueOf(m.group(4)));
 
                 return fieldEvaluation == Program.FieldEvaluation.LEFT_TO_RIGHT
                         ? new FieldPair(pf1, pf2)
@@ -169,20 +171,20 @@ public class Program {
                     .ofNullable(DominoUtil.getItemString(doc, "deletionControlField"))
                     .map(fieldPairs::get)
                     .orElse(null);
-            
+
             fieldKey = Optional
                     .ofNullable(DominoUtil.getItemString(doc, "keyField"))
                     .map(fieldPairs::get)
                     .orElse(null);
-            
+
             List<String> tempFieldNames = DominoUtil.getItemStrings(doc, "temporaryFields");
             fieldTemporary = fieldPairs.entrySet()
                     .stream()
                     .filter((e) -> tempFieldNames.contains(e.getKey()))
                     .collect(Collectors.toMap(
-                            (e) -> e.getValue().getDestinationFieldName(),
+                            (e) -> e.getValue().getTo().getName(),
                             (e) -> e.getValue()));
-            
+
             this.fieldPairs = new ArrayList<>(fieldPairs.values());
         }
 
@@ -288,7 +290,7 @@ public class Program {
     public List<FieldPair> getFieldPairs() {
         return fieldList;
     }
-    
+
     public Map<String, FieldPair> getFieldTemporary() {
         return fieldTemporary;
     }

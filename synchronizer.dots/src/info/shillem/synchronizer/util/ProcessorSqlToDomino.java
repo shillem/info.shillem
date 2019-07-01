@@ -256,13 +256,12 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
         for (FieldPair pair : helper.getFieldPairs()) {
             Field from = pair.getFrom();
             Field to = pair.getTo();
-            String destinationFieldName = pair.getDestinationFieldName();
 
             try {
                 switch (from.getType()) {
                 case DATE:
                     // There's a fix here because Domino doesn't read millisecs
-                    record.setValue(destinationFieldName, transformValue(
+                    record.setValue(to.getName(), transformValue(
                             Optional.ofNullable(result.getTimestamp(from.getName()))
                                     .map(t -> new java.util.Date(t.getTime() / 1000 * 1000))
                                     .orElse(null),
@@ -298,17 +297,16 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
 
         for (FieldPair pair : helper.getFieldPairs()) {
             Field to = pair.getTo();
-            String destinationFieldName = pair.getDestinationFieldName();
-            
-            if (helper.getFieldTemporary().containsKey(destinationFieldName)) {
+
+            if (helper.getFieldTemporary().containsKey(to.getName())) {
                 continue;
             }
-            
-            Object recordValue = record.getValue(destinationFieldName);
+
+            Object recordValue = record.getValue(to.getName());
 
             try {
                 Object documentValue = transformValue(
-                        DominoUtil.getItemValue(doc, destinationFieldName), to.getType());
+                        DominoUtil.getItemValue(doc, to.getName()), to.getType());
 
                 if (recordValue == null) {
                     if (documentValue == null
@@ -317,9 +315,9 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
                         continue;
                     }
 
-                    doc.removeItem(destinationFieldName);
+                    doc.removeItem(to.getName());
 
-                    changes.put(destinationFieldName, new ValueChange(documentValue, recordValue));
+                    changes.put(to.getName(), new ValueChange(documentValue, recordValue));
 
                     continue;
                 }
@@ -335,13 +333,12 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
                     if (recordValue instanceof Date) {
                         DominoUtil.setDate(
                                 helper.getDominoFactory().getSession(),
-                                doc, destinationFieldName, (Date) recordValue);
+                                doc, to.getName(), (Date) recordValue);
                     } else {
-                        doc.replaceItemValue(destinationFieldName, recordValue);
+                        doc.replaceItemValue(to.getName(), recordValue);
                     }
 
-                    changes.put(destinationFieldName,
-                            new ValueChange(documentValue, recordValue));
+                    changes.put(to.getName(), new ValueChange(documentValue, recordValue));
                 }
             } catch (Exception e) {
                 throw new RuntimeException(String.format(
