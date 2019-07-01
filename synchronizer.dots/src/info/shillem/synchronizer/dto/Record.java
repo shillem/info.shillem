@@ -1,17 +1,18 @@
 package info.shillem.synchronizer.dto;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class Record {
 
-    private final HashMap<String, Object> values;
+    private final Map<String, Object> values;
 
     private boolean _deleted;
     private boolean _new;
     
     public Record() {
-        values = new HashMap<>();
+        values = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     }
 
     public Set<String> getKeys() {
