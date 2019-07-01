@@ -269,17 +269,21 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
 
                     break;
                 case DOUBLE:
-                    record.setValue(destinationFieldName, transformValue(
-                            result.getDouble(from.getName()), to.getType()));
+                    // getObject actually returns null if the SQL value is null
+                    // unlike getDouble that returns 0.0
+                    record.setValue(to.getName(), transformValue(
+                            result.getObject(from.getName()), to.getType()));
 
                     break;
                 case INTEGER:
-                    record.setValue(destinationFieldName, transformValue(
-                            result.getInt(from.getName()), to.getType()));
+                    // getObject actually returns null if the SQL value is null
+                    // unlike getInteger that returns 0
+                    record.setValue(to.getName(), transformValue(
+                            result.getObject(from.getName()), to.getType()));
 
                     break;
                 case STRING:
-                    record.setValue(destinationFieldName, transformValue(
+                    record.setValue(to.getName(), transformValue(
                             result.getString(from.getName()), to.getType()));
 
                     break;
