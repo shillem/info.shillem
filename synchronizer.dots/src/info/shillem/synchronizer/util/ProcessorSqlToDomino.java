@@ -74,7 +74,7 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
     }
 
     @Override
-    public boolean execute() throws ProcessorException {
+    public final boolean execute() throws ProcessorException {
         beforeExecution();
 
         try (Connection conn = helper.getSqlFactory().getConnection()) {
