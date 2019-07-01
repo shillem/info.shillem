@@ -235,16 +235,24 @@ Yg4BAIQAAAAAAAAAAAA=
                 <font size="8pt" color="gray"/>
                 <field showdelimiters="false" type="text" kind="computed" name="query_stmt">
                   <code event="defaultvalue">
-                    <formula>@Implode(
-	@Trim(
-		@If(query_stmt_with="";"";"WITH":query_stmt_with):
-		"SELECT":query_stmt_select:
-		"FROM":query_stmt_from:
-		@If(query_stmt_where="";"";"WHERE":query_stmt_where):
-		@If(query_stmt_group="";"";"GROUP BY":query_stmt_group):
-		@If(query_stmt_order="";"";"ORDER BY":query_stmt_order)
-	);
-@NewLine)</formula>
+                    <formula>$keywords := "WITH|query_stmt_with":
+"SELECT|query_stmt_select":
+"FROM|query_stmt_from":
+"WHERE|query_stmt_where":
+"GROUP BY|query_stmt_group":
+"ORDER BY|query_stmt_order";
+
+@For(i := 1; i &lt;= @Elements($keywords);i := i + 1;
+	@Do(
+		$val := @GetField(@RightBack($keywords[i];"|"));
+		@If($val != "";
+			$query := $query + (@If($query="";"";@NewLine) + @LeftBack($keywords[i];"|") + @NewLine + $val);
+			""
+		)
+	)
+);
+
+$query</formula>
                   </code>
                 </field>
               </run>
