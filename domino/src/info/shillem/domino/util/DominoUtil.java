@@ -1,5 +1,6 @@
 package info.shillem.domino.util;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -111,6 +112,26 @@ public enum DominoUtil {
         return getItemValues(doc, itemName, Date.class::cast);
     }
 
+    public static BigDecimal getItemDecimal(Document doc, String itemName)
+            throws NotesException {
+        return getItemValue(doc, itemName, (val) -> new BigDecimal(((Number) val).toString()));
+    }
+
+    public static List<BigDecimal> getItemDecimals(Document doc, String itemName)
+            throws NotesException {
+        return getItemValues(doc, itemName, (val) -> new BigDecimal(((Number) val).toString()));
+    }
+
+    public static Double getItemDouble(Document doc, String itemName)
+            throws NotesException {
+        return getItemValue(doc, itemName, (val) -> ((Number) val).doubleValue());
+    }
+
+    public static List<Double> getItemDoubles(Document doc, String itemName)
+            throws NotesException {
+        return getItemValues(doc, itemName, (val) -> ((Number) val).doubleValue());
+    }
+
     public static Integer getItemInteger(Document doc, String itemName)
             throws NotesException {
         return getItemValue(doc, itemName, (val) -> ((Number) val).intValue());
@@ -135,7 +156,7 @@ public enum DominoUtil {
             throws NotesException {
         return getItemValue(doc, itemName, Object.class::cast);
     }
-    
+
     public static <T> T getItemValue(Document doc, String itemName, Function<Object, T> converter)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
@@ -166,7 +187,7 @@ public enum DominoUtil {
             DominoUtil.recycle(item);
         }
     }
-    
+
     public static List<Object> getItemValues(Document doc, String itemName)
             throws NotesException {
         return getItemValues(doc, itemName, Object.class::cast);
