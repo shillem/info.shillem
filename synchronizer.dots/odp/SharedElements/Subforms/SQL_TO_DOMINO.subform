@@ -33,83 +33,10 @@ Yg4BAIQAAAAAAAAAAAA=
         </tablerow>
         <tablerow>
           <tablecell borderwidth="0px" bgcolor="#f7f7f7">
-            <pardef id="5" align="right" hide="edit previewedit" keepwithnext="true" keeptogether="true"/>
-            <par def="5">
+            <par def="3">
               <run>
                 <font size="8pt" style="bold"/>SELECT</run>
               <actionhotspot hotspotstyle="none"/>
-              <run>
-                <font size="8pt" style="bold"/>:</run>
-            </par>
-            <pardef id="6" align="right" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-            <par def="6">
-              <actionhotspot hotspotstyle="none">
-                <run>
-                  <font size="8pt" style="bold underline" color="blue"/>SELECT</run>
-                <code event="click">
-                  <lotusscript>Sub Click(Source As Button)
-	
-	Dim wks As New NotesUIWorkspace
-	Dim doc As NotesDocument
-	
-	Dim labels As Variant
-	Dim values As Variant
-	Dim s As String
-	
-	Dim itm As NotesItem
-	
-	Set doc = wks.CurrentDocument.Document
-	
-	If (doc.GetFirstItem("fieldOperation").Text = "LEFT_TO_RIGHT") Then
-		Let values = doc.GetItemValue("displayMappingLeft")
-		Let labels = doc.GetItemValue("displayMappingRight")
-	Else
-		Let values = doc.GetItemValue("displayMappingRight")
-		Let labels = doc.GetItemValue("displayMappingLeft")
-	End If
-	
-	For i=0 To Ubound(values)
-		Let s = s &amp; GetName(values(i), values(i))
-		
-		If i  &lt; Ubound(values) Then
-			Let s = s &amp; "," &amp; Chr(13) &amp; Chr(10)
-		End If
-	Next
-	
-	Set itm = doc.GetFirstItem("query_stmt_select")
-	
-	If (itm.Text = "") Then
-		Let itm.Values = s
-	Else
-		Let itm.Values = itm.Text &amp; Chr(13) &amp; Chr(10) &amp; "--NEW" &amp; Chr(13) &amp; Chr(10) &amp; s
-	End If
-	
-	Call wks.CurrentDocument.Refresh
-	
-End Sub
-</lotusscript>
-                </code>
-                <code event="GetName">
-                  <lotusscript>Function GetName(firstChoice As String, alternative As String) As String
-	
-	Dim v As Variant
-	
-	Let v = Split(firstChoice, ":")
-	
-	If (v(0) &lt;&gt; "") Then
-		Let GetName = v(0)
-		
-		Exit Function
-	End If
-	
-	Let v = Split(alternative, ":")
-	
-	Let GetName = v(0)
-	
-End Function
-</lotusscript>
-                </code>
-              </actionhotspot>
               <run>
                 <font size="8pt" style="bold"/>:</run>
             </par>
@@ -295,8 +222,8 @@ Yg4BAIQAAAAAAAAAAAA=
           </tablecell>
         </tablerow>
       </table>
-      <pardef id="7" firstlineleftmargin="1in" hide="notes web"/>
-      <par def="7"/>
+      <pardef id="5" firstlineleftmargin="1in" hide="notes web"/>
+      <par def="5"/>
     </richtext>
   </body>
   <item name="queryTimeout" summary="false" sign="true">
