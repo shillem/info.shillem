@@ -28,7 +28,9 @@ import info.shillem.synchronizer.dto.Record;
 import info.shillem.synchronizer.lang.ProcessorException;
 import info.shillem.synchronizer.util.Processor;
 import info.shillem.synchronizer.util.ProcessorBuilder;
+import info.shillem.synchronizer.util.ProcessorDominoToSql;
 import info.shillem.synchronizer.util.ProcessorHelper;
+import info.shillem.synchronizer.util.ProcessorSqlToDomino;
 import info.shillem.synchronizer.util.ProcessorHelper.Mode;
 import info.shillem.synchronizer.util.SqlFactory;
 import info.shillem.util.Unthrow;
@@ -385,8 +387,24 @@ public class SynchronizerTask extends AbstractServerTask {
                                 .getProcessorBuilder(name)))
                         .orElseGet(() -> {
                             switch (program.getNature()) {
+                            case DOMINO_TO_SQL:
+                                return new ProcessorBuilder() {
+                                    @Override
+                                    public Processor<? extends Record> build(
+                                            ProcessorHelper helper) {
+                                        return new ProcessorDominoToSql<Record>(
+                                                helper, () -> new Record());
+                                    }
+                                };
                             case SQL_TO_DOMINO:
-                                return new ProcessorBuilder();
+                                return new ProcessorBuilder() {
+                                    @Override
+                                    public Processor<? extends Record> build(
+                                            ProcessorHelper helper) {
+                                        return new ProcessorSqlToDomino<Record>(
+                                                helper, () -> new Record());
+                                    }
+                                };
                             default:
                                 throw new UnsupportedOperationException(
                                         "Nature " + program.getNature() + " is not supported");
@@ -442,6 +460,8 @@ public class SynchronizerTask extends AbstractServerTask {
                 program.setAsStopped(getSession(), "Program threw an exception", aborted);
             } else {
                 helper.getDominoFactory().recycle();
+                
+                helper.getSqlFactory().recycle();
 
                 program.setAsStopped(getSession(), helper.getLog(), aborted);
             }

@@ -20,6 +20,7 @@ import info.shillem.domino.util.DominoUtil;
 import info.shillem.synchronizer.util.Field;
 import info.shillem.synchronizer.util.FieldPair;
 import info.shillem.synchronizer.util.RecordPolicy;
+import info.shillem.util.StringUtil;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.RichTextItem;
@@ -51,6 +52,7 @@ public class Program {
         private String processorBuilderClassName;
         private RecordPolicy processorRecordPolicy;
         private Map<String, String> processorVariables;
+        private String queryReferenceTable;
         private String queryStatement;
         private Integer queryTimeout;
         private Status status;
@@ -82,6 +84,7 @@ public class Program {
                 throws NotesException {
             connectionDriverClassName = DominoUtil.getItemString(connectionDoc, "driver");
             connectionUrl = DominoUtil.getItemString(connectionDoc, "url");
+            queryReferenceTable = DominoUtil.getItemString(programDoc, "query_reference_table");
             queryStatement = DominoUtil.getItemString(programDoc, "query_stmt");
             queryTimeout = DominoUtil.getItemInteger(programDoc, "query_timeout");
         }
@@ -153,10 +156,10 @@ public class Program {
                 }
 
                 Field pf1 = new Field(
-                        Optional.ofNullable(m.group(1)).orElse(m.group(3)),
+                        StringUtil.isEmpty(m.group(1)) ? m.group(3) : m.group(1),
                         Field.Type.valueOf(m.group(2)));
                 Field pf2 = new Field(
-                        Optional.ofNullable(m.group(3)).orElse(m.group(1)),
+                        StringUtil.isEmpty(m.group(3)) ? m.group(1) : m.group(3),
                         Field.Type.valueOf(m.group(4)));
 
                 return fieldEvaluation == Program.FieldEvaluation.LEFT_TO_RIGHT
@@ -229,6 +232,7 @@ public class Program {
     private final String processorBuilderClassName;
     private final RecordPolicy processorRecordPolicy;
     private final Map<String, String> processorVariables;
+    private final String queryReferenceTable;
     private final String queryStatement;
     private final Integer queryTimeout;
     private final RunMode runMode;
@@ -258,6 +262,7 @@ public class Program {
         processorBuilderClassName = builder.processorBuilderClassName;
         processorRecordPolicy = builder.processorRecordPolicy;
         processorVariables = builder.processorVariables;
+        queryReferenceTable = builder.queryReferenceTable;
         queryStatement = builder.queryStatement;
         queryTimeout = builder.queryTimeout;
         runMode = builder.runMode;
@@ -321,6 +326,10 @@ public class Program {
         }
 
         return Optional.of(processorVariables.get(key));
+    }
+
+    public String getQueryReferenceTable() {
+        return queryReferenceTable;
     }
 
     public String getQueryStatement() {

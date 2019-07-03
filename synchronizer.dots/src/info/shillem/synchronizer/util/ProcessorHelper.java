@@ -92,16 +92,14 @@ public class ProcessorHelper {
         return dominoFactory;
     }
 
-    public Optional<String> getFieldDeletion() {
+    public Optional<Field> getFieldDeletion() {
         return Optional
                 .ofNullable(program.getFieldDeletion())
-                .map((pair) -> pair.getTo().getName());
+                .map((pair) -> pair.getTo());
     }
 
-    public Optional<String> getFieldKey() {
-        return Optional
-                .ofNullable(program.getFieldKey())
-                .map((pair) -> pair.getTo().getName());
+    public Field getFieldKey() {
+        return program.getFieldKey().getTo();
     }
 
     public List<FieldPair> getFieldPairs() {
@@ -122,6 +120,10 @@ public class ProcessorHelper {
 
     public Set<Mode> getModes() {
         return new HashSet<>(modes);
+    }
+
+    public String getQueryReferenceTable() {
+        return program.getQueryReferenceTable();
     }
 
     public String getQueryStatement() {

@@ -1,21 +1,17 @@
 package info.shillem.synchronizer.util;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import info.shillem.domino.util.DominoSilo;
 import info.shillem.domino.util.DominoUtil;
-import info.shillem.domino.util.ViewAccessPolicy;
-import info.shillem.domino.util.ViewPath;
 import info.shillem.synchronizer.dots.Program.Nature;
 import info.shillem.synchronizer.dto.Record;
 import info.shillem.synchronizer.dto.ValueChange;
@@ -27,26 +23,12 @@ import lotus.domino.Item;
 import lotus.domino.NotesException;
 import lotus.domino.View;
 
-public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
-
-    protected final ProcessorHelper helper;
-    protected final Supplier<T> recordSupplier;
-    protected final ViewPath viewPath;
+public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
     private boolean refreshView;
 
     public ProcessorSqlToDomino(ProcessorHelper helper, Supplier<T> recordSupplier) {
-        this.helper = Objects.requireNonNull(
-                helper, "Processor helper cannot be null");
-        this.recordSupplier = Objects.requireNonNull(
-                recordSupplier, "Record supplier helper cannot be null");
-
-        this.viewPath = new ViewPath() {
-            @Override
-            public String getName() {
-                return helper.getViewName();
-            }
-        };
+        super(helper, recordSupplier);
     }
 
     protected void afterExecution() throws ProcessorException {
@@ -77,25 +59,28 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
     public final boolean execute() throws ProcessorException {
         beforeExecution();
 
-        try (Connection conn = helper.getSqlFactory().getConnection()) {
+        try {
+            Connection conn = helper.getSqlFactory().getConnection();
             PreparedStatement statement = conn.prepareStatement(helper.getQueryStatement());
             statement.setQueryTimeout(helper.getQueryTimeout());
 
             helper.logMessage("Performing query...");
 
-            try (ResultSet result = statement.executeQuery()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
                 ProcessorTracker tracker = helper.getTracker();
 
                 helper.logMessage("Processing records...");
 
-                while (result.next()) {
+                String keyFieldName = getKeyField().getName();
+
+                while (resultSet.next()) {
                     if (helper.isExecutionCanceled()) {
                         return false;
                     }
 
                     T record = newRecord();
 
-                    pullResult(result, record);
+                    pullResultSet(resultSet, record);
 
                     Document doc = null;
 
@@ -113,7 +98,7 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
                                 deleteDocument(doc);
 
                                 helper.logVerboseMessage(() -> Unthrow.on(
-                                        () -> "Deleted record " + record.getValue(getKeyField())));
+                                        () -> "Deleted record " + record.getValue(keyFieldName)));
 
                                 setRefreshView(true);
                             }
@@ -140,7 +125,7 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
                         helper.logVerboseMessage(() -> Unthrow.on(() -> {
                             StringBuilder summary = new StringBuilder(
                                     (record.isNew() ? "New" : "Updated")
-                                            + " record " + record.getValue(getKeyField()));
+                                            + " record " + record.getValue(keyFieldName));
 
                             changes.forEach((name, change) -> summary.append(
                                     String.format("\n\t%s %s", name, change)));
@@ -180,41 +165,19 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
         try {
             View view = getView();
 
-            if (refreshView) {
+            if (isRefreshView()) {
                 view.refresh();
 
                 setRefreshView(false);
             }
 
-            Document doc = view.getDocumentByKey(getDocumentKey(record), true);
+            Document doc = view.getDocumentByKey(getKeyValue(record), true);
 
             if (doc == null) {
                 return Optional.empty();
             }
 
             return Optional.of(helper.getDominoFactory().setDefaults(doc));
-        } catch (NotesException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    protected Object getDocumentKey(T record) throws ProcessorException {
-        return record.getValue(getKeyField());
-    }
-
-    protected final DominoSilo getDominoSilo() {
-        return helper.getDominoFactory().getDominoSilo(helper.getId());
-    }
-
-    protected String getKeyField() throws ProcessorException {
-        return helper.getFieldKey()
-                .orElseThrow(() -> new ProcessorException(
-                        "Cannot find document without a key field"));
-    }
-
-    protected final View getView() {
-        try {
-            return getDominoSilo().getView(viewPath, ViewAccessPolicy.REFRESH);
         } catch (NotesException e) {
             throw new RuntimeException(e);
         }
@@ -247,44 +210,51 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
         return refreshView;
     }
 
-    @Override
-    public T newRecord() {
-        return recordSupplier.get();
-    }
-
-    protected void pullResult(ResultSet result, T record) throws SQLException {
+    protected void pullResultSet(ResultSet resultSet, T record) throws ProcessorException {
         for (FieldPair pair : helper.getFieldPairs()) {
             Field from = pair.getFrom();
             Field to = pair.getTo();
 
             try {
                 switch (from.getType()) {
+                case BOOLEAN:
+                    record.setValue(to.getName(), transformValue(
+                            resultSet.getBoolean(from.getName()), to.getType()));
+
+                    break;
                 case DATE:
                     // There's a fix here because Domino doesn't read millisecs
                     record.setValue(to.getName(), transformValue(
-                            Optional.ofNullable(result.getTimestamp(from.getName()))
+                            Optional.ofNullable(resultSet.getTimestamp(from.getName()))
                                     .map(t -> new java.util.Date(t.getTime() / 1000 * 1000))
                                     .orElse(null),
                             to.getType()));
+
+                    break;
+                case DECIMAL:
+                    // getObject actually returns null if the SQL value is null
+                    // unlike getBigDecimal that returns 0.0
+                    record.setValue(to.getName(), transformValue(
+                            resultSet.getObject(from.getName()), to.getType()));
 
                     break;
                 case DOUBLE:
                     // getObject actually returns null if the SQL value is null
                     // unlike getDouble that returns 0.0
                     record.setValue(to.getName(), transformValue(
-                            result.getObject(from.getName()), to.getType()));
+                            resultSet.getObject(from.getName()), to.getType()));
 
                     break;
                 case INTEGER:
                     // getObject actually returns null if the SQL value is null
                     // unlike getInteger that returns 0
                     record.setValue(to.getName(), transformValue(
-                            result.getObject(from.getName()), to.getType()));
+                            resultSet.getObject(from.getName()), to.getType()));
 
                     break;
                 case STRING:
                     record.setValue(to.getName(), transformValue(
-                            result.getString(from.getName()), to.getType()));
+                            resultSet.getString(from.getName()), to.getType()));
 
                     break;
                 }
@@ -295,7 +265,7 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
         }
     }
 
-    protected Map<String, ValueChange> pushRecord(Record record, Document doc)
+    protected Map<String, ValueChange> pushRecord(T record, Document doc)
             throws ProcessorException {
         Map<String, ValueChange> changes = new HashMap<>();
 
@@ -334,10 +304,15 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
 
                 if (documentValue == null
                         || !recordValue.equals(documentValue)) {
-                    if (recordValue instanceof Date) {
+                    if (recordValue instanceof Boolean) {
+                        doc.replaceItemValue(to.getName(), ((Boolean) recordValue).toString());
+                    } else if (recordValue instanceof Date) {
                         DominoUtil.setDate(
                                 helper.getDominoFactory().getSession(),
                                 doc, to.getName(), (Date) recordValue);
+                    } else if (recordValue instanceof BigDecimal) {
+                        doc.replaceItemValue(to.getName(),
+                                ((BigDecimal) recordValue).doubleValue());
                     } else {
                         doc.replaceItemValue(to.getName(), recordValue);
                     }
@@ -356,54 +331,6 @@ public class ProcessorSqlToDomino<T extends Record> implements Processor<T> {
 
     protected final void setRefreshView(boolean flag) {
         this.refreshView = flag;
-    }
-
-    protected Object transformValue(Object value, Field.Type destinationType) {
-        if (value == null) {
-            return value;
-        }
-
-        if (value instanceof Date) {
-            if (Field.Type.STRING == destinationType) {
-                return DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(((Date) value).toInstant());
-            }
-
-            return value;
-        }
-
-        if (value instanceof Number) {
-            if (Field.Type.DOUBLE == destinationType) {
-                return ((Number) value).doubleValue();
-            }
-
-            if (Field.Type.INTEGER == destinationType) {
-                return ((Number) value).intValue();
-            }
-
-            if (Field.Type.STRING == destinationType) {
-                return ((Number) value).toString();
-            }
-
-            return value;
-        }
-
-        if (value instanceof String) {
-            if (Field.Type.DATE == destinationType) {
-                return DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse((String) value);
-            }
-
-            if (Field.Type.DOUBLE == destinationType) {
-                return Double.valueOf((String) value);
-            }
-
-            if (Field.Type.INTEGER == destinationType) {
-                return Integer.valueOf((String) value);
-            }
-
-            return value;
-        }
-
-        return value;
     }
 
 }
