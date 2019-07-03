@@ -16,7 +16,7 @@ Use "Standard"
   </code>
   <actionbar bgcolor="#f0f0f0" bordercolor="black">
     <actionbuttonstyle bgcolor="#f0f0f0"/>
-    <font size="9pt" color="system"/>
+    <font color="system"/>
     <border style="solid" width="0px 0px 1px" color="system"/>
     <action title="Categori_ze" showinbar="false" systemcommand="categorize"/>
     <action title="_Edit Document" showinbar="false" systemcommand="edit"/>
@@ -47,9 +47,6 @@ Use "Standard"
         </run>
         <run>
           <font size="8pt" color="red"/>
-        </run>
-        <run>
-          <font size="8pt" color="red"/>
           <sharedfieldref name="uuid"/>
         </run>
         <run>
@@ -57,19 +54,7 @@ Use "Standard"
         </run>
         <run>
           <font size="8pt" color="red"/>
-        </run>
-        <run>
-          <font size="8pt" color="red"/>
-        </run>
-        <run>
-          <font size="8pt" color="red"/>
           <sharedfieldref name="displayBoolean"/>
-        </run>
-        <run>
-          <font size="8pt" color="red"/>
-        </run>
-        <run>
-          <font size="8pt" color="red"/>
         </run>
         <run>
           <font size="8pt" color="red"/>
@@ -87,15 +72,9 @@ Use "Standard"
             </code>
           </field>
         </run>
-        <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="58" containertype="65418" aftercontainercount="1" afterbegincount="3">
+        <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="26" containertype="65418" aftercontainercount="1" afterbegincount="3">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-        <run>
-          <font size="8pt" color="red"/>
-        </run>
-        <run>
-          <font size="8pt" color="red"/>
-        </run>
         <run>
           <font size="8pt" color="red"/>
         </run>
@@ -103,25 +82,32 @@ Yg4BAIQAAAAAAAAAAAA=
           <font size="8pt" color="red"/>
           <field type="text" allowmultivalues="true" kind="computedfordisplay" name="displayTypes" listinputseparators="comma semicolon" listdisplayseparator="semicolon">
             <code event="defaultvalue">
-              <formula>"STRING":
-"INTEGER":
+              <formula>"BOOLEAN":
+"DATE";
+"DECIMAL":
 "DOUBLE":
-"DATE"</formula>
+"INTEGER":
+"STRING"</formula>
             </code>
           </field>
         </run>
-        <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="80" containertype="65418" aftercontainercount="1" afterbegincount="3">
+        <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="35" containertype="65418" aftercontainercount="1" afterbegincount="3">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
         <run>
           <font size="8pt" color="red"/>
+          <field type="text" allowmultivalues="true" kind="computedfordisplay" name="displayFields" listinputseparators="comma semicolon" listdisplayseparator="semicolon">
+            <code event="defaultvalue">
+              <formula>@If(fieldEvaluation="LEFT_TO_RIGHT";
+ @Left(@Left(mapping;"|");":");
+ @Right(@Right(mapping;"|");":")
+)</formula>
+            </code>
+          </field>
         </run>
-        <run>
-          <font size="8pt" color="red"/>
-        </run>
-        <run>
-          <font size="8pt" color="red"/>
-        </run>
+        <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="41" containertype="65418" aftercontainercount="1" afterbegincount="3">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
         <run>
           <font size="8pt" color="red"/>
           <field type="text" kind="computedwhencomposed" name="status">
@@ -130,12 +116,9 @@ Yg4BAIQAAAAAAAAAAAA=
             </code>
           </field>
         </run>
-        <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="102" containertype="65418" aftercontainercount="1" afterbegincount="3">
+        <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="47" containertype="65418" aftercontainercount="1" afterbegincount="3">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-        <run>
-          <font size="8pt" color="red"/>
-        </run>
       </par>
       <pardef id="2"/>
       <par def="2"/>
@@ -162,9 +145,6 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
-              </run>
-              <run>
-                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="title">
                   <code event="inputvalidation">
                     <formula>@If(@ThisValue="" &amp; !@IsDocBeingRecalculated;
@@ -174,12 +154,9 @@ Yg4BAIQAAAAAAAAAAAA=
                   </code>
                 </field>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="13" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -197,17 +174,11 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt" color="gray"/>
-              </run>
-              <run>
-                <font size="8pt" color="gray"/>
                 <computedtext>
                   <code event="value">
                     <formula>nature</formula>
                   </code>
                 </computedtext>
-              </run>
-              <run>
-                <font size="8pt" color="gray"/>
               </run>
             </par>
           </tablecell>
@@ -226,17 +197,11 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
-              </run>
-              <run>
-                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="description"/>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-              <run>
-                <font size="8pt"/>
-              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -249,8 +214,8 @@ Yg4BAIQAAAAAAAAAAAA=
         <tablecolumn width="7.2000in"/>
         <tablerow tablabel="Execution">
           <tablecell borderwidth="0px">
-            <pardef id="7" hide="notes web" keepwithnext="true" keeptogether="true"/>
-            <par def="7"/>
+            <pardef id="6" hide="notes web" keepwithnext="true" keeptogether="true"/>
+            <par def="6"/>
             <table cellbordercolor="black" leftmargin="0" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
               <tablecolumn width="2in"/>
               <tablecolumn width="5in"/>
@@ -270,9 +235,6 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="runMode">
                         <keywords columns="3" ui="dialoglist">
                           <textlist>
@@ -285,9 +247,6 @@ Yg4BAIQAAAAAAAAAAAA=
                           <formula>"DRY_RUN"</formula>
                         </code>
                       </field>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                     </run>
                   </par>
                 </tablecell>
@@ -306,9 +265,6 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="interval">
                         <keywords columns="1" ui="dialoglist">
                           <textlist>
@@ -319,9 +275,6 @@ Yg4BAIQAAAAAAAAAAAA=
                           </textlist>
                         </keywords>
                       </field>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                     </run>
                   </par>
                 </tablecell>
@@ -344,9 +297,6 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" choicesdialog="addressbook" lookupeachchar="false" lookupaddressonrefresh="false" type="names" kind="editable" name="server">
                         <code event="inputvalidation">
                           <formula>@If(@ThisValue="";
@@ -355,9 +305,6 @@ Yg4BAIQAAAAAAAAAAAA=
 )</formula>
                         </code>
                       </field>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                     </run>
                   </par>
                 </tablecell>
@@ -376,15 +323,9 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" type="number" kind="editable" name="order">
                         <numberformat format="general" digits="2" punctuated="false" parens="false" percent="false" bytes="false"/>
                       </field>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                     </run>
                   </par>
                 </tablecell>
@@ -403,15 +344,9 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" type="datetime" allowmultivalues="true" kind="editable" name="timeFrame" listinputseparators="comma" listdisplayseparator="comma">
                         <datetimeformat show="datetime" date="yearmonthday" fourdigityearfor21stcentury="true" time="hour" zone="never" dateformat="weekdaymonthdayyear" dayformat="twodigitday" monthformat="twodigitmonth" yearformat="fourdigityear" weekdayformat="shortname" dateseparator1=" " dateseparator2="/" dateseparator3="/" timeseparator=":" preference="usersetting"/>
                       </field>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                     </run>
                   </par>
                 </tablecell>
@@ -421,14 +356,14 @@ Yg4BAIQAAAAAAAAAAAA=
         </tablerow>
         <tablerow tablabel="Connection">
           <tablecell borderwidth="0px">
-            <par def="7"/>
+            <par def="6"/>
             <table cellbordercolor="black" leftmargin="0" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
               <tablecolumn width="2in"/>
               <tablecolumn width="5in"/>
               <tablerow>
                 <tablecell borderwidth="0px" bgcolor="#f7f7f7">
-                  <pardef id="10" align="right" hide="edit previewedit" keepwithnext="true" keeptogether="true"/>
-                  <par def="10">
+                  <pardef id="9" align="right" hide="edit previewedit" keepwithnext="true" keeptogether="true"/>
+                  <par def="9">
                     <run>
                       <font size="8pt" style="bold"/>Domino Database</run>
                     <run>
@@ -437,8 +372,8 @@ Yg4BAIQAAAAAAAAAAAA=
                     <run>
                       <font size="8pt" style="bold"/>:</run>
                   </par>
-                  <pardef id="11" align="right" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-                  <par def="11">
+                  <pardef id="10" align="right" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+                  <par def="10">
                     <actionhotspot hotspotstyle="none">
                       <run>
                         <font size="8pt" style="bold underline" color="blue"/>Domino Database</run>
@@ -464,9 +399,6 @@ End Sub
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" type="text" kind="editable" name="database">
                         <code event="inputenabled">
                           <formula>@False</formula>
@@ -479,12 +411,9 @@ End Sub
                         </code>
                       </field>
                     </run>
-                    <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
+                    <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-                    <run>
-                      <font size="8pt"/>
-                    </run>
                   </par>
                 </tablecell>
               </tablerow>
@@ -506,9 +435,6 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" type="text" kind="editable" name="viewName">
                         <code event="inputvalidation">
                           <formula>@If(@ThisValue="" &amp; !@IsDocBeingRecalculated;
@@ -518,12 +444,9 @@ Yg4BAIQAAAAAAAAAAAA=
                         </code>
                       </field>
                     </run>
-                    <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
+                    <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-                    <run>
-                      <font size="8pt"/>
-                    </run>
                   </par>
                 </tablecell>
               </tablerow>
@@ -545,9 +468,6 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="connectionName">
                         <keywords recalconchange="true" columns="1" ui="dialoglist">
                           <formula>displayConnectionNames</formula>
@@ -560,21 +480,18 @@ Yg4BAIQAAAAAAAAAAAA=
                         </code>
                       </field>
                     </run>
-                    <run>
-                      <font size="8pt"/>
-                    </run>
                   </par>
                 </tablecell>
               </tablerow>
             </table>
-            <pardef id="12" keepwithnext="true" keeptogether="true"/>
-            <par def="12"/>
-            <par def="12"/>
+            <pardef id="8" keepwithnext="true" keeptogether="true"/>
+            <par def="8"/>
+            <par def="8"/>
           </tablecell>
         </tablerow>
         <tablerow tablabel="Field Mapping">
           <tablecell borderwidth="0px">
-            <par def="7"/>
+            <par def="6"/>
             <table cellbordercolor="black" leftmargin="0" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
               <tablecolumn width="2in"/>
               <tablecolumn width="5in"/>
@@ -589,19 +506,16 @@ Yg4BAIQAAAAAAAAAAAA=
                   </par>
                 </tablecell>
                 <tablecell borderwidth="0px">
-                  <pardef id="14" hide="notes web" keepwithnext="true" keeptogether="true"/>
-                  <par def="14"/>
+                  <pardef id="11" hide="notes web" keepwithnext="true" keeptogether="true"/>
+                  <par def="11"/>
                   <table widthtype="fitmargins" leftmargin="0" refwidth="5in">
                     <tablecolumn width="50%"/>
                     <tablecolumn width="50%"/>
                     <tablerow>
                       <tablecell columnspan="2" borderwidth="0px" bgcolor="#f7f7f7">
-                        <pardef id="17" align="center" keepwithnext="true" keeptogether="true"/>
-                        <par def="17">
+                        <pardef id="14" align="center" keepwithnext="true" keeptogether="true"/>
+                        <par def="14">
                           <border outsidewidth="5px"/>
-                          <run>
-                            <font size="8pt" style="bold"/>
-                          </run>
                           <run>
                             <font size="8pt" style="bold"/>
                           </run>
@@ -648,31 +562,28 @@ End Sub
                               </code>
                             </field>
                           </run>
-                          <run>
-                            <font size="8pt" style="bold"/>
-                          </run>
                         </par>
                       </tablecell>
                     </tablerow>
                     <tablerow>
                       <tablecell borderwidth="0px 1px 0px 0px">
-                        <pardef id="18" align="center" hide="notes web" keepwithnext="true" keeptogether="true"/>
-                        <par def="18"/>
+                        <pardef id="15" align="center" hide="notes web" keepwithnext="true" keeptogether="true"/>
+                        <par def="15"/>
                         <table widthtype="fitmargins" leftmargin="0" refwidth="2.5000in">
                           <tablecolumn width="50%"/>
                           <tablecolumn width="50%"/>
                           <tablerow>
                             <tablecell borderwidth="0px">
-                              <pardef id="20" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-                              <par def="20">
+                              <pardef id="17" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+                              <par def="17">
                                 <border outsidewidth="5px"/>
                                 <run>
                                   <font size="8pt" style="bold underline"/>Name</run>
                               </par>
                             </tablecell>
                             <tablecell borderwidth="0px">
-                              <pardef id="21" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-                              <par def="21">
+                              <pardef id="18" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+                              <par def="18">
                                 <border outsidewidth="5px"/>
                                 <run>
                                   <font size="8pt" style="bold underline"/>Type</run>
@@ -681,11 +592,8 @@ End Sub
                           </tablerow>
                           <tablerow>
                             <tablecell borderwidth="0px">
-                              <par def="20">
+                              <par def="17">
                                 <border outsidewidth="5px"/>
-                                <run>
-                                  <font size="8pt"/>
-                                </run>
                                 <run>
                                   <font size="8pt"/>
                                 </run>
@@ -693,20 +601,14 @@ End Sub
                                   <font size="8pt"/>
                                   <field showdelimiters="false" type="text" kind="editable" name="selectLeft"/>
                                 </run>
-                                <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="14" containertype="65418" aftercontainercount="1" afterbegincount="4">
+                                <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-                                <run>
-                                  <font size="8pt"/>
-                                </run>
                               </par>
                             </tablecell>
                             <tablecell borderwidth="0px">
-                              <par def="21">
+                              <par def="18">
                                 <border outsidewidth="5px"/>
-                                <run>
-                                  <font size="8pt"/>
-                                </run>
                                 <run>
                                   <font size="8pt"/>
                                 </run>
@@ -721,32 +623,29 @@ Yg4BAIQAAAAAAAAAAAA=
                                     </code>
                                   </field>
                                 </run>
-                                <run>
-                                  <font size="8pt"/>
-                                </run>
                               </par>
                             </tablecell>
                           </tablerow>
                         </table>
                       </tablecell>
                       <tablecell borderwidth="0px 0px 0px 1px">
-                        <pardef id="22" align="center" hide="notes web" keepwithnext="true" keeptogether="true"/>
-                        <par def="22"/>
+                        <pardef id="20" align="center" hide="notes web" keepwithnext="true" keeptogether="true"/>
+                        <par def="20"/>
                         <table widthtype="fitmargins" leftmargin="0.0104in" refwidth="2.4903in">
                           <tablecolumn width="50%"/>
                           <tablecolumn width="50%"/>
                           <tablerow>
                             <tablecell borderwidth="0px">
-                              <pardef id="24" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-                              <par def="24">
+                              <pardef id="22" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+                              <par def="22">
                                 <border outsidewidth="5px"/>
                                 <run>
                                   <font size="8pt" style="bold underline"/>Name</run>
                               </par>
                             </tablecell>
                             <tablecell borderwidth="0px">
-                              <pardef id="25" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-                              <par def="25">
+                              <pardef id="23" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+                              <par def="23">
                                 <border outsidewidth="5px"/>
                                 <run>
                                   <font size="8pt" style="bold underline"/>Type</run>
@@ -755,11 +654,8 @@ Yg4BAIQAAAAAAAAAAAA=
                           </tablerow>
                           <tablerow>
                             <tablecell borderwidth="0px">
-                              <par def="24">
+                              <par def="22">
                                 <border outsidewidth="5px"/>
-                                <run>
-                                  <font size="8pt"/>
-                                </run>
                                 <run>
                                   <font size="8pt"/>
                                 </run>
@@ -767,20 +663,14 @@ Yg4BAIQAAAAAAAAAAAA=
                                   <font size="8pt"/>
                                   <field showdelimiters="false" type="text" kind="editable" name="selectRight"/>
                                 </run>
-                                <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="14" containertype="65418" aftercontainercount="1" afterbegincount="4">
+                                <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-                                <run>
-                                  <font size="8pt"/>
-                                </run>
                               </par>
                             </tablecell>
                             <tablecell borderwidth="0px">
-                              <par def="25">
+                              <par def="23">
                                 <border outsidewidth="5px"/>
-                                <run>
-                                  <font size="8pt"/>
-                                </run>
                                 <run>
                                   <font size="8pt"/>
                                 </run>
@@ -795,9 +685,6 @@ Yg4BAIQAAAAAAAAAAAA=
                                     </code>
                                   </field>
                                 </run>
-                                <run>
-                                  <font size="8pt"/>
-                                </run>
                               </par>
                             </tablecell>
                           </tablerow>
@@ -806,8 +693,8 @@ Yg4BAIQAAAAAAAAAAAA=
                     </tablerow>
                     <tablerow>
                       <tablecell columnspan="2" borderwidth="0px">
-                        <pardef id="27" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-                        <par def="27">
+                        <pardef id="25" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+                        <par def="25">
                           <border outsidewidth="5px"/>
                           <actionhotspot hotspotstyle="none">
                             <code event="click">
@@ -850,16 +737,13 @@ $key := $selectLeft + ":" + typeLeft + "|" + $selectRight + ":" + typeRight;
                     </tablerow>
                     <tablerow>
                       <tablecell borderwidth="0px 1px 0px 0px">
-                        <pardef id="28" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
+                        <pardef id="26" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
                           <code event="hidewhen">
                             <formula>@Elements(mapping) = 0</formula>
                           </code>
                         </pardef>
-                        <par def="28">
+                        <par def="26">
                           <border outsidewidth="5px 0px 0px"/>
-                          <run>
-                            <font size="8pt" color="gray"/>
-                          </run>
                           <run>
                             <font size="8pt" color="gray"/>
                           </run>
@@ -871,25 +755,19 @@ $key := $selectLeft + ":" + typeLeft + "|" + $selectRight + ":" + typeRight;
                               </code>
                             </field>
                           </run>
-                          <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="22" containertype="65418" aftercontainercount="1" afterbegincount="4">
+                          <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="13" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-                          <run>
-                            <font size="8pt" color="gray"/>
-                          </run>
                         </par>
                       </tablecell>
                       <tablecell borderwidth="0px 0px 0px 1px">
-                        <pardef id="29" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
+                        <pardef id="27" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
                           <code event="hidewhen">
                             <formula>@Elements(mapping) = 0</formula>
                           </code>
                         </pardef>
-                        <par def="29">
+                        <par def="27">
                           <border outsidewidth="5px 0px 0px"/>
-                          <run>
-                            <font size="8pt" color="gray"/>
-                          </run>
                           <run>
                             <font size="8pt" color="gray"/>
                           </run>
@@ -901,12 +779,9 @@ Yg4BAIQAAAAAAAAAAAA=
                               </code>
                             </field>
                           </run>
-                          <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="22" containertype="65418" aftercontainercount="1" afterbegincount="4">
+                          <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="13" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-                          <run>
-                            <font size="8pt" color="gray"/>
-                          </run>
                         </par>
                       </tablecell>
                     </tablerow>
@@ -931,15 +806,9 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="keyField">
                         <keywords recalcchoices="true" columns="1" ui="dialoglist">
-                          <formula>@If(fieldOperation="LEFT_TO_RIGHT";
- @Left(@Left(mapping;"|");":");
- @Right(@Right(mapping;"|");":")
-)</formula>
+                          <formula>displayFields</formula>
                         </keywords>
                         <code event="inputvalidation">
                           <formula>@If(@ThisValue="" &amp; !@IsDocBeingRecalculated;
@@ -948,9 +817,6 @@ Yg4BAIQAAAAAAAAAAAA=
 )</formula>
                         </code>
                       </field>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                     </run>
                   </par>
                 </tablecell>
@@ -969,20 +835,11 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="deletionControlField">
                         <keywords recalcchoices="true" columns="1" ui="dialoglist">
-                          <formula>@If(fieldOperation="LEFT_TO_RIGHT";
- @Left(@Left(mapping;"|");":");
- @Right(@Right(mapping;"|");":")
-)</formula>
+                          <formula>displayFields</formula>
                         </keywords>
                       </field>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                     </run>
                   </par>
                 </tablecell>
@@ -1001,20 +858,11 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" allowmultivalues="true" kind="editable" name="temporaryFields" listinputseparators="comma" listdisplayseparator="comma">
                         <keywords recalcchoices="true" columns="1" ui="dialoglist">
-                          <formula>@If(fieldOperation="LEFT_TO_RIGHT";
- @Left(@Left(mapping;"|");":");
- @Right(@Right(mapping;"|");":")
-)</formula>
+                          <formula>displayFields</formula>
                         </keywords>
                       </field>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                     </run>
                   </par>
                 </tablecell>
@@ -1024,19 +872,19 @@ Yg4BAIQAAAAAAAAAAAA=
         </tablerow>
         <tablerow tablabel="Query">
           <tablecell borderwidth="0px">
-            <par def="7"/>
+            <par def="6"/>
             <subformref>
               <code event="value">
                 <formula>nature</formula>
               </code>
             </subformref>
-            <par def="12"/>
+            <par def="8"/>
           </tablecell>
         </tablerow>
         <tablerow tablabel="Processor">
           <tablecell borderwidth="0px">
-            <pardef id="30" leftmargin="0" hide="notes web" keepwithnext="true" keeptogether="true"/>
-            <par def="30"/>
+            <pardef id="29" leftmargin="0" hide="notes web" keepwithnext="true" keeptogether="true"/>
+            <par def="29"/>
             <table cellbordercolor="black" leftmargin="0" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
               <tablecolumn width="2in"/>
               <tablecolumn width="5in"/>
@@ -1063,17 +911,11 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" type="text" kind="editable" name="processorBuilderClassName"/>
                     </run>
-                    <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
+                    <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-                    <run>
-                      <font size="8pt"/>
-                    </run>
                   </par>
                 </tablecell>
               </tablerow>
@@ -1102,17 +944,11 @@ Form=Adds the form item with the specified value for every new document</popupte
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" type="text" allowmultivalues="true" kind="editable" name="processorVariables" listinputseparators="newline" listdisplayseparator="newline"/>
                     </run>
-                    <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
+                    <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-                    <run>
-                      <font size="8pt"/>
-                    </run>
                   </par>
                 </tablecell>
               </tablerow>
@@ -1130,9 +966,6 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="processorRecordPolicy">
                         <keywords columns="3" ui="dialoglist">
                           <textlist>
@@ -1145,9 +978,6 @@ Yg4BAIQAAAAAAAAAAAA=
                         </code>
                       </field>
                     </run>
-                    <run>
-                      <font size="8pt"/>
-                    </run>
                   </par>
                 </tablecell>
               </tablerow>
@@ -1156,7 +986,7 @@ Yg4BAIQAAAAAAAAAAAA=
         </tablerow>
         <tablerow tablabel="Log">
           <tablecell borderwidth="0px">
-            <par def="7"/>
+            <par def="6"/>
             <table cellbordercolor="black" leftmargin="0" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
               <tablecolumn width="2in"/>
               <tablecolumn width="5in"/>
@@ -1174,29 +1004,23 @@ Yg4BAIQAAAAAAAAAAAA=
                     </run>
                     <run>
                       <font size="8pt"/>
-                    </run>
-                    <run>
-                      <font size="8pt"/>
                       <field runexitingonchange="true" borderstyle="none" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" allowmultivalues="true" kind="editable" name="printSummary" listinputseparators="comma" listdisplayseparator="comma">
                         <keywords helperbutton="false" columns="1" ui="checkbox">
                           <formula>displayBoolean</formula>
                         </keywords>
                       </field>
                     </run>
-                    <run>
-                      <font size="8pt"/>
-                    </run>
                   </par>
                 </tablecell>
               </tablerow>
             </table>
-            <par def="7"/>
+            <par def="6"/>
             <table widthtype="fitmargins" cellbordercolor="black" leftmargin="0" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
               <tablecolumn width="100%"/>
               <tablerow>
                 <tablecell borderwidth="0px" bgcolor="#f7f7f7">
-                  <pardef id="34" align="center" keepwithnext="true" keeptogether="true"/>
-                  <par def="34">
+                  <pardef id="30" align="center" keepwithnext="true" keeptogether="true"/>
+                  <par def="30">
                     <run>
                       <font size="8pt" style="bold"/>Last Execution</run>
                   </par>
@@ -1204,11 +1028,8 @@ Yg4BAIQAAAAAAAAAAAA=
               </tablerow>
               <tablerow>
                 <tablecell borderwidth="0px">
-                  <pardef id="35" keepwithnext="true" keeptogether="true"/>
-                  <par def="35">
-                    <run>
-                      <font size="8pt"/>
-                    </run>
+                  <pardef id="31" keepwithnext="true" keeptogether="true"/>
+                  <par def="31">
                     <run>
                       <font size="8pt"/>
                     </run>
@@ -1220,23 +1041,20 @@ Yg4BAIQAAAAAAAAAAAA=
                         </code>
                       </field>
                     </run>
-                    <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="3">
+                    <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="3">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
-                    <run>
-                      <font size="8pt"/>
-                    </run>
                   </par>
                 </tablecell>
               </tablerow>
             </table>
-            <par def="7"/>
-            <par def="12"/>
+            <par def="6"/>
+            <par def="8"/>
           </tablecell>
         </tablerow>
       </table>
-      <pardef id="36" firstlineleftmargin="1in"/>
-      <par def="36"/>
+      <pardef id="3" firstlineleftmargin="1in"/>
+      <par def="3"/>
     </richtext>
   </body>
   <item name="$$fieldOperation" summary="false" sign="true">
@@ -1321,15 +1139,7 @@ Sub Exiting(Source As Field)
 End Sub<break/>
     </text>
   </item>
-  <item name="order" summary="false" sign="true">
+  <item name="order" summary="false">
     <number>0</number>
-  </item>
-  <item name="$REF" summary="true" sign="true">
-    <rawitemdata type="4">
-AQDbh9YB+zyfZlWrPgAmhCXB
-</rawitemdata>
-  </item>
-  <item name="$Conflict" sign="true">
-    <text/>
   </item>
 </form>
