@@ -8,7 +8,7 @@
   </code>
   <actionbar bgcolor="#f0f0f0" bordercolor="black">
     <actionbuttonstyle bgcolor="#f0f0f0"/>
-    <font color="system"/>
+    <font size="9pt" color="system"/>
     <border style="solid" width="0px 0px 1px" color="system"/>
     <action title="Categori_ze" showinbar="false" systemcommand="categorize"/>
     <action title="_Edit Document" showinbar="false" systemcommand="edit"/>
@@ -39,7 +39,13 @@
         </run>
         <run>
           <font size="8pt" color="red"/>
+        </run>
+        <run>
+          <font size="8pt" color="red"/>
           <sharedfieldref name="uuid"/>
+        </run>
+        <run>
+          <font size="8pt" color="red"/>
         </run>
       </par>
       <pardef id="2"/>
@@ -67,6 +73,9 @@
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="title">
                   <code event="inputvalidation">
                     <formula>@If(@ThisValue="";
@@ -76,9 +85,12 @@
                   </code>
                 </field>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="13" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -96,11 +108,17 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="description"/>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -111,8 +129,8 @@ Yg4BAIQAAAAAAAAAAAA=
         <tablecolumn width="5in"/>
         <tablerow>
           <tablecell borderwidth="0px" bgcolor="#f7f7f7">
-            <pardef id="6" align="right" keepwithnext="true" keeptogether="true"/>
-            <par def="6">
+            <pardef id="7" align="right" keepwithnext="true" keeptogether="true"/>
+            <par def="7">
               <run>
                 <font size="8pt" style="bold"/>Driver</run>
               <run>
@@ -128,6 +146,9 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="driver">
                   <code event="inputvalidation">
                     <formula>@If(@ThisValue="";
@@ -137,15 +158,18 @@ Yg4BAIQAAAAAAAAAAAA=
                   </code>
                 </field>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>
         <tablerow>
           <tablecell borderwidth="0px" bgcolor="#f7f7f7">
-            <par def="6">
+            <par def="7">
               <run>
                 <font size="8pt" style="bold"/>URL</run>
               <run>
@@ -161,6 +185,9 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="url">
                   <code event="inputvalidation">
                     <formula>@If(@ThisValue="";
@@ -170,9 +197,12 @@ Yg4BAIQAAAAAAAAAAAA=
                   </code>
                 </field>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>

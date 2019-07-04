@@ -23,11 +23,17 @@
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_with"/>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="13" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -48,11 +54,17 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_select"/>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -70,11 +82,17 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_from"/>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -92,11 +110,17 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_where"/>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -114,11 +138,17 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_group"/>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -136,11 +166,17 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="text" kind="editable" name="query_stmt_order"/>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="12" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -155,6 +191,9 @@ Yg4BAIQAAAAAAAAAAAA=
           </tablecell>
           <tablecell borderwidth="0px">
             <par def="4">
+              <run>
+                <font size="8pt" color="gray"/>
+              </run>
               <run>
                 <font size="8pt" color="gray"/>
               </run>
@@ -183,9 +222,12 @@ $query</formula>
                   </code>
                 </field>
               </run>
-              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="10" containertype="65418" aftercontainercount="1" afterbegincount="4">
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="18" containertype="65418" aftercontainercount="1" afterbegincount="4">
 Yg4BAIQAAAAAAAAAAAA=
 </compositedata>
+              <run>
+                <font size="8pt" color="gray"/>
+              </run>
             </par>
           </tablecell>
         </tablerow>
@@ -203,6 +245,9 @@ Yg4BAIQAAAAAAAAAAAA=
               </run>
               <run>
                 <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
                 <field showdelimiters="false" type="number" kind="editable" name="query_timeout">
                   <numberformat format="general" varying="true" digits="2" punctuated="false" parens="false" percent="false" bytes="false"/>
                   <code event="defaultvalue">
@@ -215,6 +260,9 @@ Yg4BAIQAAAAAAAAAAAA=
 )</formula>
                   </code>
                 </field>
+              </run>
+              <run>
+                <font size="8pt"/>
               </run>
               <run>
                 <font size="8pt"/> seconds</run>
