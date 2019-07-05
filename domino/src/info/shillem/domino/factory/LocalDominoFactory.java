@@ -56,8 +56,8 @@ public class LocalDominoFactory extends AbstractDominoFactory {
     }
 
     @Override
-    public DominoFactory newInstance() throws NotesException {
-        Builder builder = new Builder(getSession());
+    public DominoFactory newInstance(Session session) throws NotesException {
+        Builder builder = new Builder(session);
 
         options.forEach(builder::addOption);
 

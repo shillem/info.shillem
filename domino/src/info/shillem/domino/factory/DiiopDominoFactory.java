@@ -54,7 +54,7 @@ public class DiiopDominoFactory extends AbstractDominoFactory {
     }
 
     @Override
-    public DominoFactory newInstance() throws NotesException {
+    public DominoFactory newInstance(Session session) throws NotesException {
         Builder builder = new Builder(getSession());
 
         options.forEach(builder::addOption);

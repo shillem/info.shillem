@@ -18,7 +18,7 @@ public interface DominoFactory {
 
     boolean isRemote();
 
-    DominoFactory newInstance() throws NotesException;
+    DominoFactory newInstance(Session session) throws NotesException;
 
     void recycle();
 
