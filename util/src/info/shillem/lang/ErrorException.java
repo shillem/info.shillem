@@ -52,19 +52,32 @@ public class ErrorException extends Exception {
     }
 
     public static boolean exceptionCauseIs(Throwable e, ErrorCode code) {
+        return exceptionCauseIsAny(e, code);
+    }
+
+    public static boolean exceptionCauseIsAny(Throwable e, ErrorCode... codes) {
+        Objects.requireNonNull(e, "Throwable cannot be null");
+        Objects.requireNonNull(codes, "Error code cannot be null");
+
         if (e.getCause() == null) {
             return false;
         }
-        
+
         Throwable cause = e.getCause();
-        
+
         if (!(cause instanceof ErrorException)) {
             return false;
         }
-        
+
         ErrorException ee = (ErrorException) cause;
-        
-        return code.equals(ee.getCode());
+
+        for (ErrorCode code : codes) {
+            if (code.equals(ee.getCode())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }

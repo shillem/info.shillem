@@ -12,5 +12,5 @@ Import-Package: com.ibm.domino.napi.c,
  com.ibm.xsp.model.domino,
  info.shillem.util,
  lotus.domino,
- org.osgi.framework;version="1.3.0"
+ org.osgi.framework
 Export-Package: info.shillem.domino.xsp
