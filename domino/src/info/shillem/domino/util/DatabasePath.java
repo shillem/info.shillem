@@ -13,6 +13,8 @@ public final class DatabasePath implements Serializable {
             Pattern.compile("\\.n[st]f$", Pattern.CASE_INSENSITIVE);
     private static final Pattern SYNTAX_PATTERN =
             Pattern.compile("([^!]*)!!(.*)");
+    private static final Pattern SERVER_NAME_PATTERN =
+            Pattern.compile("(?:CN=)*([^\\/]+)", Pattern.CASE_INSENSITIVE);
 
     private final String serverName;
     private final String filePath;
@@ -66,14 +68,24 @@ public final class DatabasePath implements Serializable {
         return filePath;
     }
 
+    public String getFilePathAsUrl() {
+        return filePath.replace('\\', '/');
+    }
+
     public String getServerName() {
         return serverName;
     }
 
-    public String getUrlPath() {
-        return filePath.replace('\\', '/');
+    public String getServerNameAsUrl() {
+        Matcher matcher = SERVER_NAME_PATTERN.matcher(serverName);
+        
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        
+        return null;
     }
-    
+
     @Override
     public String toString() {
         return getApiPath();

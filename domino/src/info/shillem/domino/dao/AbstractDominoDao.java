@@ -5,9 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,6 +35,7 @@ import info.shillem.domino.util.DeletionType;
 import info.shillem.domino.util.DominoSilo;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.domino.util.MimeContentType;
+import info.shillem.domino.util.ViewManager;
 import info.shillem.domino.util.ViewMatch;
 import info.shillem.dto.AttachmentFile;
 import info.shillem.dto.AttachmentMap;
@@ -43,6 +44,7 @@ import info.shillem.dto.BaseDto.SchemaFilter;
 import info.shillem.dto.BaseField;
 import info.shillem.dto.JsonValue;
 import info.shillem.util.CastUtil;
+import info.shillem.util.CollectionUtil;
 import info.shillem.util.IOUtil;
 import info.shillem.util.StringUtil;
 import info.shillem.util.Unthrow;
@@ -90,6 +92,33 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
+    protected void create(T wrapper, DominoSilo silo) throws DaoException, NotesException {
+        create(wrapper, silo, null);
+    }
+
+    protected void create(T wrapper, DominoSilo silo, String formName)
+            throws DaoException, NotesException {
+        if (!wrapper.isNew()) {
+            throw new IllegalArgumentException(
+                    "Creation cannot be performed on an existing record");
+        }
+
+        Document doc = null;
+
+        try {
+            doc = createDocument(silo, formName);
+
+            pushWrapper(wrapper, doc);
+
+            doc.save();
+
+            wrapper.setId(doc.getUniversalID());
+            wrapper.commit(DominoUtil.getLastModified(doc));
+        } finally {
+            DominoUtil.recycle(doc);
+        }
+    }
+
     protected Document createDocument(DominoSilo silo) throws NotesException {
         return createDocument(silo, null);
     }
@@ -107,7 +136,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected boolean deleteDocument(DominoSilo silo, Document doc, DeletionType deletion)
-            throws DaoException, NotesException {
+            throws NotesException {
         if (silo.isDocumentLockingEnabled()) {
             if (!doc.lock()) {
                 throw new RuntimeException("Unable to acquire lock");
@@ -143,7 +172,13 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
-        return getDocumentByKeys(view, Arrays.asList(key), match);
+        Document doc = view.getDocumentByKey(key, match.isExact());
+
+        if (doc == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(factory.setDefaults(doc));
     }
 
     protected Optional<Document> getDocumentByKeys(View view, Collection<?> keys, ViewMatch match)
@@ -154,9 +189,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throw new IllegalArgumentException("Key(s) cannot be empty");
         }
 
-        Document doc = view.getDocumentByKey(
-                keys instanceof Vector ? (Vector<?>) keys : new Vector<>(keys),
-                match.isExact());
+        Document doc = view.getDocumentByKey(CollectionUtil.asVector(keys), match.isExact());
 
         if (doc == null) {
             return Optional.empty();
@@ -173,7 +206,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             View view, Object key, ViewMatch match) throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
-        return getViewEntriesByKeys(view, Arrays.asList(key), match);
+        return view.getAllEntriesByKey(key, match.isExact());
     }
 
     protected ViewEntryCollection getViewEntriesByKeys(
@@ -184,15 +217,40 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throw new IllegalArgumentException("Key(s) cannot be empty");
         }
 
-        return view.getAllEntriesByKey(
-                keys instanceof Vector ? (Vector<?>) keys : new Vector<>(keys),
-                match.isExact());
+        return view.getAllEntriesByKey(CollectionUtil.asVector(keys), match.isExact());
     }
 
-    protected void pullDocument(Document doc, T wrapper, Query<E> query)
-            throws DaoException, NotesException {
-        factory.setDefaults(doc);
+    protected Optional<ViewEntry> getViewEntryByKey(
+            View view, Object key, ViewMatch match) throws NotesException {
+        Objects.requireNonNull(key, "Key cannot be null");
 
+        ViewEntry entry = view.getEntryByKey(key, match.isExact());
+
+        if (entry == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(factory.setDefaults(entry));
+    }
+
+    protected Optional<ViewEntry> getViewEntryByKeys(
+            View view, Collection<?> keys, ViewMatch match) throws NotesException {
+        Objects.requireNonNull(keys, "Key(s) cannot be null");
+
+        if (keys.isEmpty()) {
+            throw new IllegalArgumentException("Key(s) cannot be empty");
+        }
+
+        ViewEntry entry = view.getEntryByKey(CollectionUtil.asVector(keys), match.isExact());
+
+        if (entry == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(factory.setDefaults(entry));
+    }
+
+    protected void pullDocument(Document doc, T wrapper, Query<E> query) throws NotesException {
         for (E field : query.getSchema()) {
             pullItem(field, doc, wrapper, query.getLocale());
         }
@@ -207,35 +265,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    protected void pullEntry(ViewEntry entry, T wrapper, Query<E> query, List<String> columns)
-            throws NotesException {
-        factory.setDefaults(entry);
-
-        for (E field : query.getSchema()) {
-            String fieldName = getDocumentItemName(field);
-
-            if (columns.contains(fieldName)) {
-                List<?> columnValues = entry.getColumnValues();
-
-                wrapper.presetValue(field, pullValue(
-                        field.getProperties().getType(),
-                        columnValues.get(columns.indexOf(fieldName))));
-            } else {
-                throw new IllegalArgumentException(
-                        "Unable to retrieve value for schema field " + field);
-            }
-        }
-
-        wrapper.setId(entry.getUniversalID());
-
-        if (query.isFetchDatabaseUrl()) {
-            throw new UnsupportedOperationException(
-                    "Database URL cannot be fetched from a view entry");
-        }
-    }
-
-    protected void pullItem(E field, Document doc, T wrapper, Locale locale)
-            throws DaoException, NotesException {
+    protected void pullItem(E field, Document doc, T wrapper, Locale locale) {
         Class<? extends Serializable> type = field.getProperties().getType();
 
         try {
@@ -254,15 +284,14 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                         getDocumentItemName(field),
                         (value) -> Unthrow.on(() -> pullValue(type, value))));
             }
-        } catch (ClassCastException e) {
-            throw new RuntimeException(String.format(
-                    "Unable to pull item %s from document %s", field.name(), doc.getNoteID()),
-                    e);
+        } catch (Exception e) {
+            throw wrappedPullItemException(e, field, doc);
         }
     }
 
     private AttachmentMap pullItemAttachmentMap(E field, Document doc)
-            throws DaoException, NotesException {
+            throws IllegalAccessException, IllegalArgumentException, InstantiationException,
+            InvocationTargetException, NoSuchMethodException, NotesException, SecurityException {
         String itemName = getDocumentItemName(field);
 
         MIMEEntity mimeEntity = null;
@@ -282,7 +311,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
 
             try {
-                AttachmentMap am = (AttachmentMap) field.getProperties().getType().newInstance();
+                AttachmentMap am = (AttachmentMap) field.getProperties()
+                        .getType()
+                        .getDeclaredConstructor()
+                        .newInstance();
 
                 for (MIMEEntity attachment : attachments) {
                     DominoUtil
@@ -291,8 +323,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 }
 
                 return am;
-            } catch (IllegalAccessException | InstantiationException e) {
-                throw new RuntimeException(e);
             } finally {
                 DominoUtil.recycle(attachments);
             }
@@ -301,8 +331,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    private Object pullItemJsonValue(E field, Document doc)
-            throws NotesException {
+    private Object pullItemJsonValue(E field, Document doc) throws NotesException {
         String itemName = getDocumentItemName(field);
         MIMEEntity mimeEntity = null;
 
@@ -363,6 +392,40 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return type.cast(value);
     }
 
+    protected void pullViewEntry(
+            ViewEntry entry, T wrapper, Query<E> query, ViewManager manager)
+            throws NotesException {
+        List<?> columnValues = entry.getColumnValues();
+
+        for (E field : query.getSchema()) {
+            String fieldName = getDocumentItemName(field);
+            int columnIndex = manager.indexOfColumn(fieldName);
+
+            if (columnIndex < 0) {
+                throw new IllegalArgumentException(
+                        "Unable to retrieve value for schema field " + field);
+            }
+
+            wrapper.presetValue(field, pullValue(
+                    field.getProperties().getType(),
+                    columnValues.get(columnIndex)));
+        }
+
+        wrapper.setId(entry.getUniversalID());
+
+        int lastModifiedIndex = manager.indexOfColumn("$lastModified");
+
+        if (lastModifiedIndex > -1) {
+            wrapper.setLastModified(pullValue(
+                    Date.class,
+                    columnValues.get(lastModifiedIndex)));
+        }
+
+        if (query.isFetchDatabaseUrl()) {
+            wrapper.setDatabaseUrl(manager.getDatabaseUrl(entry));
+        }
+    }
+
     private Object pushValue(Object value) throws NotesException {
         if (value instanceof BigDecimal || value instanceof Long) {
             return ((Number) value).doubleValue();
@@ -382,56 +445,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     protected void pushWrapper(T wrapper, Document doc) throws NotesException {
         for (E field : wrapper.getSchema(SchemaFilter.UPDATED)) {
             pushWrapperField(field, wrapper, doc);
-        }
-    }
-
-    protected void create(T wrapper, DominoSilo silo) throws DaoException, NotesException {
-        create(wrapper, silo, null);
-    }
-
-    protected void create(T wrapper, DominoSilo silo, String formName)
-            throws DaoException, NotesException {
-        if (!wrapper.isNew()) {
-            throw new IllegalArgumentException(
-                    "Creation cannot be performed on an existing record");
-        }
-
-        Document doc = null;
-
-        try {
-            doc = createDocument(silo, formName);
-
-            pushWrapper(wrapper, doc);
-
-            doc.save();
-
-            wrapper.setId(doc.getUniversalID());
-            wrapper.commit(DominoUtil.getLastModified(doc));
-        } finally {
-            DominoUtil.recycle(doc);
-        }
-    }
-
-    protected void update(T wrapper, DominoSilo silo) throws DaoException, NotesException {
-        if (wrapper.isNew()) {
-            throw new IllegalArgumentException("Update cannot be performed on a new record");
-        }
-
-        Document doc = null;
-
-        try {
-            doc = getDocumentById(silo, wrapper.getId())
-                    .orElseThrow(() -> DaoRecordException.asMissing(wrapper.getId()));
-
-            checkTimestampAlignment(wrapper, doc);
-
-            pushWrapper(wrapper, doc);
-
-            doc.save();
-
-            wrapper.commit(DominoUtil.getLastModified(doc));
-        } finally {
-            DominoUtil.recycle(doc);
         }
     }
 
@@ -653,13 +666,58 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return getDocumentById(database, documentId);
     }
 
+    protected void update(T wrapper, DominoSilo silo) throws DaoException, NotesException {
+        if (wrapper.isNew()) {
+            throw new IllegalArgumentException("Update cannot be performed on a new record");
+        }
+
+        Document doc = null;
+
+        try {
+            doc = getDocumentById(silo, wrapper.getId())
+                    .orElseThrow(() -> DaoRecordException.asMissing(wrapper.getId()));
+
+            checkTimestampAlignment(wrapper, doc);
+
+            pushWrapper(wrapper, doc);
+
+            doc.save();
+
+            wrapper.commit(DominoUtil.getLastModified(doc));
+        } finally {
+            DominoUtil.recycle(doc);
+        }
+    }
+
     protected T wrapDocument(Document doc, Supplier<T> supplier, Query<E> query)
-            throws DaoException, NotesException {
-        T dto = supplier.get();
+            throws NotesException {
+        T wrapper = supplier.get();
 
-        pullDocument(doc, dto, query);
+        pullDocument(doc, wrapper, query);
 
-        return dto;
+        return wrapper;
+    }
+
+    protected RuntimeException wrappedPullItemException(Exception e, E field, Document doc) {
+        try {
+            return new RuntimeException(String.format(
+                    "Unable to pull item %s from document %s",
+                    field.name(),
+                    doc.getNoteID()),
+                    e);
+        } catch (NotesException ne) {
+            return new RuntimeException(String.format("Unable to pull item %s", field.name()), e);
+        }
+    }
+
+    protected T wrapViewEntry(
+            ViewEntry entry, Supplier<T> supplier, Query<E> query, ViewManager manager)
+            throws NotesException {
+        T wrapper = supplier.get();
+
+        pullViewEntry(entry, wrapper, query, manager);
+
+        return wrapper;
     }
 
 }
