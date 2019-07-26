@@ -112,6 +112,10 @@ public abstract class Processor<T extends Record> {
 
         if (value instanceof String) {
             String stringValue = (String) value;
+            
+            if (stringValue.isEmpty()) {
+                return null;
+            }
 
             if (Field.Type.BOOLEAN == destinationType) {
                 return Boolean.valueOf(stringValue);
