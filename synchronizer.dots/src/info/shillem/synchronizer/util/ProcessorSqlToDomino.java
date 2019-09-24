@@ -115,6 +115,8 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                         }
 
                         Map<String, ValueChange> changes = pushRecord(record, doc);
+                        
+                        finalizeDocument(doc, record, changes);
 
                         if (changes.isEmpty()) {
                             tracker.addUnmodified();
