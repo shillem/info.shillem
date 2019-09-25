@@ -139,10 +139,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throws NotesException {
         if (silo.isDocumentLockingEnabled()) {
             if (!doc.lock()) {
-                throw new RuntimeException("Unable to acquire lock");
+                throw new RuntimeException("Unable to acquire lock on note " + doc.getNoteID());
             }
-
-            doc.lock();
         }
 
         return doc.removePermanently(deletion.isHard());
