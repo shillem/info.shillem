@@ -416,7 +416,7 @@ public class Program {
         }
     }
 
-    public synchronized boolean setAsStopped(Session session, String log, boolean aborted) {
+    public synchronized boolean setAsStopped(Session session, String log, boolean failed) {
         if (!isRunning()) {
             return false;
         }
@@ -447,7 +447,7 @@ public class Program {
 
             doc.replaceItemValue("status", newStatus.name());
 
-            if (aborted) {
+            if (failed) {
                 DominoUtil.setDate(
                         session, doc, "started", Program.toDate(lastSuccessfullyStarted));
                 DominoUtil.setDate(

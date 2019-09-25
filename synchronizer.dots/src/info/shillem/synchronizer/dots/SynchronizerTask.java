@@ -360,7 +360,7 @@ public class SynchronizerTask extends AbstractServerTask {
 
     private void runProgram(Program program, TaskRun taskRun, boolean verbose) {
         ProcessorHelper helper = null;
-        boolean aborted = false;
+        boolean failed = false;
 
         if (!program.setAsStarted(getSession())) {
             logMessage(String.format(
@@ -443,27 +443,27 @@ public class SynchronizerTask extends AbstractServerTask {
             }
 
             helper.logMessage(summary);
-        } catch (ProcessorException e) {
-            Optional
-                    .ofNullable(helper)
-                    .ifPresent((h) -> h.logException(e));
-
-            logMessage(e.getMessage());
         } catch (Exception e) {
+            failed = true;
+            
             Optional
                     .ofNullable(helper)
                     .ifPresent((h) -> h.logException(e));
 
-            logException(e);
+            if (e instanceof ProcessorException) {
+                logMessage(e.getMessage());
+            } else {
+                logException(e);
+            }
         } finally {
             if (helper == null) {
-                program.setAsStopped(getSession(), "Program threw an exception", aborted);
+                program.setAsStopped(getSession(), "Program threw an exception", failed);
             } else {
                 helper.getDominoFactory().recycle();
-                
+
                 helper.getSqlFactory().recycle();
 
-                program.setAsStopped(getSession(), helper.getLog(), aborted);
+                program.setAsStopped(getSession(), helper.getLog(), failed);
             }
         }
     }
