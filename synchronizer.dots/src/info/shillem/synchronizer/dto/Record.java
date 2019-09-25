@@ -15,10 +15,14 @@ public class Record {
         values = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     }
 
+    public Integer getInteger(String key) {
+        return (Integer) getValue(key);
+    }
+
     public Set<String> getKeys() {
         return values.keySet();
     }
-
+    
     public String getString(String key) {
         return (String) getValue(key);
     }
