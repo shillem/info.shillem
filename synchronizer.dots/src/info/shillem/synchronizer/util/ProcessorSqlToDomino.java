@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import info.shillem.domino.util.DominoUtil;
+import info.shillem.domino.util.ViewAccessPolicy;
 import info.shillem.synchronizer.dots.Program.Nature;
 import info.shillem.synchronizer.dto.Record;
 import info.shillem.synchronizer.dto.ValueChange;
@@ -25,7 +26,7 @@ import lotus.domino.View;
 
 public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
-    private boolean refreshView;
+    private boolean cachedView;
 
     public ProcessorSqlToDomino(ProcessorHelper helper, Supplier<T> recordSupplier) {
         super(helper, recordSupplier);
@@ -100,7 +101,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                                 helper.logVerboseMessage(() -> Unthrow.on(
                                         () -> "Deleted record " + record.getValue(keyFieldName)));
 
-                                setRefreshView(true);
+                                setCachedView(false);
                             }
 
                             tracker.addDeleted();
@@ -138,7 +139,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                         if (!helper.isMode(Mode.TEST)) {
                             doc.save();
 
-                            setRefreshView(true);
+                            setCachedView(false);
                         }
 
                         tracker.addModified(record.isNew());
@@ -165,12 +166,10 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
     protected Optional<Document> findDocument(T record) throws ProcessorException {
         try {
-            View view = getView();
+            View view = getView(ViewAccessPolicy.withCache(cachedView));
 
-            if (isRefreshView()) {
-                view.refresh();
-
-                setRefreshView(false);
+            if (!cachedView) {
+                setCachedView(true);
             }
 
             Document doc = view.getDocumentByKey(getKeyValue(record), true);
@@ -206,10 +205,6 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
     @Override
     public final boolean isNature(Nature nature) {
         return nature == Nature.SQL_TO_DOMINO;
-    }
-
-    protected final boolean isRefreshView() {
-        return refreshView;
     }
 
     protected void pullResultSet(ResultSet resultSet, T record) throws ProcessorException {
@@ -331,8 +326,8 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         return changes;
     }
 
-    protected final void setRefreshView(boolean flag) {
-        this.refreshView = flag;
+    protected final void setCachedView(boolean flag) {
+        this.cachedView = flag;
     }
 
 }

@@ -50,9 +50,9 @@ public abstract class Processor<T extends Record> {
         return record.getValue(getKeyField().getName());
     }
 
-    protected final View getView() {
+    protected final View getView(ViewAccessPolicy policy) {
         try {
-            return getDominoSilo().getView(viewPath, ViewAccessPolicy.REFRESH);
+            return getDominoSilo().getView(viewPath, policy);
         } catch (NotesException e) {
             throw new RuntimeException(e);
         }
