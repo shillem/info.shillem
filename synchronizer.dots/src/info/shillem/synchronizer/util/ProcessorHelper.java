@@ -177,4 +177,8 @@ public class ProcessorHelper {
         }
     }
 
+    public void setVariable(String name, String value) {
+        program.setProcessorVariable(name, value);
+    }
+
 }

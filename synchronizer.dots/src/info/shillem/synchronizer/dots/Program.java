@@ -6,10 +6,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.TreeMap;
+import java.util.Vector;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -118,7 +121,7 @@ public class Program {
 
             processorVariables = DominoUtil.getItemStrings(doc, "processorVariables")
                     .stream()
-                    .map((val) -> val.split("="))
+                    .map((val) -> val.split("=", 2))
                     .collect(Collectors.toMap((val) -> val[0], (val) -> val[1]));
 
             runMode = DominoUtil.getItemValue(
@@ -232,6 +235,7 @@ public class Program {
     private final String processorBuilderClassName;
     private final RecordPolicy processorRecordPolicy;
     private final Map<String, String> processorVariables;
+    private final Map<String, String> processorVariablesAtRuntime;
     private final String queryReferenceTable;
     private final String queryStatement;
     private final Integer queryTimeout;
@@ -262,6 +266,7 @@ public class Program {
         processorBuilderClassName = builder.processorBuilderClassName;
         processorRecordPolicy = builder.processorRecordPolicy;
         processorVariables = builder.processorVariables;
+        processorVariablesAtRuntime = new HashMap<String, String>();
         queryReferenceTable = builder.queryReferenceTable;
         queryStatement = builder.queryStatement;
         queryTimeout = builder.queryTimeout;
@@ -321,11 +326,15 @@ public class Program {
     }
 
     public Optional<String> getProcessorVariable(String key) {
-        if (!processorVariables.containsKey(key)) {
-            return Optional.empty();
+        if (processorVariablesAtRuntime.containsKey(key)) {
+            return Optional.of(processorVariablesAtRuntime.get(key));
         }
 
-        return Optional.of(processorVariables.get(key));
+        if (processorVariables.containsKey(key)) {
+            return Optional.of(processorVariables.get(key));
+        }
+
+        return Optional.empty();
     }
 
     public String getQueryReferenceTable() {
@@ -454,8 +463,22 @@ public class Program {
                         session, doc, "stopped", Program.toDate(lastSuccessfullyStopped));
             } else {
                 lastSuccessfullyStarted = getLastSuccessfullyStartedDate(doc);
-
                 lastSuccessfullyStopped = LocalDateTime.now();
+
+                if (!processorVariablesAtRuntime.isEmpty() && !isRunMode(RunMode.DRY_RUN)) {
+                    Map<String, String> allVariables = new TreeMap<>(processorVariables);
+                    allVariables.putAll(processorVariablesAtRuntime);
+
+                    List<String> values = allVariables.entrySet().stream()
+                            .map((e) -> e.getKey() + "=" + e.getValue())
+                            .collect(Collectors.toCollection(Vector::new));
+
+                    DominoUtil.recycle(doc.replaceItemValue("processorVariables", values));
+                    
+                    processorVariables.putAll(processorVariablesAtRuntime);
+                }
+                
+                processorVariablesAtRuntime.clear();
 
                 DominoUtil.setDate(
                         session, doc, "stopped", Program.toDate(lastSuccessfullyStopped));
@@ -476,6 +499,10 @@ public class Program {
     @Override
     public String toString() {
         return String.format("%s (%s)", title, id);
+    }
+
+    public void setProcessorVariable(String name, String value) {
+        processorVariablesAtRuntime.put(name, value);
     }
 
     private static LocalDateTime getLastSuccessfullyStartedDate(Document doc)

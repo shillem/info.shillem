@@ -44,10 +44,8 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         try {
             if (getDominoSilo().isDocumentLockingEnabled()) {
                 if (!doc.lock()) {
-                    throw new RuntimeException("Unable to acquire lock");
+                    throw new RuntimeException("Unable to acquire lock on note " + doc.getNoteID());
                 }
-
-                doc.lock();
             }
 
             doc.removePermanently(true);
@@ -116,7 +114,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                         }
 
                         Map<String, ValueChange> changes = pushRecord(record, doc);
-                        
+
                         finalizeDocument(doc, record, changes);
 
                         if (changes.isEmpty()) {
@@ -202,6 +200,10 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         }
     }
 
+    protected final boolean isCachedView() {
+        return cachedView;
+    }
+
     @Override
     public final boolean isNature(Nature nature) {
         return nature == Nature.SQL_TO_DOMINO;
@@ -262,68 +264,77 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         }
     }
 
-    protected Map<String, ValueChange> pushRecord(T record, Document doc)
+    private Map<String, ValueChange> pushRecord(T record, Document doc)
             throws ProcessorException {
         Map<String, ValueChange> changes = new HashMap<>();
 
         for (FieldPair pair : helper.getFieldPairs()) {
-            Field to = pair.getTo();
+            ValueChange change = pushRecordValue(record, doc, pair);
 
-            if (helper.getFieldTemporary().containsKey(to.getName())) {
-                continue;
-            }
-
-            Object recordValue = record.getValue(to.getName());
-
-            try {
-                Object documentValue = transformValue(
-                        DominoUtil.getItemValue(doc, to.getName()), to.getType());
-
-                if (recordValue == null) {
-                    if (documentValue == null
-                            || (documentValue instanceof String
-                                    && ((String) documentValue).isEmpty())) {
-                        continue;
-                    }
-
-                    doc.removeItem(to.getName());
-
-                    changes.put(to.getName(), new ValueChange(documentValue, recordValue));
-
-                    continue;
-                }
-
-                if (recordValue instanceof String
-                        && ((String) recordValue).isEmpty()
-                        && documentValue == null) {
-                    continue;
-                }
-
-                if (documentValue == null
-                        || !recordValue.equals(documentValue)) {
-                    if (recordValue instanceof Boolean) {
-                        doc.replaceItemValue(to.getName(), ((Boolean) recordValue).toString());
-                    } else if (recordValue instanceof Date) {
-                        DominoUtil.setDate(
-                                helper.getDominoFactory().getSession(),
-                                doc, to.getName(), (Date) recordValue);
-                    } else if (recordValue instanceof BigDecimal) {
-                        doc.replaceItemValue(to.getName(),
-                                ((BigDecimal) recordValue).doubleValue());
-                    } else {
-                        doc.replaceItemValue(to.getName(), recordValue);
-                    }
-
-                    changes.put(to.getName(), new ValueChange(documentValue, recordValue));
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(String.format(
-                        "Error while pushing %s with value %s",
-                        to, String.valueOf(recordValue)), e);
+            if (change != null) {
+                changes.put(pair.getTo().getName(), change);
             }
         }
 
         return changes;
+    }
+
+    protected ValueChange pushRecordValue(T record, Document doc, FieldPair pair)
+            throws ProcessorException {
+        Field to = pair.getTo();
+
+        if (helper.getFieldTemporary().containsKey(to.getName())) {
+            return null;
+        }
+
+        Object recordValue = record.getValue(to.getName());
+
+        try {
+            Object documentValue = transformValue(
+                    DominoUtil.getItemValue(doc, to.getName()), to.getType());
+
+            if (recordValue == null) {
+                if (documentValue == null
+                        || (documentValue instanceof String
+                                && ((String) documentValue).isEmpty())) {
+                    return null;
+                }
+
+                doc.removeItem(to.getName());
+
+                return new ValueChange(documentValue, recordValue);
+            }
+
+            if (recordValue instanceof String
+                    && ((String) recordValue).isEmpty()
+                    && documentValue == null) {
+                return null;
+            }
+
+            if (documentValue == null
+                    || !recordValue.equals(documentValue)) {
+                if (recordValue instanceof Boolean) {
+                    doc.replaceItemValue(to.getName(), ((Boolean) recordValue).toString());
+                } else if (recordValue instanceof Date) {
+                    DominoUtil.setDate(
+                            helper.getDominoFactory().getSession(),
+                            doc, to.getName(), (Date) recordValue);
+                } else if (recordValue instanceof BigDecimal) {
+                    doc.replaceItemValue(to.getName(),
+                            ((BigDecimal) recordValue).doubleValue());
+                } else {
+                    doc.replaceItemValue(to.getName(), recordValue);
+                }
+
+                return new ValueChange(documentValue, recordValue);
+            }
+
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException(String.format(
+                    "Error while pushing %s with value %s",
+                    to, String.valueOf(recordValue)), e);
+        }
     }
 
     protected final void setCachedView(boolean flag) {
