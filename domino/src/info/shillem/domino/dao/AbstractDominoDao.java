@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import java.util.Vector;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -400,13 +402,43 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             int columnIndex = manager.indexOfColumn(fieldName);
 
             if (columnIndex < 0) {
-                throw new IllegalArgumentException(
-                        "Unable to retrieve value for schema field " + field);
+                throw new IllegalStateException(
+                        "Column for schema field " + field + " does not exist");
             }
 
-            wrapper.presetValue(field, pullValue(
-                    field.getProperties().getType(),
-                    columnValues.get(columnIndex)));
+            Object value = columnValues.get(columnIndex);
+            Class<? extends Serializable> type = field.getProperties().getType();
+
+            try {
+                if (field.getProperties().isList()) {
+                    List<?> values =
+                            (value instanceof List) ? ((List<?>) value) : Arrays.asList(value);
+
+                    wrapper.presetValue(field, values.stream()
+                            .map((val) -> Unthrow.on(() -> pullValue(type, val)))
+                            .collect(Collectors.toList()));
+                } else {
+                    Object val;
+
+                    if (value instanceof List) {
+                        List<?> values = (List<?>) value;
+
+                        val = values.isEmpty() ? null : values.get(0);
+
+                        if (val instanceof String && ((String) val).isEmpty()) {
+                            val = null;
+                        }
+                    } else if (value instanceof String && ((String) value).isEmpty()) {
+                        val = null;
+                    } else {
+                        val = value;
+                    }
+
+                    wrapper.presetValue(field, pullValue(type, val));
+                }
+            } catch (Exception e) {
+                throw wrappedPullColumnValueException(e, field, entry);
+            }
         }
 
         wrapper.setId(entry.getUniversalID());
@@ -705,6 +737,20 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                     e);
         } catch (NotesException ne) {
             return new RuntimeException(String.format("Unable to pull item %s", field.name()), e);
+        }
+    }
+
+    protected RuntimeException wrappedPullColumnValueException(
+            Exception e, E field, ViewEntry entry) {
+        try {
+            return new RuntimeException(String.format(
+                    "Unable to pull column value %s from document %s",
+                    field.name(),
+                    entry.getNoteID()),
+                    e);
+        } catch (NotesException ne) {
+            return new RuntimeException(
+                    String.format("Unable to pull column value %s", field.name()), e);
         }
     }
 

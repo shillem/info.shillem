@@ -27,7 +27,6 @@ import lotus.domino.MIMEHeader;
 import lotus.domino.NotesError;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
-import lotus.domino.ViewEntry;
 import lotus.domino.ViewNavigator;
 
 public enum DominoUtil {
@@ -41,56 +40,7 @@ public enum DominoUtil {
     static {
         MIME_FILTERED_HEADERS.add("Content-Type");
         MIME_FILTERED_HEADERS.add("Content-Disposition");
-    }
-
-    public static <T> T getEntryValue(
-            List<String> vwColumns, ViewEntry entry, String itemName, Function<Object, T> converter)
-            throws NotesException {
-        Objects.requireNonNull(vwColumns, "View columns cannot be null");
-        Objects.requireNonNull(entry, "Entry cannot be null");
-        Objects.requireNonNull(itemName, "Item name cannot be null");
-        Objects.requireNonNull(converter, "Converter cannot be null");
-
-        if (!vwColumns.contains(itemName)) {
-            return converter.apply(null);
-        }
-
-        List<?> columnValues = entry.getColumnValues();
-        Object result = columnValues.get(vwColumns.indexOf(itemName));
-
-        if (result instanceof List) {
-            List<?> l = (List<?>) result;
-
-            return converter.apply(l.isEmpty() ? null : l.get(0));
-        }
-
-        return converter.apply(result);
-    }
-
-    public static <T> List<T> getEntryValues(
-            List<String> vwColumns, ViewEntry entry, String itemName, Function<Object, T> converter)
-            throws NotesException {
-        Objects.requireNonNull(vwColumns, "View columns cannot be null");
-        Objects.requireNonNull(entry, "Entry cannot be null");
-        Objects.requireNonNull(itemName, "Item name cannot be null");
-        Objects.requireNonNull(converter, "Converter cannot be null");
-
-        if (!vwColumns.contains(itemName)) {
-            return Collections.emptyList();
-        }
-
-        List<?> columnValues = entry.getColumnValues();
-        Object result = columnValues.get(vwColumns.indexOf(itemName));
-
-        if (result instanceof List) {
-            return ((List<?>) result)
-                    .stream()
-                    .map(converter)
-                    .collect(Collectors.toList());
-        }
-
-        return Arrays.asList(converter.apply(result));
-    }
+    }  
 
     public static Boolean getItemBoolean(Document doc, String itemName)
             throws NotesException {
