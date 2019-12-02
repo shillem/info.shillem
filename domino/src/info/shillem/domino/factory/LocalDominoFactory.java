@@ -39,7 +39,7 @@ public class LocalDominoFactory extends AbstractDominoFactory {
 
     private final Set<Option> options;
 
-    private LocalDominoFactory(Builder builder) throws NotesException {
+    protected LocalDominoFactory(Builder builder) throws NotesException {
         super(builder.session);
 
         options = builder.options;

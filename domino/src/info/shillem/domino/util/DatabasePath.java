@@ -69,7 +69,7 @@ public final class DatabasePath implements Serializable {
     }
 
     public String getFilePathAsUrl() {
-        return filePath.replace('\\', '/');
+        return "/" + filePath.replace('\\', '/');
     }
 
     public String getServerName() {
