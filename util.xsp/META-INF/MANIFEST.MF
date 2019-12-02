@@ -13,6 +13,7 @@ Export-Package: info.shillem.util.xsp.component,
  info.shillem.util.xsp.context,
  info.shillem.util.xsp.converter,
  info.shillem.util.xsp.dispatcher,
+ info.shillem.util.xsp.helper.component,
  info.shillem.util.xsp.listener,
  info.shillem.util.xsp.renderer,
  info.shillem.util.xsp.validator
