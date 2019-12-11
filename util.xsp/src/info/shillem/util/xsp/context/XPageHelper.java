@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -16,7 +17,6 @@ import java.util.stream.StreamSupport;
 import javax.faces.FacesException;
 import javax.faces.application.FacesMessage;
 import javax.faces.application.FacesMessage.Severity;
-import javax.faces.component.EditableValueHolder;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
@@ -26,17 +26,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ibm.xsp.ajax.AjaxUtil;
-import com.ibm.xsp.complex.Attr;
-import com.ibm.xsp.complex.Parameter;
-import com.ibm.xsp.component.FacesAttrsObject;
 import com.ibm.xsp.component.UIViewRootEx;
 import com.ibm.xsp.component.UIViewRootEx2;
-import com.ibm.xsp.component.xp.XspEventHandler;
 import com.ibm.xsp.context.FacesContextEx;
 import com.ibm.xsp.util.FacesUtil;
 import com.sun.faces.util.MessageFactory;
 
 import info.shillem.util.CastUtil;
+import info.shillem.util.xsp.component.ComponentUtil;
 
 public enum XPageHelper {
     ;
@@ -102,11 +99,10 @@ public enum XPageHelper {
             throw new UnsupportedOperationException();
         }
 
-        Parameter param = getComponentParam(event.getComponent(), ON_SUCCESS_REFRESH_ID_PARAM);
-
-        if (param != null) {
-            ((FacesContextEx) facesContext).setPartialRefreshId(param.getValue());
-        }
+        Optional
+                .ofNullable(ComponentUtil.getHandlerParam(
+                        event.getComponent(), ON_SUCCESS_REFRESH_ID_PARAM))
+                .ifPresent((id) -> ((FacesContextEx) facesContext).setPartialRefreshId(id));
     }
 
     public static void bindBeforeRenderResponseMethod(FacesContext facesContext, String el) {
@@ -145,40 +141,6 @@ public enum XPageHelper {
         }
     }
 
-    public static Attr getComponentAttr(UIComponent component, String key) {
-        if (component instanceof FacesAttrsObject) {
-            FacesAttrsObject attrsObj = (FacesAttrsObject) component;
-            List<Attr> attrs = attrsObj.getAttrs();
-
-            if (attrs != null) {
-                for (Attr attr : attrs) {
-                    if (attr.getName().equals(key)) {
-                        return attr;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public static Parameter getComponentParam(UIComponent component, String key) {
-        if (component instanceof XspEventHandler) {
-            XspEventHandler handlerObj = (XspEventHandler) component;
-            List<Parameter> params = handlerObj.getParameters();
-
-            if (params != null) {
-                for (Parameter param : handlerObj.getParameters()) {
-                    if (param.getName().equals(key)) {
-                        return param;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
     public static List<FacesMessage> getFlashMessages(FacesContext facesContext) {
         return Collections.unmodifiableList(CastUtil.toAnyList((List<?>) XPageScope.FLASH
                 .getValues(facesContext, false)
@@ -197,6 +159,10 @@ public enum XPageHelper {
         return ((UIViewRootEx) facesContext.getViewRoot()).getPageName();
     }
 
+    public static String getProperty(FacesContext facesContext, String property) {
+        return ((FacesContextEx) facesContext).getProperty(property);
+    }
+
     public static Map<String, String> getRequestParameterMap(FacesContext facesContext) {
         return CastUtil.toAnyMap(facesContext.getExternalContext().getRequestParameterMap());
     }
@@ -205,28 +171,12 @@ public enum XPageHelper {
         return (UIViewRootEx2) facesContext.getViewRoot();
     }
 
-    public static boolean isRenderingPhase(FacesContext facesContext) {
-        return getViewRootEx2(facesContext).isRenderingPhase();
+    public static boolean isPropertyEnabled(FacesContext facesContext, String property) {
+        return Boolean.valueOf(getProperty(facesContext, property));
     }
 
-    /**
-     * Resets and releases a form in case a ValidationException is triggered and the
-     * user decides to abort entirely. If not called the form would remain in an
-     * unconsistent state
-     * 
-     * @param component the root component that provides scope to the operation
-     */
-    public static void resetInput(UIComponent component) {
-        if (component instanceof EditableValueHolder) {
-            EditableValueHolder holder = (EditableValueHolder) component;
-
-            holder.setSubmittedValue(null);
-            holder.setValid(true);
-        }
-
-        Iterable<?> children = component.getChildren();
-
-        children.forEach(c -> resetInput((UIComponent) c));
+    public static boolean isRenderingPhase(FacesContext facesContext) {
+        return getViewRootEx2(facesContext).isRenderingPhase();
     }
 
     public static Object resolveVariable(FacesContext facesContext, String name) {

@@ -1,161 +1,104 @@
 package info.shillem.dao;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import info.shillem.dto.BaseField;
+import info.shillem.util.ComparisonOperator;
+import info.shillem.util.LogicalOperator;
 
-public class SearchQuery<E extends Enum<E> & BaseField> extends Query<E> {
+public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
 
-    public static class Builder<E extends Enum<E> & BaseField> extends QueryBuilder<E, Builder<E>> {
+    public static class Group implements Piece {
 
-        private final Deque<Piece> deque = new ArrayDeque<Piece>();
-        private int maxCount;
+        private final Deque<Piece> deque = new ArrayDeque<>();
 
-        private Builder<E> addLogicalOperator(LogicalOperator operator) {
-            Piece piece = deque.peekLast();
+        public Group add(Logical logicalValue, Piece newPiece) {
+            Piece lastPiece = deque.peekLast();
 
-            if (piece instanceof Condition
-                    || piece instanceof Wrapper) {
-                deque.add(operator);
-
-                return this;
+            if (lastPiece != null && !(lastPiece instanceof Logical)) {
+                deque.add(logicalValue);
             }
 
-            throw new IllegalStateException(
-                    "Logical operator not allowed when preceded by " + piece);
-        }
-
-        public Builder<E> and() {
-            return addLogicalOperator(LogicalOperator.AND);
-        }
-
-        public SearchQuery<E> build() {
-            if (deque.isEmpty()) {
-                throw new IllegalStateException("Search query cannot be empty");
-            }
-
-            return new SearchQuery<>(this);
-        }
-
-        public Builder<E> condition(Condition<E> condition) {
-            Piece piece = deque.peekLast();
-
-            if (Objects.isNull(piece) || piece instanceof LogicalOperator) {
-                deque.add(condition);
-
-                return this;
-            }
-
-            throw new IllegalStateException("Condition not allowed when preceded by " + piece);
-        }
-
-        public int getMaxCount() {
-            return maxCount;
-        }
-
-        public Builder<E> or() {
-            return addLogicalOperator(LogicalOperator.OR);
-        }
-
-        public Builder<E> setMaxCount(int maxCount) {
-            this.maxCount = maxCount;
+            deque.add(Objects.requireNonNull(newPiece, "Piece cannot be null"));
 
             return this;
         }
+
+        public Group and(Piece piece) {
+            return add(Logical.AND, piece);
+        }
         
-        public Builder<E> wrap() {
-            Piece piece = deque.peekLast();
+        public Collection<Piece> getPieces() {
+            return deque;
+        }
 
-            if (piece instanceof Condition) {
-                deque.add(Wrapper.INSTANCE);
+        public boolean isEmpty() {
+            return deque.isEmpty();
+        }
 
-                return this;
-            }
-
-            throw new IllegalStateException("Wrapper not allowed when preceded by " + piece);
+        public Group or(Piece piece) {
+            return add(Logical.OR, piece);
+        }
+        
+        @Override
+        public String toString() {
+            return deque.toString();
         }
 
     }
 
-    public enum ComparisonOperator {
-        LESS_THAN("<"),
-        LESS_THAN_OR_EQUAL("<="),
-        EQUAL("="),
-        NOT_EQUAL("!="),
-        GREATER_THAN_OR_EQUAL(">="),
-        GREATER_THAN(">");
+    public static class Logical implements Piece {
 
-        private final String sign;
+        static final Logical AND = new Logical(LogicalOperator.AND);
+        static final Logical OR = new Logical(LogicalOperator.OR);
 
-        private ComparisonOperator(String sign) {
-            this.sign = sign;
+        private final LogicalOperator operator;
+
+        private Logical(LogicalOperator operator) {
+            this.operator = operator;
         }
-
-        public String getSign() {
-            return sign;
-        }
-
-        public ComparisonOperator non() {
-            switch (this) {
-            case LESS_THAN:
-                return GREATER_THAN;
-            case LESS_THAN_OR_EQUAL:
-                return GREATER_THAN_OR_EQUAL;
-            case EQUAL:
-                return NOT_EQUAL;
-            case NOT_EQUAL:
-                return EQUAL;
-            case GREATER_THAN_OR_EQUAL:
-                return LESS_THAN_OR_EQUAL;
-            case GREATER_THAN:
-                return LESS_THAN;
-            }
-
-            throw new UnsupportedOperationException(this.name());
-        }
-    }
-
-    public static abstract class Condition<E extends Enum<E> & BaseField> implements Piece {
-
-        private final E field;
-        private final ComparisonOperator operator;
-
-        private Condition(E field) {
-            this(field, ComparisonOperator.EQUAL);
-        }
-
-        private Condition(E field, ComparisonOperator operator) {
-            this.field = Objects.requireNonNull(field, "Field cannot be null");
-            this.operator = Objects.requireNonNull(operator, "Operator cannot be null");
-        }
-
-        public E getField() {
-            return field;
-        }
-
-        public ComparisonOperator getOperator() {
+        
+        public LogicalOperator getOperator() {
             return operator;
         }
 
+        @Override
+        public String toString() {
+            return operator.toString();
+        }
+
     }
 
-    public static class FieldValue<E extends Enum<E> & BaseField> extends Condition<E> {
+    public interface Piece {
+        
+    }
 
+    public static class Value<E extends Enum<E> & BaseField> implements Piece {
+
+        private final E field;
+        private final ComparisonOperator operator;
         private final Object value;
 
-        public FieldValue(E field, Object value) {
+        public Value(E field, Object value) {
             this(field, value, ComparisonOperator.EQUAL);
         }
 
-        public FieldValue(E field, Object value, ComparisonOperator operator) {
-            super(field, operator);
-
+        public Value(E field, Object value, ComparisonOperator operator) {
+            this.field = Objects.requireNonNull(field, "Field cannot be null");
+            this.operator = Objects.requireNonNull(operator, "Operator cannot be null");
             this.value = value;
+        }
+        
+        public E getField() {
+            return field;
+        }
+        
+        public ComparisonOperator getOperator() {
+            return operator;
         }
 
         public Object getValue() {
@@ -164,74 +107,56 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
         @Override
         public String toString() {
-            return "{" + getField() + " " + getOperator().getSign() + " " + value + "}";
+            return "{" + getField() + " " + getOperator() + " " + value + "}";
         }
 
     }
 
-    public static class FieldValues<E extends Enum<E> & BaseField> extends Condition<E> {
+    public static class Values<E extends Enum<E> & BaseField> implements Piece {
 
-        private final Collection<Object> values;
+        private final E field;
+        private final ComparisonOperator operator;
+        private final Set<Object> values;
 
-        public FieldValues(E field, Collection<Object> values) {
-            this(field, values, ComparisonOperator.EQUAL);
+        public Values(E field, Set<Object> values) {
+            this(field, values, ComparisonOperator.IN);
         }
 
-        public FieldValues(E field, Collection<Object> values, ComparisonOperator operator) {
-            super(field, operator);
-
+        public Values(E field, Set<Object> values, ComparisonOperator operator) {
+            this.field = Objects.requireNonNull(field, "Field cannot be null");
+            this.operator = Objects.requireNonNull(operator, "Operator cannot be null");
             this.values = values;
         }
+        
+        public E getField() {
+            return field;
+        }
+        
+        public ComparisonOperator getOperator() {
+            return operator;
+        }
 
-        public Collection<Object> getValues() {
+        public Set<Object> getValues() {
             return values;
         }
 
         @Override
         public String toString() {
-            return "{" + getField() + " " + getOperator().getSign() + " " + values + "}";
+            return "{" + getField() + " " + getOperator() + " " + values + "}";
         }
 
     }
 
-    public enum LogicalOperator implements Piece {
-        AND, OR;
+    private final Group group;
+
+    SearchQuery(SearchQueryBuilder<E> builder) {
+        super(builder.base, builder.page);
+
+        group = builder.group;
     }
 
-    public interface Piece {
-
-    }
-
-    public enum Wrapper implements Piece {
-        INSTANCE {
-            @Override
-            public String toString() {
-                return "WRAP";
-            }
-        };
-    }
-
-    private final List<Piece> pieces;
-    private final int maxCount;
-
-    private SearchQuery(Builder<E> builder) {
-        super(builder);
-
-        pieces = new ArrayList<>(builder.deque);
-        maxCount = builder.getMaxCount();
-    }
-    
-    public int getMaxCount() {
-        return maxCount;
-    }
-    
-    public List<Piece> getPieces() {
-        return pieces;
-    }
-
-    @Override
-    public String toString() {
-        return pieces.toString();
+    public Collection<Piece> getPieces() {
+        return group.getPieces();
     }
 
 }

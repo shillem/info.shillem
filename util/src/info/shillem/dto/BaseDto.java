@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 public interface BaseDto<E extends Enum<E> & BaseField> {
-    
+
     public enum SchemaFilter {
         SET, UPDATED
     }
@@ -25,7 +25,7 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
     String getDatabaseUrl();
 
     Date getDate(E key);
-    
+
     Double getDouble(E key);
 
     String getId();
@@ -49,7 +49,7 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
     boolean isValueTrue(E key);
 
     boolean isValueUpdated(E key);
-    
+
     void presetValue(E key, Object value);
 
     void rollback();
@@ -63,7 +63,7 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
     void setValue(E key, Object value);
 
     void setValueAsUpdated(E key);
-    
+
     void transactValue(E key, Object value);
 
 }

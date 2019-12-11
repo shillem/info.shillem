@@ -5,14 +5,15 @@ import java.util.Map;
 import java.util.Objects;
 
 import info.shillem.domino.util.DominoSilo;
+import info.shillem.domino.util.DominoSilo.Identifier;
 import lotus.domino.Session;
 
-abstract class AbstractDominoFactory implements DominoFactory {
+public abstract class AbstractDominoFactory implements DominoFactory {
     
     private final Session session;
-    private final Map<String, DominoSilo> silos;
+    private final Map<Identifier, DominoSilo> silos;
     
-    AbstractDominoFactory(Session session) {
+    protected AbstractDominoFactory(Session session) {
         Objects.requireNonNull(session, "Session cannot be null");
         
         if (!session.isValid()) {
@@ -24,24 +25,25 @@ abstract class AbstractDominoFactory implements DominoFactory {
     }
 
     @Override
-    public void addDominoSilo(DominoSilo silo) {
-        silos.computeIfAbsent(silo.getName(), (key) -> {
+    public void addSilo(DominoSilo silo) {
+        silos.computeIfAbsent(silo.getIdentifier(), (key) -> {
             silo.setSession(getSession());
             return silo;
         });
     }
 
     @Override
-    public boolean containsDominoSilo(String name) {
-        return silos.containsKey(name);
+    public boolean containsSilo(DominoSilo.Identifier identifier) {
+        return silos.containsKey(identifier);
     }
 
     @Override
-    public DominoSilo getDominoSilo(String name) {
-        DominoSilo silo = silos.get(name);
+    public DominoSilo getSilo(DominoSilo.Identifier identifier) {
+        DominoSilo silo = silos.get(identifier);
 
         if (silo == null) {
-            throw new IllegalArgumentException("No configured silo with name " + name);
+            throw new IllegalArgumentException(
+                    "No configured silo with identifier " + identifier.getName());
         }
 
         return silo;

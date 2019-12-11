@@ -19,12 +19,12 @@ import lotus.domino.View;
 
 public class SingleDominoSilo implements DominoSilo {
 
-    private final String name;
+    private final Identifier identifier;
     private final DatabasePath databasePath;
 
     private Session session;
     private DatabasePath templatePath;
-    private Consumer<Entry<String, Database>> databaseConsumer;
+    private Consumer<Entry<Identifier, Database>> databaseConsumer;
 
     private Database databaseHandle;
     private boolean documentLockingEnabled;
@@ -32,9 +32,9 @@ public class SingleDominoSilo implements DominoSilo {
     private Map<String, View> viewHandles;
     private Map<String, List<String>> viewColumnNames;
 
-    public SingleDominoSilo(String name, DatabasePath databasePath) {
-        this.name = name;
-        this.databasePath = databasePath;
+    public SingleDominoSilo(Identifier identifier, DatabasePath databasePath) {
+        this.identifier = Objects.requireNonNull(identifier, "Identifier cannot be null");
+        this.databasePath = Objects.requireNonNull(databasePath, "Database path cannot be null");
     }
 
     @Override
@@ -72,7 +72,7 @@ public class SingleDominoSilo implements DominoSilo {
                     databasePath.getServerName(), databasePath.getFilePath(), true);
 
             if (databaseConsumer != null) {
-                databaseConsumer.accept(new SimpleEntry<String, Database>(name, newDatabase));
+                databaseConsumer.accept(new SimpleEntry<Identifier, Database>(identifier, newDatabase));
             }
 
             return newDatabase;
@@ -85,10 +85,10 @@ public class SingleDominoSilo implements DominoSilo {
     public DatabasePath getDatabasePath() {
         return databasePath;
     }
-
+    
     @Override
-    public String getName() {
-        return name;
+    public Identifier getIdentifier() {
+        return identifier;
     }
 
     @Override
@@ -163,7 +163,7 @@ public class SingleDominoSilo implements DominoSilo {
 
     @Override
     public void setTemplateCreation(
-            DatabasePath templatePath, Consumer<Map.Entry<String, Database>> databaseConsumer) {
+            DatabasePath templatePath, Consumer<Map.Entry<Identifier, Database>> databaseConsumer) {
         this.templatePath = templatePath;
         this.databaseConsumer = databaseConsumer;
     }

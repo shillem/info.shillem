@@ -8,7 +8,7 @@ import info.shillem.dto.BaseField;
 
 public interface GenericDao<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
 
-    List<T> collect(FilterQuery<E> query) throws DaoException;
+    List<T> collect(Query<E> query) throws DaoException;
 
     void create(T dto) throws DaoException;
 

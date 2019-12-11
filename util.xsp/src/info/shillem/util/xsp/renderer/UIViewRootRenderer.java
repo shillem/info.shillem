@@ -18,66 +18,51 @@ import com.ibm.xsp.renderkit.html_basic.ViewRootRendererEx2;
 import com.ibm.xsp.resource.Resource;
 import com.ibm.xsp.resource.ScriptResource;
 import com.ibm.xsp.util.FacesUtil;
-import com.ibm.xsp.util.JSUtil;
 import com.ibm.xsp.webapp.XspHttpServletResponse;
+
+import info.shillem.util.Unthrow;
+import info.shillem.util.xsp.context.XPageHelper;
 
 public class UIViewRootRenderer extends ViewRootRendererEx2 {
 
-    protected static ScriptResource JQUERY_DEFINE_AMD;
+    private static final ScriptResource JQUERY_DEFINE_AMD;
+
+    static {
+        JQUERY_DEFINE_AMD = new ScriptResource();
+        JQUERY_DEFINE_AMD.setContents("define.amd.jQuery = true;");
+        JQUERY_DEFINE_AMD.setClientSide(true);
+    }
 
     @Override
-    protected void addDojoResources(FacesContext facesContext, UIViewRootEx root,
-            List<Resource> resources) {
-        super.addDojoResources(facesContext, root, resources);
+    protected void addCommonResources(FacesContext facesContext, UIViewRootEx root,
+            List<Resource> resources) throws IOException {
+        super.addCommonResources(facesContext, root, resources);
 
-        if (!isXspProperty(facesContext, "xsp.client.script.jQuery.defineAmd")) {
-            return;
+        if (XPageHelper.isPropertyEnabled(facesContext, "xsp.client.script.jQuery.defineAmd")) {
+            resources.add(JQUERY_DEFINE_AMD);
         }
-
-        if (JQUERY_DEFINE_AMD == null) {
-            JQUERY_DEFINE_AMD = new ScriptResource();
-            JQUERY_DEFINE_AMD.setContents("define.amd.jQuery = true;");
-            JQUERY_DEFINE_AMD.setClientSide(true);
-        }
-
-        resources.add(JQUERY_DEFINE_AMD);
     }
 
     @Override
     protected void addPageResources(FacesContext facesContext, UIViewRootEx root,
             List<Resource> resources)
             throws IOException {
-        List<Resource> unprioritized = root.getResources();
-        List<Resource> lowPriorityScript = null;
+        List<Resource> pageResources = root.getResources();
 
-        if (unprioritized != null) {
-            for (Resource resource : unprioritized) {
-                if (resource instanceof ScriptResource) {
-                    ScriptResource scriptResource = (ScriptResource) resource;
-                    ResourceRenderer resourceRenderer =
-                            getScriptResourceRenderer(facesContext, scriptResource);
-
-                    if (resourceRenderer instanceof UIScriptResourceRenderer) {
-                        if (UIScriptResourceRenderer.Type.parse(scriptResource
-                                .getType()) == UIScriptResourceRenderer.Type.JAVASCRIPT) {
-                            if (lowPriorityScript == null) {
-                                lowPriorityScript = new ArrayList<>();
-                            }
-
-                            lowPriorityScript.add(resource);
-                        }
-
-                        continue;
-                    }
-                }
-
-                resources.add(resource);
-            }
-
-            if (lowPriorityScript != null) {
-                resources.addAll(lowPriorityScript);
-            }
+        if (pageResources == null) {
+            return;
         }
+
+        pageResources.sort((res1, res2) -> {
+            boolean res1Low = isScriptResourceLowPriority(facesContext, res1);
+            boolean res2Low = isScriptResourceLowPriority(facesContext, res2);
+
+            if (res1Low && !res2Low) return -1;
+            if (!res1Low && res2Low) return 1;
+            return 0;
+        });
+
+        resources.addAll(pageResources);
     }
 
     @Override
@@ -135,58 +120,62 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
             throws IOException {
         List<Resource> pageResources = root.getResources();
 
-        if (pageResources != null) {
-            Map<ScriptResource, UIScriptResourceRenderer> resNoAmd = new LinkedHashMap<>(
-                    pageResources.size());
+        if (pageResources == null) {
+            encodeHtmlEnd(root, writer);
 
-            for (Resource resource : pageResources) {
-                if (resource instanceof ScriptResource) {
-                    ScriptResource scriptResource = (ScriptResource) resource;
-
-                    if (scriptResource.isRendered()) {
-                        ResourceRenderer resourceRenderer =
-                                getScriptResourceRenderer(facesContext, scriptResource);
-
-                        if (resourceRenderer instanceof UIScriptResourceRenderer) {
-                            UIScriptResourceRenderer uisr =
-                                    ((UIScriptResourceRenderer) resourceRenderer);
-
-                            switch (UIScriptResourceRenderer.Type.parse(scriptResource.getType())) {
-                            case JAVASCRIPT_ASYNC:
-                                uisr.encodeTypedResource(facesContext, root, resource);
-                                break;
-                            case JAVASCRIPT_ASYNC_NOAMD:
-                                resNoAmd.put(scriptResource, uisr);
-                                break;
-                            default:
-                                // Do nothing
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!resNoAmd.isEmpty()) {
-                writer.startElement("script", root);
-                writer.writeText(
-                        "'function' == typeof define && define.amd && 'dojotoolkit.org' == define.amd.vendor && (define._amd = define.amd, delete define.amd);",
-                        null);
-                writer.endElement("script");
-                JSUtil.writeln(writer);
-
-                for (Map.Entry<ScriptResource, UIScriptResourceRenderer> entry : resNoAmd
-                        .entrySet()) {
-                    entry.getValue().encodeTypedResource(facesContext, root, entry.getKey());
-                }
-
-                writer.startElement("script", root);
-                writer.writeText(
-                        "'function' == typeof define && define._amd && (define.amd = define._amd, delete define._amd);",
-                        null);
-                writer.endElement("script");
-                JSUtil.writeln(writer);
-            }
+            return;
         }
+
+        Map<ScriptResource, UIScriptResourceRenderer> resNoAmd = new LinkedHashMap<>();
+
+        pageResources.stream()
+                .filter(Resource::isRendered)
+                .filter((res) -> res instanceof ScriptResource)
+                .map(ScriptResource.class::cast)
+                .forEach((res) -> Unthrow.on(() -> {
+                    ResourceRenderer renderer = getScriptResourceRenderer(facesContext, res);
+
+                    if (!(renderer instanceof UIScriptResourceRenderer)) {
+                        return;
+                    }
+
+                    UIScriptResourceRenderer uisr = (UIScriptResourceRenderer) renderer;
+
+                    switch (UIScriptResourceRenderer.Type.parse(res.getType())) {
+                    case JAVASCRIPT_ASYNC:
+                        uisr.encodeTypedResource(facesContext, root, res);
+                        break;
+                    case JAVASCRIPT_ASYNC_NOAMD:
+                        resNoAmd.put(res, uisr);
+                        break;
+                    default:
+                        // Do nothing
+                    }
+                }));
+
+        if (resNoAmd.isEmpty()) {
+            encodeHtmlEnd(root, writer);
+
+            return;
+        }
+
+        RenderUtil.startElement(writer, "script", root);
+        RenderUtil.writeUnescapedText(writer, "'function' == typeof define"
+                + " && define.amd"
+                + " && 'dojotoolkit.org' == define.amd.vendor"
+                + " && (define._amd = define.amd, delete define.amd);");
+        RenderUtil.endElement(writer, "script");
+        RenderUtil.writeNewLine(writer);
+
+        resNoAmd.forEach((script, renderer) -> Unthrow.on(
+                () -> renderer.encodeTypedResource(facesContext, root, script)));
+
+        RenderUtil.startElement(writer, "script", root);
+        RenderUtil.writeUnescapedText(writer, "'function' == typeof define"
+                + " && define._amd"
+                + " && (define.amd = define._amd, delete define._amd);");
+        RenderUtil.endElement(writer, "script");
+        RenderUtil.writeNewLine(writer);
 
         encodeHtmlEnd(root, writer);
     }
@@ -199,8 +188,20 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
         return (ResourceRenderer) FacesUtil.getRendererAs(renderer, ResourceRenderer.class);
     }
 
-    private boolean isXspProperty(FacesContext facesContext, String property) {
-        return Boolean.valueOf(((FacesContextEx) facesContext).getProperty(property));
+    private boolean isScriptResourceLowPriority(FacesContext facesContext, Resource resource) {
+        if (!(resource instanceof ScriptResource)) {
+            return false;
+        }
+
+        ScriptResource scriptResource = (ScriptResource) resource;
+        Renderer scriptResourceRenderer = getScriptResourceRenderer(facesContext, scriptResource);
+
+        if (!(scriptResourceRenderer instanceof UIScriptResourceRenderer)) {
+            return false;
+        }
+
+        return UIScriptResourceRenderer.Type
+                .parse(scriptResource.getType()) == UIScriptResourceRenderer.Type.JAVASCRIPT;
     }
 
 }

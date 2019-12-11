@@ -11,11 +11,19 @@ import lotus.domino.View;
 
 public interface DominoSilo {
 
+    public interface Identifier {
+
+        default String getName() {
+            return getClass().getCanonicalName() + "." + toString();
+        }
+
+    }
+    
     Database getDatabase() throws NotesException;
 
     DatabasePath getDatabasePath();
 
-    String getName();
+    Identifier getIdentifier();
 
     View getView(ViewPath viewPath, ViewAccessPolicy accessPolicy) throws NotesException;
 
@@ -28,6 +36,6 @@ public interface DominoSilo {
     void setSession(Session session);
 
     void setTemplateCreation(
-            DatabasePath templatePath, Consumer<Map.Entry<String, Database>> databaseConsumer);
+            DatabasePath templatePath, Consumer<Map.Entry<Identifier, Database>> databaseConsumer);
 
 }

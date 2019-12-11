@@ -14,7 +14,7 @@ import com.ibm.xsp.resource.DojoModulePathLoader;
 import com.ibm.xsp.resource.DojoModulePathResource;
 import com.ibm.xsp.resource.DojoModuleResource;
 import com.ibm.xsp.resource.Resource;
-import com.ibm.xsp.util.JSUtil;
+
 import info.shillem.util.StringUtil;
 
 public class UIDojoModuleResourceRenderer extends DojoModuleResourceRenderer {
@@ -34,7 +34,7 @@ public class UIDojoModuleResourceRenderer extends DojoModuleResourceRenderer {
         };
 
         static char quote = '"';
-        
+
         private String begin;
         private String end;
 
@@ -94,8 +94,8 @@ public class UIDojoModuleResourceRenderer extends DojoModuleResourceRenderer {
 
         ResponseWriter writer = facesContext.getResponseWriter();
 
-        writer.startElement("script", component);
-        writer.writeAttribute("type", "text/javascript", null);
+        RenderUtil.startElement(writer, "script", component);
+        RenderUtil.writeAttribute(writer, "type", "text/javascript");
 
         StringBuilder builder = new StringBuilder();
         DojoLoader dojoLoader = getDojoLoader((ApplicationEx) facesContext.getApplication());
@@ -106,9 +106,9 @@ public class UIDojoModuleResourceRenderer extends DojoModuleResourceRenderer {
             dojoLoader.printIf(builder, name);
         }
 
-        writer.writeText(builder.toString(), null);
-        writer.endElement("script");
-        JSUtil.writeln(writer);
+        RenderUtil.writeUnescapedText(writer, builder);
+        RenderUtil.endElement(writer, "script");
+        RenderUtil.writeNewLine(writer);
     }
 
     private DojoLoader getDojoLoader(ApplicationEx application) {

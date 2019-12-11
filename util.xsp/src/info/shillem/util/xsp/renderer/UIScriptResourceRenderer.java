@@ -8,14 +8,10 @@ import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
 import com.ibm.xsp.component.UIViewRootEx;
-import com.ibm.xsp.renderkit.html_basic.AttrsUtil;
 import com.ibm.xsp.renderkit.html_basic.HtmlRendererUtil;
 import com.ibm.xsp.renderkit.html_basic.ScriptResourceRenderer;
 import com.ibm.xsp.resource.Resource;
 import com.ibm.xsp.resource.ScriptResource;
-import com.ibm.xsp.util.JSUtil;
-
-import info.shillem.util.StringUtil;
 
 public class UIScriptResourceRenderer extends ScriptResourceRenderer {
 
@@ -33,11 +29,9 @@ public class UIScriptResourceRenderer extends ScriptResourceRenderer {
                 String lowerCaseType = type.toLowerCase();
 
                 if (lowerCaseType.contains("async")) {
-                    if (lowerCaseType.contains("noamd")) {
-                        return JAVASCRIPT_ASYNC_NOAMD;
-                    } else {
-                        return JAVASCRIPT_ASYNC;
-                    }
+                    return lowerCaseType.contains("noamd")
+                            ? JAVASCRIPT_ASYNC_NOAMD
+                            : JAVASCRIPT_ASYNC;
                 }
             }
 
@@ -67,8 +61,6 @@ public class UIScriptResourceRenderer extends ScriptResourceRenderer {
             return;
         }
 
-        String resCharset = scriptResource.getCharset();
-        String resSrc = scriptResource.getSrc();
         Map<String, String> resAttrs = scriptResource.getAttributes();
 
         if (scriptResource.getContents() == null) {
@@ -86,9 +78,9 @@ public class UIScriptResourceRenderer extends ScriptResourceRenderer {
 
             String identifier = "resource_"
                     + ScriptResource.class.getName()
-                    + resSrc
+                    + scriptResource.getSrc()
                     + '|' + Type.JAVASCRIPT.getType() + '|'
-                    + resCharset
+                    + scriptResource.getCharset()
                     + tail;
 
             UIViewRootEx root = (UIViewRootEx) facesContext.getViewRoot();
@@ -102,32 +94,20 @@ public class UIScriptResourceRenderer extends ScriptResourceRenderer {
 
         ResponseWriter writer = facesContext.getResponseWriter();
 
-        writer.startElement("script", component);
-        writer.writeAttribute("type", Type.JAVASCRIPT.getType(), "type");
-
-        if (!StringUtil.isEmpty(resCharset)) {
-            writer.writeAttribute("charset", resCharset, "charset");
-        }
-
-        if (!StringUtil.isEmpty(resSrc)) {
-            writer.writeURIAttribute("src", HtmlRendererUtil.getImageURL(facesContext, resSrc),
-                    "src");
-        }
+        RenderUtil.startElement(writer, "script", component);
+        RenderUtil.writeAttribute(writer, "type", Type.JAVASCRIPT.getType(), "type");
+        RenderUtil.writeAttribute(writer, "charset", scriptResource.getCharset(), "charset");
+        RenderUtil.writeURIAttribute(writer,
+                "src", HtmlRendererUtil.getImageURL(facesContext, scriptResource.getSrc()), "src");
 
         for (Map.Entry<String, String> attr : resAttrs.entrySet()) {
-            writer.writeAttribute(attr.getKey(), attr.getValue(), null);
+            RenderUtil.writeAttribute(writer, attr.getKey(), attr.getValue(), attr.getKey());
         }
 
-        AttrsUtil.encodeAttrs(facesContext, writer, scriptResource);
-
-        String resContents = scriptResource.getContents();
-
-        if (StringUtil.isEmpty(resSrc) && resContents != null) {
-            writer.writeText(resContents, null);
-        }
-
-        writer.endElement("script");
-        JSUtil.writeln(writer);
+        RenderUtil.writeFacesAttrs(facesContext, writer, component);
+        RenderUtil.writeUnescapedText(writer, scriptResource.getContents());
+        RenderUtil.endElement(writer, "script");
+        RenderUtil.writeNewLine(writer);
     }
 
 }

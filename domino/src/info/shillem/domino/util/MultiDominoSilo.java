@@ -3,6 +3,7 @@ package info.shillem.domino.util;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 
@@ -13,17 +14,17 @@ import lotus.domino.View;
 
 public class MultiDominoSilo implements DominoSilo {
 
-    private final String name;
+    private final Identifier identifier;
     private final ServerFolder serverFolder;
 
     private Session session;
     private DatabasePath templatePath;
-    private Consumer<Entry<String, Database>> databaseConsumer;
+    private Consumer<Entry<Identifier, Database>> databaseConsumer;
 
     private Map<String, SingleDominoSilo> silos;
 
-    public MultiDominoSilo(String name, ServerFolder serverFolder) {
-        this.name = name;
+    public MultiDominoSilo(Identifier identifier, ServerFolder serverFolder) {
+        this.identifier = Objects.requireNonNull(identifier, "Identifier cannot be null");
         this.serverFolder = serverFolder;
         this.silos = new HashMap<>();
     }
@@ -32,7 +33,7 @@ public class MultiDominoSilo implements DominoSilo {
         SingleDominoSilo silo = silos.get(key);
 
         if (silo == null) {
-            silo = new SingleDominoSilo(key, new DatabasePath(
+            silo = new SingleDominoSilo(identifier, new DatabasePath(
                     serverFolder.getServerName(), serverFolder.getFolderPath() + key));
             silo.setSession(session);
             silo.setTemplateCreation(templatePath, databaseConsumer);
@@ -50,30 +51,27 @@ public class MultiDominoSilo implements DominoSilo {
 
     @Override
     public DatabasePath getDatabasePath() {
-        throw new UnsupportedOperationException(
-                "Use get(<DominoSilo.getName()>).getDatabasePath()");
+        throw new UnsupportedOperationException("Use get(...).getDatabasePath()");
     }
 
     @Override
-    public String getName() {
-        return name;
+    public Identifier getIdentifier() {
+        return identifier;
     }
 
     @Override
     public View getView(ViewPath viewPath, ViewAccessPolicy accessPolicy) throws NotesException {
-        throw new UnsupportedOperationException("Use get(<DominoSilo.getName()>).getView(<id>)");
+        throw new UnsupportedOperationException("Use get(...).getView(...)");
     }
 
     @Override
     public List<String> getViewColumnNames(ViewPath viewPath) throws NotesException {
-        throw new UnsupportedOperationException(
-                "Use get(<DominoSilo.getName()>).getViewColumnNames(<id>)");
+        throw new UnsupportedOperationException("Use get(...).getViewColumnNames(...)");
     }
-    
+
     @Override
     public boolean isDocumentLockingEnabled() {
-        throw new UnsupportedOperationException(
-                "Use get(<DominoSilo.getName()>).isDocumentLockingEnabled()");
+        throw new UnsupportedOperationException("Use get(...).isDocumentLockingEnabled()");
     }
 
     @Override
@@ -89,7 +87,7 @@ public class MultiDominoSilo implements DominoSilo {
 
     @Override
     public void setTemplateCreation(DatabasePath templatePath,
-            Consumer<Map.Entry<String, Database>> databaseConsumer) {
+            Consumer<Map.Entry<Identifier, Database>> databaseConsumer) {
         this.templatePath = templatePath;
         this.databaseConsumer = databaseConsumer;
     }

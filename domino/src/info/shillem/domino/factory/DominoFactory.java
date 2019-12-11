@@ -8,13 +8,13 @@ import lotus.domino.ViewEntry;
 
 public interface DominoFactory {
     
-    void addDominoSilo(DominoSilo silo);
+    void addSilo(DominoSilo silo);
 
-    boolean containsDominoSilo(String name);
-
-    DominoSilo getDominoSilo(String name);
+    boolean containsSilo(DominoSilo.Identifier identifier);
 
     Session getSession();
+
+    DominoSilo getSilo(DominoSilo.Identifier identifier);
 
     boolean isRemote();
 

@@ -2,30 +2,15 @@ package info.shillem.dao;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import info.shillem.dto.BaseField;
 
 public class UrlQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
-    public static class Builder<E extends Enum<E> & BaseField> extends QueryBuilder<E, Builder<E>> {
-
-        private String url;
-
-        public Builder(String url) {
-            this.url = Objects.requireNonNull(url, "URL cannot be null");
-        }
-
-        public UrlQuery<E> build() {
-            return new UrlQuery<>(this);
-        }
-
-    }
-
     private final String url;
 
-    private UrlQuery(Builder<E> builder) {
-        super(builder);
+    UrlQuery(UrlQueryBuilder<E> builder) {
+        super(builder.base);
 
         url = builder.url;
     }
@@ -36,11 +21,11 @@ public class UrlQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
     @Override
     public String toString() {
-        Map<String, Object> m = new HashMap<String, Object>();
+        Map<String, Object> properties = new HashMap<>();
 
-        m.put("url", url);
+        properties.put("url", url);
 
-        return m.toString();
+        return properties.toString();
     }
 
 }

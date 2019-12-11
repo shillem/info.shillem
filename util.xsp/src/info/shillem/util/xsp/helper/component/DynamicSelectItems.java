@@ -11,7 +11,7 @@ public class DynamicSelectItems extends StaticSelectItems {
 
     private static final long serialVersionUID = 1L;
 
-    SelectItem dynamicValue;
+    private SelectItem dynamicValue;
 
     @Override
     public void setItems(List<SelectItem> selectItems) {
