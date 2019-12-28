@@ -125,6 +125,13 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
         public Values(E field, Set<Object> values, ComparisonOperator operator) {
             this.field = Objects.requireNonNull(field, "Field cannot be null");
             this.operator = Objects.requireNonNull(operator, "Operator cannot be null");
+            
+            Objects.requireNonNull(operator, "Values cannot be null");
+            
+            if (values.isEmpty()) {
+                throw new IllegalArgumentException("Values cannot be empty");
+            }
+            
             this.values = values;
         }
         
