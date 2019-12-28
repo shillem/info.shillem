@@ -15,7 +15,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
 
 public class NumberConverter implements Converter, StateHolder {
-    
+
     public static final String CONVERTER_ID = "info.shillem.xsp.NumberConverter";
 
     private static final Class<?>[] GET_INSTANCE_PARAM_TYPES = { String.class };
@@ -25,350 +25,37 @@ public class NumberConverter implements Converter, StateHolder {
     static {
         try {
             currencyClass = Class.forName("java.util.Currency");
-        } catch (Exception localException) {
-
+        } catch (Exception e) {
+            // Do nothing
         }
     }
 
     private String currencyCode;
-
     private String currencySymbol;
-
-    private boolean groupingUsed = true;
-
+    private boolean groupingUsed;
     private boolean integerOnly;
-
-    private int maxFractionDigits;
-
-    private boolean maxFractionDigitsSpecified;
-
-    private int maxIntegerDigits;
-
-    private boolean maxIntegerDigitsSpecified;
-
-    private int minFractionDigits;
-
-    private boolean minFractionDigitsSpecified;
-
-    private int minIntegerDigits;
-
-    private boolean minIntegerDigitsSpecified;
-
+    private Integer maxFractionDigits;
+    private Integer maxIntegerDigits;
+    private Integer minFractionDigits;
+    private Integer minIntegerDigits;
+    private Integer nearestInteger;
     private Locale locale;
-
     private String pattern;
-
-    private String type = "number";
-
-    private Integer nearest;
-
+    private String type;
     private boolean transientFlag;
 
-    public String getCurrencyCode() {
-        return currencyCode;
-    }
-
-    public void setCurrencyCode(String currencyCode) {
-        this.currencyCode = currencyCode;
-    }
-
-    public String getCurrencySymbol() {
-        return currencySymbol;
-    }
-
-    public void setCurrencySymbol(String currencySymbol) {
-        this.currencySymbol = currencySymbol;
-    }
-
-    public boolean isGroupingUsed() {
-        return groupingUsed;
-    }
-
-    public void setGroupingUsed(boolean groupingUsed) {
-        this.groupingUsed = groupingUsed;
-    }
-
-    public boolean isIntegerOnly() {
-        return integerOnly;
-    }
-
-    public void setIntegerOnly(boolean integerOnly) {
-        this.integerOnly = integerOnly;
-    }
-
-    public int getMaxFractionDigits() {
-        return maxFractionDigits;
-    }
-
-    public void setMaxFractionDigits(int maxFractionDigits) {
-        this.maxFractionDigits = maxFractionDigits;
-    }
-
-    public boolean isMaxFractionDigitsSpecified() {
-        return maxFractionDigitsSpecified;
-    }
-
-    public void setMaxFractionDigitsSpecified(boolean maxFractionDigitsSpecified) {
-        this.maxFractionDigitsSpecified = maxFractionDigitsSpecified;
-    }
-
-    public int getMaxIntegerDigits() {
-        return maxIntegerDigits;
-    }
-
-    public void setMaxIntegerDigits(int maxIntegerDigits) {
-        this.maxIntegerDigits = maxIntegerDigits;
-    }
-
-    public boolean isMaxIntegerDigitsSpecified() {
-        return maxIntegerDigitsSpecified;
-    }
-
-    public void setMaxIntegerDigitsSpecified(boolean maxIntegerDigitsSpecified) {
-        this.maxIntegerDigitsSpecified = maxIntegerDigitsSpecified;
-    }
-
-    public int getMinFractionDigits() {
-        return minFractionDigits;
-    }
-
-    public void setMinFractionDigits(int minFractionDigits) {
-        this.minFractionDigits = minFractionDigits;
-    }
-
-    public boolean isMinFractionDigitsSpecified() {
-        return minFractionDigitsSpecified;
-    }
-
-    public void setMinFractionDigitsSpecified(boolean minFractionDigitsSpecified) {
-        this.minFractionDigitsSpecified = minFractionDigitsSpecified;
-    }
-
-    public int getMinIntegerDigits() {
-        return minIntegerDigits;
-    }
-
-    public void setMinIntegerDigits(int minIntegerDigits) {
-        this.minIntegerDigits = minIntegerDigits;
-    }
-
-    public boolean isMinIntegerDigitsSpecified() {
-        return minIntegerDigitsSpecified;
-    }
-
-    public void setMinIntegerDigitsSpecified(boolean minIntegerDigitsSpecified) {
-        this.minIntegerDigitsSpecified = minIntegerDigitsSpecified;
-    }
-
-    public Locale getLocale() {
-        if (locale == null) {
-            locale = getLocale(FacesContext.getCurrentInstance());
-        }
-
-        return locale;
-    }
-
-    private Locale getLocale(FacesContext context) {
-        if (locale == null) {
-            locale = context.getViewRoot().getLocale();
-        }
-
-        return locale;
-    }
-
-    public void setLocale(Locale locale) {
-        this.locale = locale;
-    }
-
-    public String getPattern() {
-        return pattern;
-    }
-
-    public void setPattern(String pattern) {
-        this.pattern = pattern;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public Integer getNearest() {
-        return nearest;
-    }
-
-    public void setNearest(Integer nearest) {
-        this.nearest = nearest;
-    }
-
-    public boolean isTransient() {
-        return transientFlag;
-    }
-
-    public void setTransient(boolean transientFlag) {
-        this.transientFlag = transientFlag;
-    }
-
-    public Object getAsObject(FacesContext context, UIComponent component, String value) {
-        if (context == null || component == null) {
-            throw new NullPointerException();
-        }
-
-        if (value == null) {
-            return null;
-        }
-
-        value = value.trim();
-
-        if (value.isEmpty()) {
-            return null;
-        }
-
-        try {
-            Locale locale = getLocale(context);
-
-            NumberFormat parser = getNumberFormat(locale);
-
-            if ((pattern != null && !pattern.equals("")) || "currency".equals(type)) {
-                configureCurrency(parser);
-            }
-
-            parser.setParseIntegerOnly(isIntegerOnly());
-
-            Number num = parser.parse(value);
-
-            if ("bigDecimal".equals(type) || "currency".equals(type)) {
-                BigDecimal bd = new BigDecimal(num.toString());
-
-                if (nearest != null && bd.intValue() > nearest) {
-                    bd = bd.setScale(-(nearest.toString().length()), RoundingMode.HALF_UP);
-                }
-
-                return bd;
-            } else {
-                double d = num.doubleValue();
-
-                if (nearest != null && d > nearest) {
-                    num = Double.valueOf(Math.round(d / nearest) * nearest);
-                }
-
-                if ("double".equals(type)) {
-                    return num.doubleValue();
-                }
-
-                if ("integer".equals(type)) {
-                    return num.intValue();
-                }
-            }
-
-            return num;
-        } catch (Exception e) {
-            throw new ConverterException(e);
-        }
-    }
-
-    public String getAsString(FacesContext context, UIComponent component, Object value) {
-        if (context == null || component == null) {
-            throw new NullPointerException();
-        }
-
-        if (value == null) {
-            return "";
-        }
-
-        if (value instanceof String) {
-            return (String) value;
-        }
-
-        try {
-            Locale locale = getLocale(context);
-            NumberFormat formatter = getNumberFormat(locale);
-
-            if ((pattern != null && !pattern.equals("")) || ("currency".equals(type))) {
-                configureCurrency(formatter);
-            }
-
-            configureFormatter(formatter);
-
-            return formatter.format(value);
-        } catch (Exception e) {
-            throw new ConverterException(e);
-        }
-    }
-
-    public Object saveState(FacesContext context) {
-        Object[] values = new Object[16];
-        values[0] = currencyCode;
-        values[1] = currencySymbol;
-        values[2] = (isGroupingUsed() ? Boolean.TRUE : Boolean.FALSE);
-        values[3] = (isIntegerOnly() ? Boolean.TRUE : Boolean.FALSE);
-        values[4] = new Integer(maxFractionDigits);
-        values[5] = (maxFractionDigitsSpecified ? Boolean.TRUE : Boolean.FALSE);
-        values[6] = new Integer(maxIntegerDigits);
-        values[7] = (maxIntegerDigitsSpecified ? Boolean.TRUE : Boolean.FALSE);
-        values[8] = new Integer(minFractionDigits);
-        values[9] = (minFractionDigitsSpecified ? Boolean.TRUE : Boolean.FALSE);
-        values[10] = new Integer(minIntegerDigits);
-        values[11] = (minIntegerDigitsSpecified ? Boolean.TRUE : Boolean.FALSE);
-        values[12] = locale;
-        values[13] = pattern;
-        values[14] = type;
-        values[15] = nearest;
-        return values;
-    }
-
-    public void restoreState(FacesContext context, Object state) {
-        Object[] values = (Object[]) state;
-
-        currencyCode = ((String) values[0]);
-        currencySymbol = ((String) values[1]);
-        groupingUsed = ((Boolean) values[2]).booleanValue();
-        integerOnly = ((Boolean) values[3]).booleanValue();
-        maxFractionDigits = ((Integer) values[4]).intValue();
-        maxFractionDigitsSpecified = ((Boolean) values[5]).booleanValue();
-        maxIntegerDigits = ((Integer) values[6]).intValue();
-        maxIntegerDigitsSpecified = ((Boolean) values[7]).booleanValue();
-        minFractionDigits = ((Integer) values[8]).intValue();
-        minFractionDigitsSpecified = ((Boolean) values[9]).booleanValue();
-        minIntegerDigits = ((Integer) values[10]).intValue();
-        minIntegerDigitsSpecified = ((Boolean) values[11]).booleanValue();
-        locale = ((Locale) values[12]);
-        pattern = ((String) values[13]);
-        type = ((String) values[14]);
-        nearest = ((Integer) values[15]);
-    }
-
-    private NumberFormat getNumberFormat(Locale locale) {
-        if (pattern == null && type == null) {
-            throw new IllegalArgumentException("Either pattern or type must be specified.");
-        }
-
-        if (pattern != null) {
-            DecimalFormatSymbols symbols = new DecimalFormatSymbols(locale);
-            return new DecimalFormat(pattern, symbols);
-        }
-
-        if ("currency".equals(type)) {
-            return NumberFormat.getCurrencyInstance(locale);
-        } else if ("percent".equals(type)) {
-            return NumberFormat.getPercentInstance(locale);
-        } else if (type.matches("integer|double|number")) {
-            return NumberFormat.getNumberInstance(locale);
-        }
-
-        throw new ConverterException(new IllegalArgumentException(type));
+    public NumberConverter() {
+        groupingUsed = true;
+        type = "number";
     }
 
     private void configureCurrency(NumberFormat formatter) throws Exception {
-        String code = null;
-        String symbol = null;
-
         if (currencyCode == null && currencySymbol == null) {
             return;
         }
+
+        String code = null;
+        String symbol = null;
 
         if (currencyCode != null && currencySymbol != null) {
             if (currencyClass != null) {
@@ -403,21 +90,294 @@ public class NumberConverter implements Converter, StateHolder {
     private void configureFormatter(NumberFormat formatter) {
         formatter.setGroupingUsed(groupingUsed);
 
-        if (maxIntegerDigitsSpecified) {
+        if (maxIntegerDigits != null) {
             formatter.setMaximumIntegerDigits(maxIntegerDigits);
         }
 
-        if (minIntegerDigitsSpecified) {
+        if (minIntegerDigits != null) {
             formatter.setMinimumIntegerDigits(minIntegerDigits);
         }
 
-        if (maxFractionDigitsSpecified) {
+        if (maxFractionDigits != null) {
             formatter.setMaximumFractionDigits(maxFractionDigits);
         }
 
-        if (minFractionDigitsSpecified) {
+        if (minFractionDigits != null) {
             formatter.setMinimumFractionDigits(minFractionDigits);
         }
+    }
+
+    @Override
+    public Object getAsObject(FacesContext context, UIComponent component, String value) {
+        if (context == null || component == null) {
+            throw new NullPointerException();
+        }
+
+        if (value == null) {
+            return null;
+        }
+
+        value = value.trim();
+
+        if (value.isEmpty()) {
+            return null;
+        }
+
+        try {
+            Locale locale = getLocale(context);
+            NumberFormat parser = getNumberFormat(locale);
+
+            if ((pattern != null && !pattern.equals("")) || "currency".equals(type)) {
+                configureCurrency(parser);
+            }
+
+            parser.setParseIntegerOnly(isIntegerOnly());
+
+            Number num = parser.parse(value);
+
+            if ("bigDecimal".equals(type) || "currency".equals(type)) {
+                BigDecimal bd = new BigDecimal(num.toString());
+
+                if (nearestInteger != null && bd.intValue() > nearestInteger) {
+                    bd = bd.setScale(-(nearestInteger.toString().length()), RoundingMode.HALF_UP);
+                }
+
+                return bd;
+            }
+
+            if (nearestInteger != null && num.doubleValue() > nearestInteger) {
+                num = Double
+                        .valueOf(Math.round(num.doubleValue() / nearestInteger) * nearestInteger);
+            }
+
+            if ("double".equals(type)) {
+                return num.doubleValue();
+            }
+
+            if ("integer".equals(type)) {
+                return num.intValue();
+            }
+
+            return num;
+        } catch (Exception e) {
+            throw new ConverterException(e);
+        }
+    }
+
+    @Override
+    public String getAsString(FacesContext context, UIComponent component, Object value) {
+        if (context == null || component == null) {
+            throw new NullPointerException();
+        }
+
+        if (value == null) {
+            return "";
+        }
+
+        if (value instanceof String) {
+            return (String) value;
+        }
+
+        try {
+            Locale locale = getLocale(context);
+            NumberFormat formatter = getNumberFormat(locale);
+            Number num = (Number) value;
+
+            if ((pattern != null && !pattern.equals("")) || ("currency".equals(type))) {
+                configureCurrency(formatter);
+            }
+
+            configureFormatter(formatter);
+
+            if (nearestInteger != null && num.doubleValue() > nearestInteger) {
+                num = Double
+                        .valueOf(Math.round(num.doubleValue() / nearestInteger) * nearestInteger);
+            }
+
+            return formatter.format(num);
+        } catch (Exception e) {
+            throw new ConverterException(e);
+        }
+    }
+
+    public String getCurrencyCode() {
+        return currencyCode;
+    }
+
+    public String getCurrencySymbol() {
+        return currencySymbol;
+    }
+
+    public Locale getLocale() {
+        if (locale == null) {
+            locale = getLocale(FacesContext.getCurrentInstance());
+        }
+
+        return locale;
+    }
+
+    private Locale getLocale(FacesContext context) {
+        if (locale == null) {
+            locale = context.getViewRoot().getLocale();
+        }
+
+        return locale;
+    }
+
+    public Integer getMaxFractionDigits() {
+        return maxFractionDigits;
+    }
+
+    public Integer getMaxIntegerDigits() {
+        return maxIntegerDigits;
+    }
+
+    public Integer getMinFractionDigits() {
+        return minFractionDigits;
+    }
+
+    public Integer getMinIntegerDigits() {
+        return minIntegerDigits;
+    }
+
+    public Integer getNearestInteger() {
+        return nearestInteger;
+    }
+
+    private NumberFormat getNumberFormat(Locale locale) {
+        if (pattern == null && type == null) {
+            throw new IllegalStateException("Either pattern or type must be configured");
+        }
+
+        if (pattern != null) {
+            return new DecimalFormat(pattern, new DecimalFormatSymbols(locale));
+        }
+
+        if ("currency".equals(type)) {
+            return NumberFormat.getCurrencyInstance(locale);
+        }
+
+        if ("percent".equals(type)) {
+            return NumberFormat.getPercentInstance(locale);
+        }
+
+        if (type.matches("integer|double|number")) {
+            return NumberFormat.getNumberInstance(locale);
+        }
+
+        throw new ConverterException(new IllegalArgumentException(type));
+    }
+
+    public String getPattern() {
+        return pattern;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public boolean isGroupingUsed() {
+        return groupingUsed;
+    }
+
+    public boolean isIntegerOnly() {
+        return integerOnly;
+    }
+
+    @Override
+    public boolean isTransient() {
+        return transientFlag;
+    }
+
+    @Override
+    public void restoreState(FacesContext context, Object state) {
+        Object[] values = (Object[]) state;
+
+        currencyCode = (String) values[0];
+        currencySymbol = (String) values[1];
+        groupingUsed = ((Boolean) values[2]).booleanValue();
+        integerOnly = ((Boolean) values[3]).booleanValue();
+        maxFractionDigits = (Integer) values[4];
+        maxIntegerDigits = (Integer) values[5];
+        minFractionDigits = (Integer) values[6];
+        minIntegerDigits = (Integer) values[7];
+        nearestInteger = (Integer) values[8];
+        locale = (Locale) values[9];
+        pattern = (String) values[10];
+        type = (String) values[11];
+    }
+
+    @Override
+    public Object saveState(FacesContext context) {
+        Object[] values = new Object[12];
+
+        values[0] = currencyCode;
+        values[1] = currencySymbol;
+        values[2] = groupingUsed;
+        values[3] = integerOnly;
+        values[4] = maxFractionDigits;
+        values[5] = maxIntegerDigits;
+        values[6] = minFractionDigits;
+        values[7] = minIntegerDigits;
+        values[8] = nearestInteger;
+        values[9] = locale;
+        values[10] = pattern;
+        values[11] = type;
+
+        return values;
+    }
+
+    public void setCurrencyCode(String currencyCode) {
+        this.currencyCode = currencyCode;
+    }
+
+    public void setCurrencySymbol(String currencySymbol) {
+        this.currencySymbol = currencySymbol;
+    }
+
+    public void setGroupingUsed(boolean groupingUsed) {
+        this.groupingUsed = groupingUsed;
+    }
+
+    public void setIntegerOnly(boolean integerOnly) {
+        this.integerOnly = integerOnly;
+    }
+
+    public void setLocale(Locale locale) {
+        this.locale = locale;
+    }
+
+    public void setMaxFractionDigits(Integer maxFractionDigits) {
+        this.maxFractionDigits = maxFractionDigits;
+    }
+
+    public void setMaxIntegerDigits(Integer maxIntegerDigits) {
+        this.maxIntegerDigits = maxIntegerDigits;
+    }
+
+    public void setMinFractionDigits(Integer minFractionDigits) {
+        this.minFractionDigits = minFractionDigits;
+    }
+
+    public void setMinIntegerDigits(Integer minIntegerDigits) {
+        this.minIntegerDigits = minIntegerDigits;
+    }
+
+    public void setNearestInteger(Integer nearestInteger) {
+        this.nearestInteger = nearestInteger;
+    }
+
+    public void setPattern(String pattern) {
+        this.pattern = pattern;
+    }
+
+    @Override
+    public void setTransient(boolean transientFlag) {
+        this.transientFlag = transientFlag;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
 }

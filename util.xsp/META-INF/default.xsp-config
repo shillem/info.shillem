@@ -186,7 +186,7 @@
 			</description>
 			<display-name>Maximum Fraction Digits</display-name>
 			<property-name>maxFractionDigits</property-name>
-			<property-class>int</property-class>
+			<property-class>java.lang.Integer</property-class>
 			<property-extension>
 				<allow-run-time-binding>false</allow-run-time-binding>
 			</property-extension>
@@ -201,7 +201,7 @@
 			</description>
 			<display-name>Maximum Integer Digits</display-name>
 			<property-name>maxIntegerDigits</property-name>
-			<property-class>int</property-class>
+			<property-class>java.lang.Integer</property-class>
 			<property-extension>
 				<allow-run-time-binding>false</allow-run-time-binding>
 			</property-extension>
@@ -215,7 +215,7 @@
 			</description>
 			<display-name>Minimum Fraction Digits</display-name>
 			<property-name>minFractionDigits</property-name>
-			<property-class>int</property-class>
+			<property-class>java.lang.Integer</property-class>
 			<property-extension>
 				<allow-run-time-binding>false</allow-run-time-binding>
 			</property-extension>
@@ -230,7 +230,7 @@
 			</description>
 			<display-name>Min Integer Digits</display-name>
 			<property-name>minIntegerDigits</property-name>
-			<property-class>int</property-class>
+			<property-class>java.lang.Integer</property-class>
 			<property-extension>
 				<allow-run-time-binding>false</allow-run-time-binding>
 			</property-extension>
@@ -281,10 +281,10 @@
 		<!-- ======== /end Sun NumberConverter Properties ================= -->
 
 		<property>
-			<description>The nearest number to round the number to
+			<description>The nearest integer to round the number to
 			</description>
-			<display-name>Nearest number</display-name>
-			<property-name>nearest</property-name>
+			<display-name>Nearest integer</display-name>
+			<property-name>nearestInteger</property-name>
 			<property-class>java.lang.Integer</property-class>
 		</property>
 
