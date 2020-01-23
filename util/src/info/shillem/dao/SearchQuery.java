@@ -53,8 +53,8 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
 
     public static class Logical implements Piece {
 
-        static final Logical AND = new Logical(LogicalOperator.AND);
-        static final Logical OR = new Logical(LogicalOperator.OR);
+        public static final Logical AND = new Logical(LogicalOperator.AND);
+        public static final Logical OR = new Logical(LogicalOperator.OR);
 
         private final LogicalOperator operator;
 

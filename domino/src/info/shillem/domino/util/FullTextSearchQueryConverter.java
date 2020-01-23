@@ -15,8 +15,13 @@ public class FullTextSearchQueryConverter<E extends Enum<E> & BaseField>
         super(query);
     }
 
-    public FullTextSearchQueryConverter(SearchQuery<E> query, Function<E, String> itemNamer) {
-        super(query, itemNamer);
+    public FullTextSearchQueryConverter(SearchQuery<E> query, Function<E, String> namer) {
+        super(query, namer);
+    }
+
+    @Override
+    protected String formatField(E field) {
+        return "[" + namer.apply(field) + "]";
     }
 
     @Override
@@ -26,6 +31,10 @@ public class FullTextSearchQueryConverter<E extends Enum<E> & BaseField>
 
     @Override
     protected String formatValue(Object value) {
+        if (value == null) {
+            return "\"\"";
+        }
+
         if (value instanceof String) {
             return "\"" + value + "\"";
         }
@@ -40,15 +49,49 @@ public class FullTextSearchQueryConverter<E extends Enum<E> & BaseField>
     @Override
     protected void formatValue(StringBuilder builder, Value<E> value) {
         switch (value.getOperator()) {
+        case EQUAL:
+            if (value.getValue() == null) {
+                builder.append("NOT " + formatField(value.getField()) + " IS PRESENT");
+            } else {
+                builder.append(formatField(value.getField())
+                        + formatComparisonOperator(value.getOperator())
+                        + formatValue(value.getValue()));
+            }
+
+            break;
+        case LIKE: {
+            String stringValue = (String) value.getValue();
+
+            builder.append(formatField(value.getField())
+                    + formatComparisonOperator(value.getOperator())
+                    + formatValue(stringValue.isEmpty()
+                            ? stringValue
+                            : stringValue.contains("*")
+                                    ? stringValue
+                                    : "*" + stringValue + "*"));
+
+            break;
+        }
         case NOT_EQUAL:
+            if (value.getValue() == null) {
+                builder.append(formatField(value.getField()) + " IS PRESENT");
+            } else {
+                builder.append("NOT " + formatField(value.getField())
+                        + formatComparisonOperator(value.getOperator().getOpposite())
+                        + formatValue(value.getValue()));
+            }
+
+            break;
         case NOT_IN:
-            builder.append("NOT " + namer.apply(value.getField())
+            builder.append("NOT " + formatField(value.getField())
                     + formatComparisonOperator(value.getOperator().getOpposite())
                     + formatValue(value.getValue()));
 
             break;
         default:
-            super.formatValue(builder, value);
+            builder.append(formatField(value.getField())
+                    + formatComparisonOperator(value.getOperator())
+                    + formatValue(value.getValue()));
         }
     }
 

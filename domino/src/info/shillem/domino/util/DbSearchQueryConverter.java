@@ -25,9 +25,9 @@ public class DbSearchQueryConverter<E extends Enum<E> & BaseField>
     public DbSearchQueryConverter(SearchQuery<E> query) {
         super(query);
     }
-    
-    public DbSearchQueryConverter(SearchQuery<E> query, Function<E, String> itemNamer) {
-        super(query, itemNamer);
+
+    public DbSearchQueryConverter(SearchQuery<E> query, Function<E, String> namer) {
+        super(query, namer);
     }
 
     @Override
@@ -85,6 +85,10 @@ public class DbSearchQueryConverter<E extends Enum<E> & BaseField>
 
     @Override
     protected String formatValue(Object value) {
+        if (value == null) {
+            return "\"\"";
+        }
+        
         if (value instanceof String) {
             return "\"" + value + "\"";
         }
@@ -98,14 +102,24 @@ public class DbSearchQueryConverter<E extends Enum<E> & BaseField>
 
     @Override
     protected void formatValue(StringBuilder builder, Value<E> value) {
-        builder.append(namer.apply(value.getField())
-                + formatComparisonOperator(value.getOperator())
-                + formatValue(value.getValue()));
+        switch (value.getOperator()) {
+        case LIKE:
+            builder.append(String.format("@Contains(%s;%s)",
+                    formatField(value.getField()),
+                    formatValue(value.getValue())));
+
+            break;
+        default:
+            builder.append(formatField(value.getField())
+                    + formatComparisonOperator(value.getOperator())
+                    + formatValue(value.getValue()));
+        }
+
     }
 
     @Override
     protected void formatValues(StringBuilder builder, Values<E> values) {
-        String itemName = namer.apply(values.getField());
+        String itemName = formatField(values.getField());
         String operator = formatComparisonOperator(values.getOperator());
 
         builder.append("(");

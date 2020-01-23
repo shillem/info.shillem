@@ -27,6 +27,10 @@ public abstract class SearchQueryConverter<E extends Enum<E> & BaseField> {
 
     protected abstract String formatComparisonOperator(ComparisonOperator operator);
 
+    protected String formatField(E field) {
+        return namer.apply(field);
+    }
+
     protected abstract void formatGroup(StringBuilder builder, Group group);
 
     protected abstract void formatLogical(StringBuilder builder, Logical logical);

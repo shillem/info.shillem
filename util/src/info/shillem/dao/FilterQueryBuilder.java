@@ -22,10 +22,6 @@ public class FilterQueryBuilder<E extends Enum<E> & BaseField> {
     }
 
     public FilterQuery<E> build() {
-        if (filters.isEmpty()) {
-            throw new IllegalStateException("Filter query cannot be empty");
-        }
-
         return new FilterQuery<>(this);
     }
 

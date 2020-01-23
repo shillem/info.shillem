@@ -29,13 +29,17 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import info.shillem.dao.Query;
+import info.shillem.dao.SearchQuery;
 import info.shillem.dao.UrlQuery;
 import info.shillem.dao.lang.DaoException;
+import info.shillem.dao.lang.DaoQueryException;
 import info.shillem.dao.lang.DaoRecordException;
 import info.shillem.domino.factory.DominoFactory;
 import info.shillem.domino.util.DeletionType;
 import info.shillem.domino.util.DominoSilo;
+import info.shillem.domino.util.DominoStream;
 import info.shillem.domino.util.DominoUtil;
+import info.shillem.domino.util.FullTextSearchQueryConverter;
 import info.shillem.domino.util.MimeContentType;
 import info.shillem.domino.util.ViewManager;
 import info.shillem.domino.util.ViewMatch;
@@ -58,6 +62,7 @@ import lotus.domino.Document;
 import lotus.domino.Item;
 import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
+import lotus.domino.NotesError;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.Stream;
@@ -728,15 +733,25 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return wrapper;
     }
 
-    protected RuntimeException wrappedPullItemException(Exception e, E field, Document doc) {
+    protected List<T> wrapFullTextSearch(View vw, Supplier<T> supplier, SearchQuery<E> query)
+            throws DaoException, NotesException {
+        String syntax = new FullTextSearchQueryConverter<E>(
+                query, this::getDocumentItemName).toString();
+
         try {
-            return new RuntimeException(String.format(
-                    "Unable to pull item %s from document %s",
-                    field.name(),
-                    doc.getNoteID()),
-                    e);
-        } catch (NotesException ne) {
-            return new RuntimeException(String.format("Unable to pull item %s", field.name()), e);
+            vw.FTSearchSorted(syntax, query.getMaxCount());
+
+            try (java.util.stream.Stream<Document> stream = DominoStream.stream(vw)) {
+                return stream
+                        .map(doc -> Unthrow.on(() -> wrapDocument(doc, supplier, query)))
+                        .collect(Collectors.toList());
+            }
+        } catch (NotesException e) {
+            if (e.id == NotesError.NOTES_ERR_NOT_IMPLEMENTED || !e.text.contains("query")) {
+                throw new RuntimeException(e);
+            }
+
+            throw DaoQueryException.asInvalid(syntax);
         }
     }
 
@@ -751,6 +766,18 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         } catch (NotesException ne) {
             return new RuntimeException(
                     String.format("Unable to pull column value %s", field.name()), e);
+        }
+    }
+
+    protected RuntimeException wrappedPullItemException(Exception e, E field, Document doc) {
+        try {
+            return new RuntimeException(String.format(
+                    "Unable to pull item %s from document %s",
+                    field.name(),
+                    doc.getNoteID()),
+                    e);
+        } catch (NotesException ne) {
+            return new RuntimeException(String.format("Unable to pull item %s", field.name()), e);
         }
     }
 
