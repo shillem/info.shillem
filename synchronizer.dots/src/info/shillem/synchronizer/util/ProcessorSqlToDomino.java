@@ -123,16 +123,18 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                             continue;
                         }
 
-                        helper.logVerboseMessage(() -> Unthrow.on(() -> {
-                            StringBuilder summary = new StringBuilder(
-                                    (record.isNew() ? "New" : "Updated")
-                                            + " record " + record.getValue(keyFieldName));
-
-                            changes.forEach((name, change) -> summary.append(
-                                    String.format("\n\t%s %s", name, change)));
-
-                            return summary.toString();
-                        }));
+                        //TODO never seen error thrown at runtime with this code!!!
+                        //Maybe lambdas are involved
+//                        helper.logVerboseMessage(() -> Unthrow.on(() -> {
+//                            StringBuilder summary = new StringBuilder(
+//                                    (record.isNew() ? "New" : "Updated")
+//                                            + " record " + record.getValue(keyFieldName));
+//
+//                            changes.forEach((name, change) -> summary.append(
+//                                    String.format("\n\t%s %s", name, change)));
+//
+//                            return summary.toString();
+//                        }));
 
                         if (!helper.isMode(Mode.TEST)) {
                             doc.save();

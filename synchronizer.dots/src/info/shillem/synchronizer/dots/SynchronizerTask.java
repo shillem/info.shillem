@@ -23,6 +23,7 @@ import info.shillem.domino.util.DatabasePath;
 import info.shillem.domino.util.DominoStream;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.domino.util.SingleDominoSilo;
+import info.shillem.domino.util.StringDbIdentifier;
 import info.shillem.synchronizer.dots.Program.RunMode;
 import info.shillem.synchronizer.dto.Record;
 import info.shillem.synchronizer.lang.ProcessorException;
@@ -30,12 +31,12 @@ import info.shillem.synchronizer.util.Processor;
 import info.shillem.synchronizer.util.ProcessorBuilder;
 import info.shillem.synchronizer.util.ProcessorDominoToSql;
 import info.shillem.synchronizer.util.ProcessorHelper;
-import info.shillem.synchronizer.util.ProcessorSqlToDomino;
 import info.shillem.synchronizer.util.ProcessorHelper.Mode;
+import info.shillem.synchronizer.util.ProcessorSqlToDomino;
 import info.shillem.synchronizer.util.SqlFactory;
 import info.shillem.util.Unthrow;
 import info.shillem.util.dots.Commands;
-import info.shillem.util.dots.DefaultProgressMonitor;
+import info.shillem.util.dots.DotsProgressMonitor;
 import info.shillem.util.dots.Preferences;
 import info.shillem.util.dots.Preferences.Property;
 import info.shillem.util.dots.Preferences.PropertyPolicy;
@@ -211,8 +212,9 @@ public class SynchronizerTask extends AbstractServerTask {
                     .addOption(LocalDominoFactory.Option.TRACK_MILLISEC_IN_JAVA_DATES)
                     .build();
 
-            factory.addDominoSilo(
-                    new SingleDominoSilo(program.getId(), program.getDatabasePath()));
+            factory.addSilo(new SingleDominoSilo(
+                    new StringDbIdentifier(program.getId()),
+                    program.getDatabasePath()));
 
             return factory;
         } catch (NotesException e) {
@@ -374,7 +376,7 @@ public class SynchronizerTask extends AbstractServerTask {
 
             try {
                 helper = new ProcessorHelper.Builder(
-                        program, new DefaultProgressMonitor(taskRun.getProgressMonitor()))
+                        program, new DotsProgressMonitor(taskRun.getProgressMonitor()))
                                 .setMode(Mode.VERBOSE, verbose)
                                 .setMode(Mode.TEST, program.isRunMode(RunMode.DRY_RUN))
                                 .setDominoFactory(newDominoFactory(program))
@@ -412,7 +414,7 @@ public class SynchronizerTask extends AbstractServerTask {
                         })
                         .build(helper);
             } catch (ClassNotFoundException e) {
-                logMessage(e.getMessage());
+                logException(e);
 
                 return;
             }
@@ -445,7 +447,7 @@ public class SynchronizerTask extends AbstractServerTask {
             helper.logMessage(summary);
         } catch (Exception e) {
             failed = true;
-            
+
             Optional
                     .ofNullable(helper)
                     .ifPresent((h) -> h.logException(e));

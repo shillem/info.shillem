@@ -3,8 +3,8 @@ package info.shillem.domino.util;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import lotus.domino.Database;
@@ -14,16 +14,16 @@ import lotus.domino.View;
 
 public class MultiDominoSilo implements DominoSilo {
 
-    private final Identifier identifier;
+    private final DbIdentifier identifier;
     private final ServerFolder serverFolder;
 
     private Session session;
     private DatabasePath templatePath;
-    private Consumer<Entry<Identifier, Database>> databaseConsumer;
+    private Consumer<Entry<DbIdentifier, Database>> databaseConsumer;
 
     private Map<String, SingleDominoSilo> silos;
 
-    public MultiDominoSilo(Identifier identifier, ServerFolder serverFolder) {
+    public MultiDominoSilo(DbIdentifier identifier, ServerFolder serverFolder) {
         this.identifier = Objects.requireNonNull(identifier, "Identifier cannot be null");
         this.serverFolder = serverFolder;
         this.silos = new HashMap<>();
@@ -55,7 +55,7 @@ public class MultiDominoSilo implements DominoSilo {
     }
 
     @Override
-    public Identifier getIdentifier() {
+    public DbIdentifier getIdentifier() {
         return identifier;
     }
 
@@ -87,7 +87,7 @@ public class MultiDominoSilo implements DominoSilo {
 
     @Override
     public void setTemplateCreation(DatabasePath templatePath,
-            Consumer<Map.Entry<Identifier, Database>> databaseConsumer) {
+            Consumer<Entry<DbIdentifier, Database>> databaseConsumer) {
         this.templatePath = templatePath;
         this.databaseConsumer = databaseConsumer;
     }

@@ -1,5 +1,6 @@
 package info.shillem.domino.factory;
 
+import info.shillem.domino.util.DbIdentifier;
 import info.shillem.domino.util.DominoSilo;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
@@ -10,11 +11,11 @@ public interface DominoFactory {
     
     void addSilo(DominoSilo silo);
 
-    boolean containsSilo(DominoSilo.Identifier identifier);
+    boolean containsSilo(DbIdentifier identifier);
 
     Session getSession();
 
-    DominoSilo getSilo(DominoSilo.Identifier identifier);
+    DominoSilo getSilo(DbIdentifier identifier);
 
     boolean isRemote();
 

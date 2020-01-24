@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/info.shillem.domino.feature_1.0.0.201912251521.jar" id="info.shillem.domino.feature" version="1.0.0.201912251521">
+   <feature url="features/info.shillem.domino.feature_1.0.0.202001101104.jar" id="info.shillem.domino.feature" version="1.0.0.202001101104">
       <category name="Shillem"/>
    </feature>
-   <feature url="features/info.shillem.domino.xsp.feature_1.0.0.201912251521.jar" id="info.shillem.domino.xsp.feature" version="1.0.0.201912251521">
+   <feature url="features/info.shillem.domino.xsp.feature_1.0.0.202001101104.jar" id="info.shillem.domino.xsp.feature" version="1.0.0.202001101104">
       <category name="Shillem"/>
    </feature>
-   <feature url="features/info.shillem.util.feature_1.0.0.201912251521.jar" id="info.shillem.util.feature" version="1.0.0.201912251521">
+   <feature url="features/info.shillem.util.feature_1.0.0.202001101104.jar" id="info.shillem.util.feature" version="1.0.0.202001101104">
       <category name="Shillem"/>
    </feature>
-   <feature url="features/info.shillem.util.xsp.feature_1.0.0.201912251521.jar" id="info.shillem.util.xsp.feature" version="1.0.0.201912251521">
+   <feature url="features/info.shillem.util.xsp.feature_1.0.0.202001101104.jar" id="info.shillem.util.xsp.feature" version="1.0.0.202001101104">
       <category name="Shillem"/>
    </feature>
    <category-def name="Shillem" label="Shillem"/>

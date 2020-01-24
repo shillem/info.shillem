@@ -4,14 +4,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import info.shillem.domino.util.DbIdentifier;
 import info.shillem.domino.util.DominoSilo;
-import info.shillem.domino.util.DominoSilo.Identifier;
 import lotus.domino.Session;
 
 public abstract class AbstractDominoFactory implements DominoFactory {
     
     private final Session session;
-    private final Map<Identifier, DominoSilo> silos;
+    private final Map<DbIdentifier, DominoSilo> silos;
     
     protected AbstractDominoFactory(Session session) {
         Objects.requireNonNull(session, "Session cannot be null");
@@ -33,12 +33,12 @@ public abstract class AbstractDominoFactory implements DominoFactory {
     }
 
     @Override
-    public boolean containsSilo(DominoSilo.Identifier identifier) {
+    public boolean containsSilo(DbIdentifier identifier) {
         return silos.containsKey(identifier);
     }
 
     @Override
-    public DominoSilo getSilo(DominoSilo.Identifier identifier) {
+    public DominoSilo getSilo(DbIdentifier identifier) {
         DominoSilo silo = silos.get(identifier);
 
         if (silo == null) {

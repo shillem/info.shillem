@@ -6,7 +6,9 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import info.shillem.domino.util.DbIdentifier;
 import info.shillem.domino.util.DominoSilo;
+import info.shillem.domino.util.StringDbIdentifier;
 import info.shillem.domino.util.ViewAccessPolicy;
 import info.shillem.domino.util.ViewPath;
 import info.shillem.synchronizer.dots.Program.Nature;
@@ -17,9 +19,10 @@ import lotus.domino.View;
 
 public abstract class Processor<T extends Record> {
 
-    protected final ProcessorHelper helper;
-    private final Supplier<T> recordSupplier;
-    private final ViewPath viewPath;
+    protected ProcessorHelper helper;
+    private Supplier<T> recordSupplier;
+    private DbIdentifier dbIdentifier;
+    private ViewPath viewPath;
 
     public Processor(ProcessorHelper helper, Supplier<T> recordSupplier) {
         this.helper = Objects.requireNonNull(
@@ -28,6 +31,7 @@ public abstract class Processor<T extends Record> {
         this.recordSupplier = Objects.requireNonNull(
                 recordSupplier, "Record supplier helper cannot be null");
 
+        this.dbIdentifier = new StringDbIdentifier(helper.getId());
         this.viewPath = new ViewPath() {
             @Override
             public String getName() {
@@ -39,7 +43,7 @@ public abstract class Processor<T extends Record> {
     public abstract boolean execute() throws ProcessorException;
 
     protected final DominoSilo getDominoSilo() {
-        return helper.getDominoFactory().getDominoSilo(helper.getId());
+        return helper.getDominoFactory().getSilo(dbIdentifier);
     }
 
     protected Field getKeyField() {
@@ -112,7 +116,7 @@ public abstract class Processor<T extends Record> {
 
         if (value instanceof String) {
             String stringValue = (String) value;
-            
+
             if (stringValue.isEmpty()) {
                 return null;
             }

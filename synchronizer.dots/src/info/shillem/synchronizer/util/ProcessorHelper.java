@@ -33,7 +33,7 @@ public class ProcessorHelper {
             this.progressMonitor = Objects.requireNonNull(
                     progressMonitor, "Progress monitor cannot be null");
 
-            this.modes = new HashSet<Mode>();
+            this.modes = new HashSet<>();
         }
 
         public ProcessorHelper build() {

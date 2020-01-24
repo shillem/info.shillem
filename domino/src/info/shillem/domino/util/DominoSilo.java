@@ -1,7 +1,7 @@
 package info.shillem.domino.util;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import lotus.domino.Database;
@@ -11,19 +11,11 @@ import lotus.domino.View;
 
 public interface DominoSilo {
 
-    public interface Identifier {
-
-        default String getName() {
-            return getClass().getCanonicalName() + "." + toString();
-        }
-
-    }
-    
     Database getDatabase() throws NotesException;
 
     DatabasePath getDatabasePath();
 
-    Identifier getIdentifier();
+    DbIdentifier getIdentifier();
 
     View getView(ViewPath viewPath, ViewAccessPolicy accessPolicy) throws NotesException;
 
@@ -36,6 +28,6 @@ public interface DominoSilo {
     void setSession(Session session);
 
     void setTemplateCreation(
-            DatabasePath templatePath, Consumer<Map.Entry<Identifier, Database>> databaseConsumer);
+            DatabasePath templatePath, Consumer<Entry<DbIdentifier, Database>> databaseConsumer);
 
 }

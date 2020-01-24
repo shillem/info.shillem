@@ -6,11 +6,13 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import info.shillem.util.ProgressMonitor;
 
-public class DefaultProgressMonitor implements ProgressMonitor {
+public class DotsProgressMonitor extends ProgressMonitor {
 
     private IProgressMonitor progressMonitor;
 
-    public DefaultProgressMonitor(IProgressMonitor progressMonitor) {
+    public DotsProgressMonitor(IProgressMonitor progressMonitor) {
+        super();
+
         this.progressMonitor =
                 Objects.requireNonNull(progressMonitor, "Progress monitor cannot be null");
     }
