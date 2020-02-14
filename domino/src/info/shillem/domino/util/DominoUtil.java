@@ -367,6 +367,12 @@ public enum DominoUtil {
         }
     }
 
+    public static void setOffset(ViewNavigator nav, int offset) throws NotesException {
+        if (offset > 0) {
+            nav.skip(offset);
+        }
+    }
+
     public static void setReaderValue(Document doc, String itemName, Object value)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");

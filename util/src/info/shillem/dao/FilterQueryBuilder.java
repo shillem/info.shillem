@@ -56,6 +56,10 @@ public class FilterQueryBuilder<E extends Enum<E> & BaseField> {
 
         return this;
     }
+    
+    public int getMaxCount() {
+        return page.getMaxCount();
+    }
 
     public FilterQueryBuilder<E> setCache(boolean flag) {
         page.setCache(flag);

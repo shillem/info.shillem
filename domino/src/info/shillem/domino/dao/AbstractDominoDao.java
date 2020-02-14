@@ -28,6 +28,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
+import info.shillem.dao.IdQuery;
 import info.shillem.dao.Query;
 import info.shillem.dao.SearchQuery;
 import info.shillem.dao.UrlQuery;
@@ -140,6 +141,21 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
 
         return doc;
+    }
+
+    protected void delete(DominoSilo silo, DeletionType deletionType, IdQuery<E> query) {
+        Document doc = null;
+
+        try {
+            doc = getDocumentById(silo, query.getId())
+                    .orElseThrow(() -> DaoRecordException.asMissing(query.getId()));
+
+            deleteDocument(silo, doc, deletionType);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            DominoUtil.recycle(doc);
+        }
     }
 
     protected boolean deleteDocument(DominoSilo silo, Document doc, DeletionType deletion)
@@ -699,6 +715,25 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
 
         return getDocumentById(database, documentId);
+    }
+
+    protected Optional<T> resolveWrapper(DominoSilo silo, Supplier<T> supplier, IdQuery<E> query)
+            throws NotesException {
+        Document doc = null;
+
+        try {
+            Optional<Document> optional = getDocumentById(silo, query.getId());
+
+            if (!optional.isPresent()) {
+                return Optional.empty();
+            }
+
+            doc = optional.get();
+
+            return Optional.of(wrapDocument(doc, supplier, query));
+        } finally {
+            DominoUtil.recycle(doc);
+        }
     }
 
     protected void update(T wrapper, DominoSilo silo) throws DaoException, NotesException {
