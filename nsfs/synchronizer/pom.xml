@@ -1,0 +1,25 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>info.shillem.nsf.synchronizer</groupId>
+	<artifactId>synchronizer</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>domino-nsf</packaging>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.openntf.maven</groupId>
+				<artifactId>nsfodp-maven-plugin</artifactId>
+				<version>3.2.0-SNAPSHOT</version>
+				<extensions>true</extensions>
+				<configuration>
+					<binaryDxl>true</binaryDxl>
+					<deployDestPath>!!apps/synchronizer.nsf</deployDestPath>
+					<deployReplaceDesign>true</deployReplaceDesign>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>

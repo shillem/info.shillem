@@ -1,0 +1,18 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: synchronizer
+Bundle-SymbolicName: info.shillem.nsf.synchronizer.synchronizer
+Automatic-Module-Name: info.shillem.nsf.synchronizer.synchronizer
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.ui;resolution:=optional,org.eclipse.core.run
+ time;resolution:=optional,com.ibm.commons;resolution:=optional,com.ibm.
+ commons.xml;resolution:=optional,com.ibm.commons.vfs;resolution:=option
+ al,com.ibm.jscript;resolution:=optional,com.ibm.designer.runtime.direct
+ ory;resolution:=optional,com.ibm.designer.runtime;resolution:=optional,
+ com.ibm.xsp.core;resolution:=optional,com.ibm.xsp.extsn;resolution:=opt
+ ional,com.ibm.xsp.designer;resolution:=optional,com.ibm.xsp.domino;reso
+ lution:=optional,com.ibm.notes.java.api;resolution:=optional,com.ibm.xs
+ p.rcp;resolution:=optional
+Created-By: org.openntf.maven.nsfodp.GeneratePDEStructureMojo
+

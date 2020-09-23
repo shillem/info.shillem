@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/info.shillem.domino.xsp.feature_1.0.0.202009232338.jar" id="info.shillem.domino.xsp.feature" version="1.0.0.202009232338">
+      <category name="Shillem"/>
+   </feature>
+   <feature url="features/info.shillem.util.xsp.feature_1.0.0.202009232338.jar" id="info.shillem.util.xsp.feature" version="1.0.0.202009232338">
+      <category name="Shillem"/>
+   </feature>
+   <category-def name="Shillem" label="Shillem"/>
+</site>

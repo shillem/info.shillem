@@ -12,4 +12,3 @@ Export-Package: info.shillem.dao,
 Automatic-Module-Name: info.shillem.domino
 Import-Package: com.google.gson,
  com.google.gson.stream
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
