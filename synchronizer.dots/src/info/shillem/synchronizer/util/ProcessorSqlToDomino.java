@@ -123,8 +123,8 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                             continue;
                         }
 
-                        //TODO never seen error thrown at runtime with this code!!!
-                        //Maybe lambdas are involved
+                        // TODO never seen error thrown at runtime with this code!!!
+                        // Maybe lambdas are involved
 //                        helper.logVerboseMessage(() -> Unthrow.on(() -> {
 //                            StringBuilder summary = new StringBuilder(
 //                                    (record.isNew() ? "New" : "Updated")
@@ -333,9 +333,17 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
             return null;
         } catch (Exception e) {
+            String docId;
+
+            try {
+                docId = record.isNew() ? "[NEW]" : doc.getNoteID();
+            } catch (NotesException ne) {
+                docId = e.getMessage();
+            }
+
             throw new RuntimeException(String.format(
-                    "Error while pushing %s with value %s",
-                    to, String.valueOf(recordValue)), e);
+                    "Error while pushing %s with value %s on record %s",
+                    to, String.valueOf(recordValue), docId), e);
         }
     }
 

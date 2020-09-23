@@ -8,5 +8,4 @@
             type="com.ibm.xsp.Library">
       </service>
    </extension>
-
 </plugin>

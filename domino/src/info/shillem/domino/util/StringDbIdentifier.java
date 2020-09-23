@@ -1,7 +1,5 @@
 package info.shillem.domino.util;
 
-import info.shillem.domino.util.DbIdentifier;
-
 import java.util.Objects;
 
 public class StringDbIdentifier implements DbIdentifier {

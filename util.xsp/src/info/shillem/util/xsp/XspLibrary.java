@@ -4,32 +4,29 @@ import com.ibm.xsp.library.AbstractXspLibrary;
 
 public class XspLibrary extends AbstractXspLibrary {
 
-	public static final String LIBRARY_ID = XspLibrary.class.getName();
-	public static final String PLUGIN_ID = XspLibrary.class.getPackage().getName();
-
-	@Override
+    @Override
     public String[] getDependencies() {
-        return new String[] { 
-                "com.ibm.xsp.core.library", 
-                "com.ibm.xsp.extsn.library", 
+        return new String[] {
+                "com.ibm.xsp.core.library",
+                "com.ibm.xsp.extsn.library",
                 "com.ibm.xsp.domino.library",
                 "com.ibm.xsp.designer.library" };
     }
 
-	@Override
+    @Override
     public String[] getFacesConfigFiles() {
         return new String[] { "META-INF/default-faces-config.xml" };
     }
 
     @Override
-	public String getLibraryId() {
-		return LIBRARY_ID;
-	}
+    public String getLibraryId() {
+        return getPluginId() + ".library";
+    }
 
     @Override
-	public String getPluginId() {
-		return PLUGIN_ID;
-	}
+    public String getPluginId() {
+        return XspLibrary.class.getPackage().getName();
+    }
 
     @Override
     public String[] getXspConfigFiles() {
