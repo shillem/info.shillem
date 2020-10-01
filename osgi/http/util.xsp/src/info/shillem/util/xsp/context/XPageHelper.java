@@ -9,10 +9,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import javax.faces.FacesException;
 import javax.faces.application.FacesMessage;
@@ -33,6 +30,7 @@ import com.ibm.xsp.util.FacesUtil;
 import com.sun.faces.util.MessageFactory;
 
 import info.shillem.util.CastUtil;
+import info.shillem.util.StreamUtil;
 import info.shillem.util.xsp.component.ComponentUtil;
 
 public enum XPageHelper {
@@ -114,8 +112,8 @@ public enum XPageHelper {
     public static List<Locale> getApplicationLocales(FacesContext facesContext) {
         Iterator<?> iterator = facesContext.getApplication().getSupportedLocales();
 
-        return StreamSupport
-                .stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
+        return StreamUtil
+                .stream(iterator)
                 .map(Locale.class::cast)
                 .collect(Collectors.toList());
     }

@@ -12,7 +12,7 @@ public final class DatabasePath implements Serializable {
     private static final Pattern PATH_END_PATTERN =
             Pattern.compile("\\.n[st]f$", Pattern.CASE_INSENSITIVE);
     private static final Pattern SYNTAX_PATTERN =
-            Pattern.compile("([^!]*)!!(.*)");
+            Pattern.compile("(.*)!![\\/]*(.+)");
     private static final Pattern SERVER_NAME_PATTERN =
             Pattern.compile("(?:CN=)*([^\\/]+)", Pattern.CASE_INSENSITIVE);
 
@@ -78,11 +78,11 @@ public final class DatabasePath implements Serializable {
 
     public String getServerNameAsUrl() {
         Matcher matcher = SERVER_NAME_PATTERN.matcher(serverName);
-        
+
         if (matcher.find()) {
             return matcher.group(1);
         }
-        
+
         return null;
     }
 

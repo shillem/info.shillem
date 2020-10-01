@@ -1,11 +1,9 @@
 package info.shillem.domino.util;
 
 import java.util.Objects;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
+import info.shillem.util.StreamUtil;
 import info.shillem.util.Unthrow;
 import info.shillem.util.Unthrow.ThrowableFunction;
 import info.shillem.util.Unthrow.ThrowableSupplier;
@@ -46,8 +44,8 @@ public class DominoStream {
     }
 
     private static <T extends Base> Stream<T> stream(DominoIterator<T> iterator) {
-        return StreamSupport
-                .stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false)
+        return StreamUtil
+                .stream(iterator)
                 .onClose(() -> Unthrow.on(iterator::close));
     }
 
