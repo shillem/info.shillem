@@ -24,9 +24,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import info.shillem.dao.IdQuery;
 import info.shillem.dao.Query;
@@ -49,8 +49,8 @@ import info.shillem.dto.AttachmentMap;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseDto.SchemaFilter;
 import info.shillem.dto.BaseField;
+import info.shillem.dto.FieldProperties;
 import info.shillem.dto.JsonValue;
-import info.shillem.util.CastUtil;
 import info.shillem.util.CollectionUtil;
 import info.shillem.util.IOUtil;
 import info.shillem.util.StringUtil;
@@ -73,8 +73,8 @@ import lotus.domino.ViewEntryCollection;
 
 public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
 
-    private static class GsonLoader {
-        private static final Gson INSTANCE = new GsonBuilder().create();
+    private static class Json {
+        private static final ObjectMapper MAPPER = new ObjectMapper();
     }
 
     private static final Pattern DOC_NOTES_URL_PATTERN = Pattern.compile("^notes:\\/\\/"
@@ -363,13 +363,23 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 return null;
             }
 
-            Class<?> type = CastUtil.toAnyClass(field.getProperties().getType());
+            ObjectMapper mapper = Json.MAPPER;
+            FieldProperties props = field.getProperties();
+            JavaType type;
 
-            TypeToken<?> t = field.getProperties().isList()
-                    ? TypeToken.getParameterized(ArrayList.class, type)
-                    : TypeToken.get(type);
+            if (props.isList()) {
+                type = mapper
+                        .getTypeFactory()
+                        .constructType(props.getType());
+            } else {
+                type = mapper
+                        .getTypeFactory()
+                        .constructCollectionLikeType(ArrayList.class, props.getType());
+            }
 
-            return GsonLoader.INSTANCE.fromJson(mimeEntity.getContentAsText(), t.getType());
+            return mapper.readValue(mimeEntity.getContentAsText(), type);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         } finally {
             DominoUtil.recycle(mimeEntity);
 
@@ -654,7 +664,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
         try {
             stm = factory.getSession().createStream();
-            stm.writeText(GsonLoader.INSTANCE.toJson(jsonValue));
+            stm.writeText(Json.MAPPER.writeValueAsString(jsonValue));
 
             mimeEntity = DominoUtil.getMimeEntity(doc, itemName, true);
             mimeEntity.setContentFromText(stm,
@@ -662,6 +672,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                     MIMEEntity.ENC_NONE);
 
             stm.close();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
         } finally {
             if (doc.hasItem(itemName)) {
                 doc.closeMIMEEntities(true, itemName);
@@ -774,7 +786,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 query, this::getDocumentItemName).toString();
 
         try {
-            vw.FTSearchSorted(syntax, query.getMaxCount());
+            vw.FTSearchSorted(syntax, query.getLimit());
 
             try (java.util.stream.Stream<Document> stream = DominoStream.stream(vw)) {
                 return stream

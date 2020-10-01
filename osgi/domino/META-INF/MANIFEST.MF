@@ -4,8 +4,10 @@ Bundle-Name: Shillem Domino Plug-in
 Bundle-SymbolicName: info.shillem.domino;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Shillem Volpato
-Import-Package: com.google.gson,
- com.google.gson.reflect,
+Import-Package: com.fasterxml.jackson.core,
+ com.fasterxml.jackson.databind,
+ com.fasterxml.jackson.databind.module,
+ com.fasterxml.jackson.databind.type,
  info.shillem.dao,
  info.shillem.dao.lang,
  info.shillem.dto,
@@ -16,3 +18,4 @@ Automatic-Module-Name: info.shillem.util
 Export-Package: info.shillem.domino.dao,
  info.shillem.domino.factory,
  info.shillem.domino.util
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
