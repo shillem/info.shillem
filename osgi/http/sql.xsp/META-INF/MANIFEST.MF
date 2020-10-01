@@ -1,0 +1,10 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Shillem SQL for XPages
+Bundle-SymbolicName: info.shillem.sql.xsp;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: com.ibm.commons,
+ com.ibm.xsp.extsn,
+ info.shillem.sql;visibility:=reexport
+Export-Package: info.shillem.domino.xsp
+Automatic-Module-Name: info.shillem.domino.xsp

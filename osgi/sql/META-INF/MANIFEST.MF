@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Shillem SQL Plug-in
+Bundle-SymbolicName: info.shillem.sql;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Shillem Volpato
+Automatic-Module-Name: info.shillem.sql
+Export-Package: info.shillem.sql.util
+Import-Package: info.shillem.dao,
+ info.shillem.dto,
+ info.shillem.util
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
