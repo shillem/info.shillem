@@ -77,14 +77,14 @@ public class SearchQueryBuilder<E extends Enum<E> & BaseField> {
         return this;
     }
 
-    public SearchQueryBuilder<E> setLocale(Locale locale) {
-        base.setLocale(locale);
+    public SearchQueryBuilder<E> setLimit(int limit) {
+        page.setLimit(limit);
 
         return this;
     }
 
-    public SearchQueryBuilder<E> setMaxCount(int maxCount) {
-        page.setMaxCount(maxCount);
+    public SearchQueryBuilder<E> setLocale(Locale locale) {
+        base.setLocale(locale);
 
         return this;
     }

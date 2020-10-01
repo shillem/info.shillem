@@ -8,7 +8,7 @@ import info.shillem.util.OrderOperator;
 public class PageQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
     private final boolean cached;
-    private final int maxCount;
+    private final int limit;
     private final Map<E, OrderOperator> sorters;
 
     private int offset;
@@ -17,13 +17,13 @@ public class PageQuery<E extends Enum<E> & BaseField> extends Query<E> {
         super(base);
 
         cached = page.cached;
-        maxCount = page.maxCount;
+        limit = page.limit;
         offset = page.offset;
         sorters = page.sorters;
     }
 
-    public int getMaxCount() {
-        return maxCount;
+    public int getLimit() {
+        return limit;
     }
 
     public int getOffset() {
@@ -48,9 +48,9 @@ public class PageQuery<E extends Enum<E> & BaseField> extends Query<E> {
                     "Offset cannot be recalculated unless offset at build time equals to Integer.MAX_VALUE");
         }
 
-        int modulus = lastRow % maxCount;
+        int modulus = lastRow % limit;
 
-        offset = lastRow - (modulus > 0 ? modulus : maxCount);
+        offset = lastRow - (modulus > 0 ? modulus : limit);
 
         return offset;
     }

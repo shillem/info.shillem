@@ -29,7 +29,7 @@ public class Query<E extends Enum<E> & BaseField> {
         return databaseUrl;
     }
 
-    public static void isOrElseThrowException(Query<?> query, Class<?>... classes) {
+    public static void require(Query<?> query, Class<?>... classes) {
         if (classes != null) {
             for (Class<?> cls : classes) {
                 if (cls.isAssignableFrom(query.getClass())) {

@@ -57,8 +57,8 @@ public class FilterQueryBuilder<E extends Enum<E> & BaseField> {
         return this;
     }
     
-    public int getMaxCount() {
-        return page.getMaxCount();
+    public int getLimit() {
+        return page.getLimit();
     }
 
     public int getOffset() {
@@ -71,14 +71,14 @@ public class FilterQueryBuilder<E extends Enum<E> & BaseField> {
         return this;
     }
 
-    public FilterQueryBuilder<E> setLocale(Locale locale) {
-        base.setLocale(locale);
+    public FilterQueryBuilder<E> setLimit(int limit) {
+        page.setLimit(limit);
 
         return this;
     }
 
-    public FilterQueryBuilder<E> setMaxCount(int maxCount) {
-        page.setMaxCount(maxCount);
+    public FilterQueryBuilder<E> setLocale(Locale locale) {
+        base.setLocale(locale);
 
         return this;
     }
