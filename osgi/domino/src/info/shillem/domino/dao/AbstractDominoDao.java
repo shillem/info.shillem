@@ -24,6 +24,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -74,7 +75,8 @@ import lotus.domino.ViewEntryCollection;
 public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
 
     private static class Json {
-        private static final ObjectMapper MAPPER = new ObjectMapper();
+        private static final ObjectMapper MAPPER = new ObjectMapper()
+                .setSerializationInclusion(Include.NON_NULL);
     }
 
     private static final Pattern DOC_NOTES_URL_PATTERN = Pattern.compile("^notes:\\/\\/"

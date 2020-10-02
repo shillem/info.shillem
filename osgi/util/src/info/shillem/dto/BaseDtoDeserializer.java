@@ -42,17 +42,26 @@ public class BaseDtoDeserializer<T extends BaseDto<?>> extends StdDeserializer<T
         super(t);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public T deserialize(JsonParser parser, DeserializationContext context)
             throws IOException, JsonProcessingException {
         JsonNode node = parser.readValueAsTree();
 
         try {
+            @SuppressWarnings("unchecked")
             T instance = (T) handledType().getConstructor().newInstance();
-            instance.setId(node.get("id").asText());
-            instance.setLastModified(deserializeDate(node.get("lastModified").asText()));
-            instance.setDatabaseUrl(node.get("databaseUrl").asText());
+            
+            if (node.has("id")) {
+                instance.setId(node.get("id").asText());
+            }
+            
+            if (node.has("lastModified")) {
+                instance.setLastModified(deserializeDate(node.get("lastModified").asText()));
+            }
+            
+            if (node.has("databaseUrl")) {
+                instance.setDatabaseUrl(node.get("databaseUrl").asText());
+            }
 
             node.get("values").fields().forEachRemaining((entry) -> Unthrow.on(() -> {
                 deserializeField(
@@ -69,9 +78,7 @@ public class BaseDtoDeserializer<T extends BaseDto<?>> extends StdDeserializer<T
     }
 
     private Date deserializeDate(String value) {
-        return value != null
-                ? Date.from(ZonedDateTime.parse(value).toInstant())
-                : null;
+        return Date.from(ZonedDateTime.parse(value).toInstant());
     }
 
     @SuppressWarnings("unchecked")
