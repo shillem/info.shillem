@@ -2,7 +2,7 @@ package info.shillem.util.xsp;
 
 import com.ibm.xsp.library.AbstractXspLibrary;
 
-public class XspLibrary extends AbstractXspLibrary {
+public final class XspLibrary extends AbstractXspLibrary {
 
     @Override
     public String[] getDependencies() {
@@ -25,7 +25,7 @@ public class XspLibrary extends AbstractXspLibrary {
 
     @Override
     public String getPluginId() {
-        return XspLibrary.class.getPackage().getName();
+        return this.getClass().getPackage().getName();
     }
 
     @Override

@@ -1,8 +1,8 @@
-package info.shillem.domino.xsp;
+package info.shillem.sql.xsp;
 
 import com.ibm.xsp.library.AbstractXspLibrary;
 
-public class XspLibrary extends AbstractXspLibrary {
+public final class XspLibrary extends AbstractXspLibrary {
 
     @Override
     public String getLibraryId() {
@@ -11,7 +11,7 @@ public class XspLibrary extends AbstractXspLibrary {
 
     @Override
     public String getPluginId() {
-        return XspLibrary.class.getPackage().getName();
+        return this.getClass().getPackage().getName();
     }
 
 }

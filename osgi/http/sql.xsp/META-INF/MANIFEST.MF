@@ -6,6 +6,5 @@ Bundle-Version: 1.0.0.qualifier
 Require-Bundle: com.ibm.commons,
  com.ibm.xsp.extsn,
  info.shillem.sql;visibility:=reexport
-Export-Package: info.shillem.domino.xsp
 Automatic-Module-Name: info.shillem.domino.xsp
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

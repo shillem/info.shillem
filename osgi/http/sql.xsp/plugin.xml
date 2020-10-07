@@ -4,7 +4,7 @@
    <extension
          point="com.ibm.commons.Extension">
       <service
-            class="info.shillem.domino.xsp.XspLibrary"
+            class="info.shillem.sql.xsp.XspLibrary"
             type="com.ibm.xsp.Library">
       </service>
    </extension>
