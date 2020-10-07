@@ -1,4 +1,4 @@
-package info.shillem.domino.xsp;
+package info.shillem.domino.xsp.factory;
 
 import java.util.HashSet;
 import java.util.Objects;

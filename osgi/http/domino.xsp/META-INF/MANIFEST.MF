@@ -11,6 +11,6 @@ Import-Package: com.ibm.domino.napi.c,
  com.ibm.xsp.model.domino,
  info.shillem.util,
  lotus.domino
-Export-Package: info.shillem.domino.xsp
 Automatic-Module-Name: info.shillem.domino.xsp
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: info.shillem.domino.xsp.factory
