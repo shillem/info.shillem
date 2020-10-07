@@ -91,7 +91,7 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
             return new SearchQuery.Values<>(field, values, op);
         }
 
-        return new SearchQuery.Value<>(field, parseValue(entry.getValue(), type));
+        return new SearchQuery.Value<>(field, parseValue(entry.getValue(), type), op);
     }
 
     private ComparisonOperator parseOperator(String token) {

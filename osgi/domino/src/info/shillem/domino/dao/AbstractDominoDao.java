@@ -784,7 +784,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
     protected List<T> wrapFullTextSearch(View vw, Supplier<T> supplier, SearchQuery<E> query)
             throws DaoException {
-        String syntax = new FullTextSearchQueryConverter<E>(
+        String syntax = new FullTextSearchQueryConverter<>(
                 query, this::getDocumentItemName).toString();
 
         try {
