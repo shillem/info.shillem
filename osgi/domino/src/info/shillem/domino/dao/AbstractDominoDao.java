@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import info.shillem.dao.IdQuery;
+import info.shillem.dao.PageQuery;
 import info.shillem.dao.Query;
 import info.shillem.dao.SearchQuery;
 import info.shillem.dao.UrlQuery;
@@ -38,8 +39,9 @@ import info.shillem.dao.lang.DaoQueryException;
 import info.shillem.dao.lang.DaoRecordException;
 import info.shillem.domino.factory.DominoFactory;
 import info.shillem.domino.util.DeletionType;
+import info.shillem.domino.util.DominoLoop;
+import info.shillem.domino.util.DominoLoop.Result;
 import info.shillem.domino.util.DominoSilo;
-import info.shillem.domino.util.DominoStream;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.domino.util.FullTextSearchQueryConverter;
 import info.shillem.domino.util.MimeContentType;
@@ -67,7 +69,6 @@ import lotus.domino.MIMEHeader;
 import lotus.domino.NotesError;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
-import lotus.domino.Stream;
 import lotus.domino.View;
 import lotus.domino.ViewEntry;
 import lotus.domino.ViewEntryCollection;
@@ -143,6 +144,14 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
 
         return doc;
+    }
+
+    protected Result<T> decorate(Result<T> result, Query<E> query) {
+        if (result.getTotal() != null) {
+            query.createSummary().setTotal(result.getTotal());
+        }
+
+        return result;
     }
 
     protected void delete(DominoSilo silo, DeletionType deletionType, IdQuery<E> query) {
@@ -273,6 +282,36 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return Optional.of(factory.setDefaults(entry));
     }
 
+    protected DominoLoop.DocumentOptions<T> newLoopDocumentOption(Query<E> query) {
+        DominoLoop.DocumentOptions<T> options = new DominoLoop.DocumentOptions<>();
+
+        if (query instanceof PageQuery) {
+            PageQuery<E> pq = (PageQuery<E>) query;
+
+            options.setLimit(pq.getLimit());
+            options.setOffset(pq.getOffset());
+        }
+
+        options.setFetchTotal(query.containsOption(DominoQueryOption.FETCH_TOTAL));
+
+        return options;
+    }
+
+    protected DominoLoop.ViewEntryOptions<T> newLoopViewEntryOption(Query<E> query) {
+        DominoLoop.ViewEntryOptions<T> options = new DominoLoop.ViewEntryOptions<>();
+
+        if (query instanceof PageQuery) {
+            PageQuery<E> pq = (PageQuery<E>) query;
+
+            options.setLimit(pq.getLimit());
+            options.setOffset(pq.getOffset());
+        }
+
+        options.setFetchTotal(query.containsOption(DominoQueryOption.FETCH_TOTAL));
+
+        return options;
+    }
+
     protected void pullDocument(Document doc, T wrapper, Query<E> query) throws NotesException {
         for (E field : query.getSchema()) {
             pullItem(field, doc, wrapper, query.getLocale());
@@ -283,7 +322,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             wrapper.setLastModified(DominoUtil.getLastModified(doc));
         }
 
-        if (query.isFetchDatabaseUrl()) {
+        if (query.containsOption(DominoQueryOption.FETCH_NOTES_URL)) {
             wrapper.setDatabaseUrl(doc.getNotesURL());
         }
     }
@@ -484,7 +523,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                     columnValues.get(lastModifiedIndex)));
         }
 
-        if (query.isFetchDatabaseUrl()) {
+        if (query.containsOption(DominoQueryOption.FETCH_NOTES_URL)) {
             wrapper.setDatabaseUrl(manager.getDatabaseUrl(entry));
         }
     }
@@ -604,7 +643,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 }
 
                 InputStream is = null;
-                Stream stm = null;
+                lotus.domino.Stream stm = null;
 
                 try {
                     is = new FileInputStream(uploadedFile);
@@ -661,7 +700,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             return;
         }
 
-        Stream stm = null;
+        lotus.domino.Stream stm = null;
         MIMEEntity mimeEntity = null;
 
         try {
@@ -750,6 +789,31 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
+    protected List<T> searchFullText(View vw, Supplier<T> supplier, SearchQuery<E> query)
+            throws DaoException {
+        String syntax = new FullTextSearchQueryConverter<>(
+                query, this::getDocumentItemName).toString();
+
+        try {
+            vw.FTSearchSorted(syntax, query.getLimit());
+
+            Result<T> result = DominoLoop.read(vw,
+                    newLoopDocumentOption(query)
+                            .setConverter(doc -> Unthrow.on(() -> wrapDocument(
+                                    factory.setDefaults(doc),
+                                    supplier,
+                                    query))));
+
+            return decorate(result, query).getData();
+        } catch (NotesException e) {
+            if (e.id == NotesError.NOTES_ERR_NOT_IMPLEMENTED || !e.text.contains("query")) {
+                throw new RuntimeException(e);
+            }
+
+            throw DaoQueryException.asInvalid(syntax);
+        }
+    }
+
     protected void update(T wrapper, DominoSilo silo) throws DaoException, NotesException {
         if (wrapper.isNew()) {
             throw new IllegalArgumentException("Update cannot be performed on a new record");
@@ -780,28 +844,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         pullDocument(doc, wrapper, query);
 
         return wrapper;
-    }
-
-    protected List<T> wrapFullTextSearch(View vw, Supplier<T> supplier, SearchQuery<E> query)
-            throws DaoException {
-        String syntax = new FullTextSearchQueryConverter<>(
-                query, this::getDocumentItemName).toString();
-
-        try {
-            vw.FTSearchSorted(syntax, query.getLimit());
-
-            try (java.util.stream.Stream<Document> stream = DominoStream.stream(vw)) {
-                return stream
-                        .map(doc -> Unthrow.on(() -> wrapDocument(doc, supplier, query)))
-                        .collect(Collectors.toList());
-            }
-        } catch (NotesException e) {
-            if (e.id == NotesError.NOTES_ERR_NOT_IMPLEMENTED || !e.text.contains("query")) {
-                throw new RuntimeException(e);
-            }
-
-            throw DaoQueryException.asInvalid(syntax);
-        }
     }
 
     protected RuntimeException wrappedPullColumnValueException(

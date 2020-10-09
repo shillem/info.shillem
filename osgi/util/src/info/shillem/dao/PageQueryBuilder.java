@@ -13,9 +13,14 @@ class PageQueryBuilder<E extends Enum<E> & BaseField> {
     int limit;
     int offset;
     Map<E, OrderOperator> sorters;
+    boolean total;
 
     PageQueryBuilder() {
         sorters = new LinkedHashMap<>();
+    }
+    
+    public void fetchTotal(boolean flag) {
+        this.total = flag;
     }
 
     public int getLimit() {

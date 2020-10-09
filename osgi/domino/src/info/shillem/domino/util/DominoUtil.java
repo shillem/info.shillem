@@ -24,10 +24,8 @@ import lotus.domino.Document;
 import lotus.domino.Item;
 import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
-import lotus.domino.NotesError;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
-import lotus.domino.ViewNavigator;
 
 public enum DominoUtil {
     ;
@@ -40,7 +38,7 @@ public enum DominoUtil {
     static {
         MIME_FILTERED_HEADERS.add("Content-Type");
         MIME_FILTERED_HEADERS.add("Content-Disposition");
-    }  
+    }
 
     public static Boolean getItemBoolean(Document doc, String itemName)
             throws NotesException {
@@ -341,17 +339,6 @@ public enum DominoUtil {
         }
     }
 
-    public static void setGuidance(ViewNavigator nav, int maxEntries, int readMode)
-            throws NotesException {
-        try {
-            nav.setCacheGuidance(maxEntries, readMode);
-        } catch (NotesException e) {
-            if (e.id != NotesError.NOTES_ERR_NOT_IMPLEMENTED) {
-                throw e;
-            }
-        }
-    }
-
     public static void setNameValue(Document doc, String itemName, Object value)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
@@ -364,12 +351,6 @@ public enum DominoUtil {
             item.setNames(true);
         } finally {
             recycle(item);
-        }
-    }
-
-    public static void setOffset(ViewNavigator nav, int offset) throws NotesException {
-        if (offset > 0) {
-            nav.skip(offset);
         }
     }
 

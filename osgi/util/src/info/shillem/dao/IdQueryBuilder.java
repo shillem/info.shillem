@@ -16,6 +16,20 @@ public class IdQueryBuilder<E extends Enum<E> & BaseField> {
         this.base = new QueryBuilder<>();
         this.id = Objects.requireNonNull(id, "Id cannot be null");
     }
+    
+    public IdQueryBuilder<E> addOption(Enum<? extends QueryOption> value) {
+        base.addOption(value);
+
+        return this;
+    }
+
+    public IdQueryBuilder<E> addOption(
+            Enum<? extends QueryOption> value,
+            @SuppressWarnings("unchecked") Enum<? extends QueryOption>... values) {
+        base.addOption(value, values);
+        
+        return this;
+    }
 
     public IdQuery<E> build() {
         return new IdQuery<>(this);
@@ -35,12 +49,6 @@ public class IdQueryBuilder<E extends Enum<E> & BaseField> {
 
     public IdQueryBuilder<E> fetch(Set<E> fields) {
         base.fetch(fields);
-        
-        return this;
-    }
-
-    public IdQueryBuilder<E> fetchDatabaseUrl(boolean flag) {
-        base.fetchDatabaseUrl(flag);
         
         return this;
     }

@@ -7,7 +7,6 @@ import info.shillem.util.OrderOperator;
 
 public class PageQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
-    private final boolean cached;
     private final int limit;
     private final Map<E, OrderOperator> sorters;
 
@@ -16,7 +15,6 @@ public class PageQuery<E extends Enum<E> & BaseField> extends Query<E> {
     PageQuery(QueryBuilder<E> base, PageQueryBuilder<E> page) {
         super(base);
 
-        cached = page.cached;
         limit = page.limit;
         offset = page.offset;
         sorters = page.sorters;
@@ -33,11 +31,7 @@ public class PageQuery<E extends Enum<E> & BaseField> extends Query<E> {
     public Map<E, OrderOperator> getSorters() {
         return sorters;
     }
-
-    public boolean isCached() {
-        return cached;
-    }
-
+    
     public boolean isUnknownOffset() {
         return offset == Integer.MAX_VALUE;
     }

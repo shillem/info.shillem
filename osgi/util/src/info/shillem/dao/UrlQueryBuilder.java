@@ -16,6 +16,20 @@ public class UrlQueryBuilder<E extends Enum<E> & BaseField> {
         this.base = new QueryBuilder<>();
         this.url = Objects.requireNonNull(url, "Url cannot be null");
     }
+    
+    public UrlQueryBuilder<E> addOption(Enum<? extends QueryOption> value) {
+        base.addOption(value);
+
+        return this;
+    }
+
+    public UrlQueryBuilder<E> addOption(
+            Enum<? extends QueryOption> value,
+            @SuppressWarnings("unchecked") Enum<? extends QueryOption>... values) {
+        base.addOption(value, values);
+        
+        return this;
+    }
 
     public UrlQuery<E> build() {
         return new UrlQuery<>(this);
@@ -35,12 +49,6 @@ public class UrlQueryBuilder<E extends Enum<E> & BaseField> {
 
     public UrlQueryBuilder<E> fetch(Set<E> fields) {
         base.fetch(fields);
-        
-        return this;
-    }
-
-    public UrlQueryBuilder<E> fetchDatabaseUrl(boolean flag) {
-        base.fetchDatabaseUrl(flag);
         
         return this;
     }

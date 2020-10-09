@@ -116,7 +116,7 @@ public class SingleDominoSilo implements DominoSilo {
             viewHandles.put(viewPath.getName(), vw);
         }
 
-        if (accessPolicy == ViewAccessPolicy.REFRESH) {
+        if (accessPolicy == ViewAccessPolicy.UPDATED) {
             vw.refresh();
         }
 
@@ -134,7 +134,7 @@ public class SingleDominoSilo implements DominoSilo {
         return viewColumnNames.computeIfAbsent(viewPath.getName(),
                 key -> Unthrow.on(() -> {
                     Vector<String> columnNames = CastUtil.toAnyVector(
-                            getView(viewPath, ViewAccessPolicy.CACHE).getColumnNames());
+                            getView(viewPath, ViewAccessPolicy.STALE).getColumnNames());
                 
                     return new ArrayList<>(columnNames);
                 }));

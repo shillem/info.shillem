@@ -26,6 +26,20 @@ public class SearchQueryBuilder<E extends Enum<E> & BaseField> {
 
         return this;
     }
+    
+    public SearchQueryBuilder<E> addOption(Enum<? extends QueryOption> value) {
+        base.addOption(value);
+
+        return this;
+    }
+
+    public SearchQueryBuilder<E> addOption(
+            Enum<? extends QueryOption> value,
+            @SuppressWarnings("unchecked") Enum<? extends QueryOption>... values) {
+        base.addOption(value, values);
+        
+        return this;
+    }
 
     public SearchQueryBuilder<E> and(Piece piece) {
         group.add(Logical.AND, piece);
@@ -59,9 +73,9 @@ public class SearchQueryBuilder<E extends Enum<E> & BaseField> {
         return this;
     }
 
-    public SearchQueryBuilder<E> fetchDatabaseUrl(boolean flag) {
-        base.fetchDatabaseUrl(flag);
-
+    public SearchQueryBuilder<E> fetchTotal(boolean flag) {
+        page.fetchTotal(flag);
+        
         return this;
     }
 
