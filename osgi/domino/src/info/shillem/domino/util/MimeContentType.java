@@ -5,19 +5,19 @@ public enum MimeContentType {
     ATTACHMENT("attachment") {
 
         @Override
-        public boolean matches(String[] headers) {
+        public boolean matches(String[] properties) {
             int score = 0;
 
-            for (String header : headers) {
-                if (header.startsWith("Content-Disposition")) {
+            for (String property : properties) {
+                if (property.startsWith("Content-Disposition")) {
                     score++;
                 }
 
-                if (header.contains("attachment")) {
+                if (property.contains("attachment")) {
                     score++;
                 }
 
-                if (header.contains("filename")) {
+                if (property.contains("filename")) {
                     score++;
                 }
 
@@ -40,9 +40,9 @@ public enum MimeContentType {
         this.type = type;
     }
 
-    public boolean matches(String[] headers) {
-        for (String header : headers) {
-            if (header.startsWith("Content-Type") && header.contains(type)) {
+    public boolean matches(String[] properties) {
+        for (String property : properties) {
+            if (property.startsWith("Content-Type") && property.contains(type)) {
                 return true;
             }
         }

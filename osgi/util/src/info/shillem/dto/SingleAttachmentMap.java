@@ -15,7 +15,7 @@ public class SingleAttachmentMap extends AttachmentMap {
         AttachmentFile currentFile = getFirst();
 
         if (currentFile.getName().equals(value.getName())) {
-            currentFile.setUploadedFile(value.getUploadedFile());
+            currentFile.setFile(value.getFile());
 
             return currentFile;
         }

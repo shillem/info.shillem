@@ -30,12 +30,6 @@ public class DominoLoop {
             return this;
         }
 
-        public DocumentOptions<T> setFetchTotal(boolean value) {
-            fetchTotal = value;
-
-            return this;
-        }
-
         public DocumentOptions<T> setLimit(int value) {
             limit = value;
 
@@ -54,6 +48,12 @@ public class DominoLoop {
             return this;
         }
 
+        public DocumentOptions<T> setTotal(OptionTotal value) {
+            total = value;
+
+            return this;
+        }
+
     }
 
     public enum OptionEntry {
@@ -63,16 +63,21 @@ public class DominoLoop {
     static class Options {
         int limit;
         int offset;
-        boolean fetchTotal;
+        OptionTotal total;
 
         boolean isWithinLimit(int count) {
             return limit == 0 || count < limit;
         }
     }
 
+    public enum OptionTotal {
+        READ, READ_ONLY;
+    }
+
     public static class Result<T> {
 
         private List<T> data;
+        private Integer limit;
         private Integer total;
 
         private Result() {
@@ -81,6 +86,10 @@ public class DominoLoop {
 
         public List<T> getData() {
             return data;
+        }
+
+        public Integer getLimit() {
+            return limit;
         }
 
         public Integer getTotal() {
@@ -105,12 +114,6 @@ public class DominoLoop {
             return this;
         }
 
-        public ViewEntryOptions<T> setFetchTotal(boolean value) {
-            fetchTotal = value;
-
-            return this;
-        }
-
         public ViewEntryOptions<T> setKind(OptionEntry kind) {
             this.kind = kind;
 
@@ -131,6 +134,12 @@ public class DominoLoop {
 
         public ViewEntryOptions<T> setReader(Consumer<ViewEntry> reader) {
             this.reader = reader;
+
+            return this;
+        }
+
+        public ViewEntryOptions<T> setTotal(OptionTotal value) {
+            total = value;
 
             return this;
         }
@@ -280,29 +289,32 @@ public class DominoLoop {
         Document doc = null;
 
         try {
-            int count = 0;
-
-            doc = starter.get();
-
-            while (doc != null) {
-                if (options.reader != null) {
-                    options.reader.accept(doc);
+            if (options.total != OptionTotal.READ_ONLY) {
+                int count = 0;
+                doc = starter.get();
+    
+                while (doc != null) {
+                    if (options.reader != null) {
+                        options.reader.accept(doc);
+                    }
+    
+                    if (options.converter != null) {
+                        result.data.add(options.converter.apply(doc));
+                    }
+    
+                    if (!options.isWithinLimit(++count)) {
+                        break;
+                    }
+    
+                    Document temp = advancer.apply(doc);
+                    DominoUtil.recycle(doc);
+                    doc = temp;
                 }
-
-                if (options.converter != null) {
-                    result.data.add(options.converter.apply(doc));
-                }
-
-                if (!options.isWithinLimit(++count)) {
-                    break;
-                }
-
-                Document temp = advancer.apply(doc);
-                DominoUtil.recycle(doc);
-                doc = temp;
             }
+            
+            result.limit = options.limit;
 
-            if (options.fetchTotal) {
+            if (options.total == OptionTotal.READ || options.total == OptionTotal.READ_ONLY) {
                 result.total = counter.get();
             }
 
@@ -322,29 +334,32 @@ public class DominoLoop {
         ViewEntry entry = null;
 
         try {
-            int count = 0;
-
-            entry = starter.get();
-
-            while (entry != null) {
-                if (options.reader != null) {
-                    options.reader.accept(entry);
+            if (options.total != OptionTotal.READ_ONLY) {
+                int count = 0;
+                entry = starter.get();
+    
+                while (entry != null) {
+                    if (options.reader != null) {
+                        options.reader.accept(entry);
+                    }
+    
+                    if (options.converter != null) {
+                        result.data.add(options.converter.apply(entry));
+                    }
+    
+                    if (!options.isWithinLimit(++count)) {
+                        break;
+                    }
+    
+                    ViewEntry temp = advancer.apply(entry);
+                    DominoUtil.recycle(entry);
+                    entry = temp;
                 }
-
-                if (options.converter != null) {
-                    result.data.add(options.converter.apply(entry));
-                }
-
-                if (!options.isWithinLimit(++count)) {
-                    break;
-                }
-
-                ViewEntry temp = advancer.apply(entry);
-                DominoUtil.recycle(entry);
-                entry = temp;
             }
+            
+            result.limit = options.limit;
 
-            if (options.fetchTotal) {
+            if (options.total == OptionTotal.READ || options.total == OptionTotal.READ_ONLY) {
                 result.total = counter.get();
             }
 

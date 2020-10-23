@@ -12,11 +12,10 @@ import java.util.Optional;
 import java.util.Vector;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import info.shillem.util.CastUtil;
+import info.shillem.util.MimeUtil;
 import info.shillem.util.Unthrow;
 import lotus.domino.Base;
 import lotus.domino.DateTime;
@@ -29,9 +28,6 @@ import lotus.domino.Session;
 
 public enum DominoUtil {
     ;
-
-    private static final Pattern MIME_FILENAME = Pattern.compile(
-            "filename=['\"]*([^'\"]+)['\"]*", Pattern.CASE_INSENSITIVE);
 
     private static final Vector<String> MIME_FILTERED_HEADERS = new Vector<>();
 
@@ -193,7 +189,8 @@ public enum DominoUtil {
         }
     }
 
-    public static List<MIMEEntity> getMimeEntitiesByContentType(MIMEEntity entity,
+    public static List<MIMEEntity> getMimeEntitiesByContentType(
+            MIMEEntity entity,
             MimeContentType contentType) throws NotesException {
         Objects.requireNonNull(entity, "Entity cannot be null");
         Objects.requireNonNull(contentType, "Content type cannot be null");
@@ -248,11 +245,7 @@ public enum DominoUtil {
 
         return getMimeEntityHeaderValAndParams(
                 entity, h -> Unthrow.on(() -> h.contains("attachment")))
-                        .map(s -> {
-                            Matcher m = MIME_FILENAME.matcher(s);
-                            m.find();
-                            return m.group(1);
-                        });
+                        .map(s -> MimeUtil.getHeaderProperty("filename", s));
     }
 
     public static Optional<String> getMimeEntityHeaderValAndParams(

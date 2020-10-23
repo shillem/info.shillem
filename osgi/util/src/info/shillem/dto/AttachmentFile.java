@@ -5,47 +5,51 @@ import java.io.Serializable;
 
 public class AttachmentFile implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private String name;
-	private boolean remove;
-	private File uploadedFile;
+    private String name;
+    private boolean remove;
+    private File file;
 
-	public AttachmentFile(String fileName) {
-		this(fileName, null);
-	}
+    public AttachmentFile(String name) {
+        this.name = name;
+    }
 
-	public AttachmentFile(String fileName, File uploadedFile) {
-		this.name = fileName;
-		this.uploadedFile = uploadedFile;
-	}
+    public AttachmentFile(String name, File file) {
+        this.name = name;
+        this.file = file;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public File getFile() {
+        return file;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public File getUploadedFile() {
-		return uploadedFile;
-	}
+    public boolean isRemove() {
+        return remove;
+    }
 
-	public void setUploadedFile(File uploadFile) {
-		this.uploadedFile = uploadFile;
-	}
+    public void setFile(File file) {
+        this.file = file;
+    }
 
-	public boolean isRemove() {
-		return remove;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setRemove(boolean remove) {
-		this.remove = remove;
-	}
-	
-	public void toggleRemove() {
-		remove = !remove;
-	}
+    public void setRemove(boolean remove) {
+        this.remove = remove;
+    }
+
+    public void toggleRemove() {
+        remove = !remove;
+    }
+
+    public void unlink() {
+        this.file = null;
+    }
 
 }

@@ -40,6 +40,7 @@ import info.shillem.dao.lang.DaoRecordException;
 import info.shillem.domino.factory.DominoFactory;
 import info.shillem.domino.util.DeletionType;
 import info.shillem.domino.util.DominoLoop;
+import info.shillem.domino.util.DominoLoop.OptionTotal;
 import info.shillem.domino.util.DominoLoop.Result;
 import info.shillem.domino.util.DominoSilo;
 import info.shillem.domino.util.DominoUtil;
@@ -148,7 +149,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
     protected Result<T> decorate(Result<T> result, Query<E> query) {
         if (result.getTotal() != null) {
-            query.createSummary().setTotal(result.getTotal());
+            query.createSummary().setLimit(result.getLimit()).setTotal(result.getTotal());
         }
 
         return result;
@@ -292,7 +293,11 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             options.setOffset(pq.getOffset());
         }
 
-        options.setFetchTotal(query.containsOption(DominoQueryOption.FETCH_TOTAL));
+        if (query.containsOption(DominoQueryOption.FETCH_TOTAL_ONLY)) {
+            options.setTotal(OptionTotal.READ_ONLY);
+        } else if (query.containsOption(DominoQueryOption.FETCH_TOTAL)) {
+            options.setTotal(OptionTotal.READ);
+        }
 
         return options;
     }
@@ -307,7 +312,11 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             options.setOffset(pq.getOffset());
         }
 
-        options.setFetchTotal(query.containsOption(DominoQueryOption.FETCH_TOTAL));
+        if (query.containsOption(DominoQueryOption.FETCH_TOTAL_ONLY)) {
+            options.setTotal(OptionTotal.READ_ONLY);
+        } else if (query.containsOption(DominoQueryOption.FETCH_TOTAL)) {
+            options.setTotal(OptionTotal.READ);
+        }
 
         return options;
     }
@@ -636,17 +645,26 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
             // Adding files
             for (AttachmentFile af : am.values()) {
-                File uploadedFile = af.getUploadedFile();
+                File file = af.getFile();
 
-                if (uploadedFile == null) {
+                if (file == null) {
                     continue;
                 }
 
-                InputStream is = null;
+                InputStream is;
+
+                try {
+                    is = new FileInputStream(file);
+                } catch (FileNotFoundException e) {
+                    throw new IllegalArgumentException(String.format(
+                            "The file %s with path %s was not found",
+                            af.getName(),
+                            file.getAbsolutePath()));
+                }
+
                 lotus.domino.Stream stm = null;
 
                 try {
-                    is = new FileInputStream(uploadedFile);
                     stm = factory.getSession().createStream();
                     stm.setContents(is);
 
@@ -664,15 +682,12 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                             MIMEEntity.ENC_IDENTITY_BINARY);
 
                     stm.close();
-                } catch (FileNotFoundException e) {
-                    throw new IllegalArgumentException(String.format(
-                            "The file with path %s was not found", uploadedFile.getAbsolutePath()));
                 } finally {
                     DominoUtil.recycle(stm);
                     IOUtil.close(is);
                 }
 
-                af.setUploadedFile(null);
+                af.unlink();
             }
 
             // Clear entity if there are no attachments
