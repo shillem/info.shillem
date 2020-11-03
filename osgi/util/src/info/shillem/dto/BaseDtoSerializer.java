@@ -21,22 +21,22 @@ public class BaseDtoSerializer extends StdSerializer<BaseDto<?>> {
     public void serialize(BaseDto<?> value, JsonGenerator gen, SerializerProvider provider)
             throws IOException {
         gen.writeStartObject();
-
-        writeStringField("id", value.getId(), gen, provider);
-        writeStringField("databaseUrl", value.getDatabaseUrl(), gen, provider);
-        writeObjectField("lastModified", value.getLastModified(), gen, provider);
-
-        gen.writeFieldName("values");
         {
-            gen.writeStartObject();
+            writeStringField("id", value.getId(), gen, provider);
+            writeStringField("databaseUrl", value.getDatabaseUrl(), gen, provider);
+            writeObjectField("lastModified", value.getLastModified(), gen, provider);
 
-            for (Enum<? extends BaseField> field : value.getSchema(SchemaFilter.SET)) {
-                writeObjectField(field.name(), serializeField(field, value), gen, provider);
+            gen.writeFieldName("values");
+            {
+                gen.writeStartObject();
+
+                for (Enum<? extends BaseField> field : value.getSchema(SchemaFilter.SET)) {
+                    writeObjectField(field.name(), serializeField(field, value), gen, provider);
+                }
+
+                gen.writeEndObject();
             }
-
-            gen.writeEndObject();
         }
-
         gen.writeEndObject();
     }
 
@@ -50,7 +50,9 @@ public class BaseDtoSerializer extends StdSerializer<BaseDto<?>> {
             Object value,
             JsonGenerator gen,
             SerializerProvider provider) throws IOException {
-        if (value == null && provider.getConfig().getDefaultPropertyInclusion()
+        if (value == null && provider
+                .getConfig()
+                .getDefaultPropertyInclusion()
                 .getContentInclusion() == Include.NON_NULL) {
             return;
         }
@@ -63,7 +65,9 @@ public class BaseDtoSerializer extends StdSerializer<BaseDto<?>> {
             String value,
             JsonGenerator gen,
             SerializerProvider provider) throws IOException {
-        if (value == null && provider.getConfig().getDefaultPropertyInclusion()
+        if (value == null && provider
+                .getConfig()
+                .getDefaultPropertyInclusion()
                 .getContentInclusion() == Include.NON_NULL) {
             return;
         }

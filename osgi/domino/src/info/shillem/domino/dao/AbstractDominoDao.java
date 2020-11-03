@@ -1,6 +1,5 @@
 package info.shillem.domino.dao;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -12,7 +11,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -49,7 +47,7 @@ import info.shillem.domino.util.MimeContentType;
 import info.shillem.domino.util.ViewManager;
 import info.shillem.domino.util.ViewMatch;
 import info.shillem.dto.AttachmentFile;
-import info.shillem.dto.AttachmentMap;
+import info.shillem.dto.AttachmentFiles;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseDto.SchemaFilter;
 import info.shillem.dto.BaseField;
@@ -340,8 +338,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         Class<? extends Serializable> type = field.getProperties().getType();
 
         try {
-            if (AttachmentMap.class.isAssignableFrom(type)) {
-                wrapper.presetValue(field, pullItemAttachmentMap(field, doc));
+            if (AttachmentFiles.class.isAssignableFrom(type)) {
+                wrapper.presetValue(field, pullItemAttachmentFiles(field, doc));
             } else if (JsonValue.class.isAssignableFrom(type)) {
                 wrapper.presetValue(field, pullItemJsonValue(field, doc));
             } else if (field.getProperties().isList()) {
@@ -360,7 +358,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    private AttachmentMap pullItemAttachmentMap(E field, Document doc)
+    private AttachmentFiles pullItemAttachmentFiles(E field, Document doc)
             throws IllegalAccessException, IllegalArgumentException, InstantiationException,
             InvocationTargetException, NoSuchMethodException, NotesException, SecurityException {
         String itemName = getDocumentItemName(field);
@@ -382,7 +380,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
 
             try {
-                AttachmentMap am = (AttachmentMap) field.getProperties()
+                AttachmentFiles files = (AttachmentFiles) field.getProperties()
                         .getType()
                         .getDeclaredConstructor()
                         .newInstance();
@@ -390,10 +388,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 for (MIMEEntity attachment : attachments) {
                     DominoUtil
                             .getMimeEntityAttachmentFilename(attachment)
-                            .ifPresent(am::put);
+                            .ifPresent(files::add);
                 }
 
-                return am;
+                return files;
             } finally {
                 DominoUtil.recycle(attachments);
             }
@@ -562,8 +560,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     protected void pushWrapperField(E field, T wrapper, Document doc) throws NotesException {
         Class<? extends Serializable> type = field.getProperties().getType();
 
-        if (AttachmentMap.class.isAssignableFrom(type)) {
-            pushWrapperFieldAttachmentMap(field, wrapper, doc);
+        if (AttachmentFiles.class.isAssignableFrom(type)) {
+            pushWrapperFieldAttachmentFiles(field, wrapper, doc);
 
             return;
         }
@@ -605,11 +603,11 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    private void pushWrapperFieldAttachmentMap(E field, T wrapper, Document doc)
+    private void pushWrapperFieldAttachmentFiles(E field, T wrapper, Document doc)
             throws NotesException {
-        AttachmentMap am = wrapper.getValue(field, AttachmentMap.class);
+        AttachmentFiles files = wrapper.getValue(field, AttachmentFiles.class);
 
-        if (am == null) {
+        if (files == null) {
             return;
         }
 
@@ -630,36 +628,33 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
 
             // Removing files
-            for (Iterator<Map.Entry<String, AttachmentFile>> iter = am.entrySet().iterator(); iter
-                    .hasNext();) {
-                Map.Entry<String, AttachmentFile> entry = iter.next();
+            List<AttachmentFile> removals = files.getAll().stream()
+                    .filter(AttachmentFile::isRemove)
+                    .collect(Collectors.toList());
 
-                if (entry.getValue().isRemove()) {
-                    if (attachmentsByName.containsKey(entry.getValue().getName())) {
-                        attachmentsByName.get(entry.getValue().getName()).remove();
-                    }
-
-                    iter.remove();
+            removals.forEach((file) -> Unthrow.on(() -> {
+                if (attachmentsByName.containsKey(file.getName())) {
+                    attachmentsByName.get(file.getName()).remove();
                 }
-            }
+
+                files.remove(file);
+            }));
 
             // Adding files
-            for (AttachmentFile af : am.values()) {
-                File file = af.getFile();
+            List<AttachmentFile> additions = files.getAll().stream()
+                    .filter((f) -> f.getFile() != null)
+                    .collect(Collectors.toList());
 
-                if (file == null) {
-                    continue;
-                }
-
+            for (AttachmentFile af : additions) {
                 InputStream is;
 
                 try {
-                    is = new FileInputStream(file);
+                    is = new FileInputStream(af.getFile());
                 } catch (FileNotFoundException e) {
                     throw new IllegalArgumentException(String.format(
                             "The file %s with path %s was not found",
                             af.getName(),
-                            file.getAbsolutePath()));
+                            af.getFile().getAbsolutePath()));
                 }
 
                 lotus.domino.Stream stm = null;

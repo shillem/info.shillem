@@ -2,21 +2,22 @@ package info.shillem.dto;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Objects;
 
 public class AttachmentFile implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private String name;
-    private boolean remove;
+    private final String name;
     private File file;
+    private boolean remove;
 
     public AttachmentFile(String name) {
-        this.name = name;
+        this(name, null);
     }
 
     public AttachmentFile(String name, File file) {
-        this.name = name;
+        this.name = Objects.requireNonNull(name, "Name cannot be null");
         this.file = file;
     }
 
@@ -32,16 +33,12 @@ public class AttachmentFile implements Serializable {
         return remove;
     }
 
-    public void setFile(File file) {
-        this.file = file;
+    public void setFile(File value) {
+        file = value;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setRemove(boolean remove) {
-        this.remove = remove;
+    public void setRemove(Boolean value) {
+        remove = value;
     }
 
     public void toggleRemove() {
@@ -49,7 +46,7 @@ public class AttachmentFile implements Serializable {
     }
 
     public void unlink() {
-        this.file = null;
+        file = null;
     }
 
 }
