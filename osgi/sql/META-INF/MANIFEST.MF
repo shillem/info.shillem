@@ -5,8 +5,20 @@ Bundle-SymbolicName: info.shillem.sql;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Shillem Volpato
 Automatic-Module-Name: info.shillem.sql
-Export-Package: info.shillem.sql.util
+Export-Package: info.shillem.sql,
+ info.shillem.sql.dao,
+ info.shillem.sql.factory,
+ info.shillem.sql.util
 Import-Package: info.shillem.dao,
  info.shillem.dto,
- info.shillem.util
+ info.shillem.util,
+ org.apache.commons.dbcp2;version="2.8.0",
+ org.apache.commons.logging;version="1.2.0",
+ org.apache.commons.pool2;version="2.9.0",
+ org.apache.commons.pool2.impl;version="2.9.0",
+ org.osgi.framework,
+ org.osgi.util.tracker
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: info.shillem.sql.SqlActivator
+Bundle-ClassPath: .

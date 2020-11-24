@@ -8,3 +8,5 @@ Require-Bundle: com.ibm.commons,
  info.shillem.sql;visibility:=reexport
 Automatic-Module-Name: info.shillem.domino.xsp
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: org.osgi.framework,
+ org.osgi.util.tracker
