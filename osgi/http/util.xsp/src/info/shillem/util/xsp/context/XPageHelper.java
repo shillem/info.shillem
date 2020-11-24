@@ -26,6 +26,7 @@ import com.ibm.xsp.ajax.AjaxUtil;
 import com.ibm.xsp.component.UIViewRootEx;
 import com.ibm.xsp.component.UIViewRootEx2;
 import com.ibm.xsp.context.FacesContextEx;
+import com.ibm.xsp.event.FacesContextListener;
 import com.ibm.xsp.util.FacesUtil;
 import com.sun.faces.util.MessageFactory;
 
@@ -78,6 +79,12 @@ public enum XPageHelper {
     public static void addMessage(
             FacesContext facesContext, Severity severity, String summary, String detail) {
         FacesUtil.addMessage(facesContext, severity, null, summary, detail);
+    }
+
+    public static void addRequestListener(
+            FacesContext facesContext,
+            FacesContextListener listener) {
+        ((FacesContextEx) facesContext).addRequestListener(listener);
     }
 
     public static void applyOnSuccessRefreshId(FacesContext facesContext) {
