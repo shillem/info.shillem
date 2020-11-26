@@ -736,7 +736,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
     protected Optional<Document> resolveDocument(UrlQuery<E> query)
             throws DaoException, NotesException {
-        return resolveDocumentUrl(((UrlQuery<E>) query).getUrl());
+        return resolveDocumentUrl(query.getUrl());
     }
 
     protected Optional<Document> resolveDocumentUrl(String url)
