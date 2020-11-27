@@ -11,114 +11,185 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import info.shillem.dao.FilterQuery;
 import info.shillem.dao.PageQuery;
 import info.shillem.dao.Query;
+import info.shillem.dao.SearchQuery;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseField;
 import info.shillem.sql.factory.SqlFactory;
+import info.shillem.sql.util.QueryConverter;
+import info.shillem.sql.util.SqlSearchQueryConverter;
+import info.shillem.util.ComparisonOperator;
+import info.shillem.util.LogicalOperator;
+import info.shillem.util.OrderOperator;
 import info.shillem.util.StringUtil;
 
 public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
 
-	protected final SqlFactory factory;
+    protected final SqlFactory factory;
 
-	protected AbstractSqlDao(SqlFactory factory) {
-		this.factory = factory;
-	}
+    protected AbstractSqlDao(SqlFactory factory) {
+        this.factory = factory;
+    }
 
-	protected String getColumnName(E field) {
-		return field.name();
-	}
+    protected String composeSelect(Query<E> query) {
+        return composeSelect(query, null);
+    }
 
-	protected void pullColumn(E field, ResultSet resultSet, T wrapper, Locale locale)
-	        throws SQLException {
-		Class<? extends Serializable> type = field.getProperties().getType();
-		Object value = resultSet.getObject(field.toString());
+    protected String composeSelect(Query<E> query, Integer top) {
+        return "SELECT"
+                + (top != null ? " TOP " + top : "")
+                + " " + query.getSchema().stream()
+                        .map((field) -> getColumnName(field) + " AS " + field)
+                        .collect(Collectors.joining(", "));
+    }
 
-		wrapper.setValue(field, pullValue(type, value));
-	}
+    protected String composeWhere(PageQuery<E> query) {
+        if (query instanceof FilterQuery) {
+            FilterQuery<E> q = (FilterQuery<E>) query;
 
-	protected void pullRow(ResultSet resultSet, T wrapper, Query<E> query) throws SQLException {
-		for (E field : query.getSchema()) {
-			pullColumn(field, resultSet, wrapper, query.getLocale());
-		}
-	}
+            if (q.getFilters().isEmpty()) {
+                return null;
+            }
 
-	private <V> V pullValue(Class<V> type, Object value) {
-		if (type.isEnum()) {
-			if (value instanceof String) {
-				return type.cast(StringUtil.enumFromString(type, (String) value));
-			}
-		} else if (type == Boolean.class) {
-			return type.cast(Boolean.valueOf((String) value));
-		} else if (Number.class.isAssignableFrom(type)) {
-			if (value == null) {
-				return null;
-			}
+            return "WHERE " + q.getFilters().entrySet().stream()
+                    .map((e) -> getColumnName(e.getKey())
+                            + QueryConverter.formatComparisonOperator(ComparisonOperator.EQUAL)
+                            + QueryConverter.formatValue(e.getValue()))
+                    .collect(Collectors.joining(
+                            QueryConverter.formatLogicalOperator(LogicalOperator.AND)));
+        }
 
-			Number num = (Number) value;
+        if (query instanceof SearchQuery) {
+            SearchQuery<E> q = (SearchQuery<E>) query;
 
-			if (type == Integer.class) {
-				return type.cast(num.intValue());
-			}
+            return "WHERE " + new SqlSearchQueryConverter<>(q, this::getColumnName).toString();
+        }
 
-			if (type == Long.class) {
-				return type.cast(num.longValue());
-			}
+        throw new UnsupportedOperationException(
+                "WHERE composition for " + query.getClass().getName() + " is not supported");
+    }
 
-			if (type == Double.class) {
-				return type.cast(num.doubleValue());
-			}
+    protected String composeOrder(PageQuery<E> query) {
+        if (query.getSorters().isEmpty()) {
+            return null;
+        }
 
-			if (type == BigDecimal.class) {
-				return type.cast(new BigDecimal(num.toString()));
-			}
-		} else if (type == Date.class && value instanceof Timestamp) {
-			return type.cast(new Date(((Timestamp) value).getTime()));
-		}
+        return "ORDER BY " + query.getSorters().entrySet().stream()
+                .map((e) -> getColumnName(e.getKey())
+                        + " " + (e.getValue() == OrderOperator.ASCENDING ? "ASC" : "DESC"))
+                .collect(Collectors.joining(", "));
+    }
 
-		return type.cast(value);
-	}
+    protected String getColumnName(E field) {
+        return field.name();
+    }
 
-	protected T wrapRow(ResultSet resultSet, Supplier<T> supplier, Query<E> query)
-	        throws SQLException {
-		T wrapper = supplier.get();
+    protected void pullColumn(
+            E field,
+            ResultSet resultSet,
+            T wrapper,
+            Locale locale)
+            throws SQLException {
+        Class<? extends Serializable> type = field.getProperties().getType();
 
-		pullRow(resultSet, wrapper, query);
+        try {
+            Object value = resultSet.getObject(field.toString());
 
-		return wrapper;
-	}
+            wrapper.presetValue(field, pullValue(type, value));
+        } catch (Exception e) {
+            throw wrappedPullColumnException(e, field);
+        }
+    }
 
-	protected List<T> wrapStatement(String plan, Supplier<T> supplier, PageQuery<E> query) {
-		try (
-		        Statement statement = factory.getConnection().createStatement(
-		                ResultSet.TYPE_SCROLL_INSENSITIVE,
-		                ResultSet.CONCUR_READ_ONLY);
-		        ResultSet resultSet = statement.executeQuery(plan)) {
-			if (query.isUnknownOffset()) {
-				resultSet.absolute(-1);
+    protected void pullRow(ResultSet resultSet, T wrapper, Query<E> query) throws SQLException {
+        for (E field : query.getSchema()) {
+            pullColumn(field, resultSet, wrapper, query.getLocale());
+        }
+    }
 
-				int lastPageOffset = query.recalculateOffset(resultSet.getRow());
+    private <V> V pullValue(Class<V> type, Object value) {
+        if (type.isEnum()) {
+            if (value instanceof String) {
+                return type.cast(StringUtil.enumFromString(type, (String) value));
+            }
+        } else if (type == Boolean.class) {
+            return type.cast(Boolean.valueOf((String) value));
+        } else if (Number.class.isAssignableFrom(type)) {
+            if (value == null) {
+                return null;
+            }
 
-				resultSet.absolute(lastPageOffset);
-			} else {
-				resultSet.absolute(query.getOffset());
-			}
+            Number num = (Number) value;
 
-			List<T> wrappers = new ArrayList<>();
-			int count = 0;
+            if (type == Integer.class) {
+                return type.cast(num.intValue());
+            }
 
-			while (resultSet.next() && count < query.getLimit()) {
-				wrappers.add(wrapRow(resultSet, supplier, query));
+            if (type == Long.class) {
+                return type.cast(num.longValue());
+            }
 
-				count++;
-			}
+            if (type == Double.class) {
+                return type.cast(num.doubleValue());
+            }
 
-			return wrappers;
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-	}
+            if (type == BigDecimal.class) {
+                return type.cast(new BigDecimal(num.toString()));
+            }
+        } else if (type == Date.class && value instanceof Timestamp) {
+            return type.cast(new Date(((Timestamp) value).getTime()));
+        }
+
+        return type.cast(value);
+    }
+
+    protected T wrapRow(ResultSet resultSet, Supplier<T> supplier, Query<E> query)
+            throws SQLException {
+        T wrapper = supplier.get();
+
+        pullRow(resultSet, wrapper, query);
+
+        return wrapper;
+    }
+
+    protected List<T> wrapStatement(String plan, Supplier<T> supplier, PageQuery<E> query) {
+        try (
+                Statement statement = factory.getConnection().createStatement(
+                        ResultSet.TYPE_SCROLL_INSENSITIVE,
+                        ResultSet.CONCUR_READ_ONLY);
+                ResultSet resultSet = statement.executeQuery(plan)) {
+            if (query.isUnknownOffset()) {
+                resultSet.absolute(-1);
+
+                int lastPageOffset = query.recalculateOffset(resultSet.getRow());
+
+                resultSet.absolute(lastPageOffset);
+            } else {
+                resultSet.absolute(query.getOffset());
+            }
+
+            List<T> wrappers = new ArrayList<>();
+            int limit = query.getLimit();
+            int count = 0;
+
+            while (resultSet.next() && (limit == 0 || count < limit)) {
+                wrappers.add(wrapRow(resultSet, supplier, query));
+
+                count++;
+            }
+
+            return wrappers;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected RuntimeException wrappedPullColumnException(Exception e, E field) {
+        return new RuntimeException(String.format("Unable to pull column %s", field.name()), e);
+    }
 
 }

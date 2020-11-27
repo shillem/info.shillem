@@ -1,8 +1,5 @@
 package info.shillem.sql.util;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -19,8 +16,6 @@ import info.shillem.util.LogicalOperator;
 public class SqlSearchQueryConverter<E extends Enum<E> & BaseField>
         extends SearchQueryConverter<E> {
 
-	protected static final DateFormat SHORT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
-
 	public SqlSearchQueryConverter(SearchQuery<E> query) {
 		super(query);
 	}
@@ -31,28 +26,7 @@ public class SqlSearchQueryConverter<E extends Enum<E> & BaseField>
 
 	@Override
 	protected String formatComparisonOperator(ComparisonOperator operator) {
-		switch (operator) {
-		case LOWER:
-			return " < ";
-		case LOWER_EQUAL:
-			return " <= ";
-		case EQUAL:
-			return " = ";
-		case IN:
-			return " IN ";
-		case LIKE:
-			return " LIKE ";
-		case NOT_EQUAL:
-			return " != ";
-		case NOT_IN:
-			return " NOT IN ";
-		case GREATER_EQUAL:
-			return " >= ";
-		case GREATER:
-			return " > ";
-		default:
-			throw new UnsupportedOperationException(operator.name());
-		}
+		return QueryConverter.formatComparisonOperator(operator);
 	}
 
 	@Override
@@ -75,20 +49,12 @@ public class SqlSearchQueryConverter<E extends Enum<E> & BaseField>
 
 	@Override
 	protected String formatLogicalOperator(LogicalOperator operator) {
-		return " " + operator + " ";
+		return QueryConverter.formatLogicalOperator(operator);
 	}
 
 	@Override
 	protected String formatValue(Object value) {
-		if (value instanceof String) {
-			return "'" + ((String) value).replaceAll("'", "''") + "'";
-		}
-
-		if (value instanceof Date) {
-			return SHORT_DATE_FORMAT.format((Date) value);
-		}
-
-		return value.toString();
+		return QueryConverter.formatValue(value);
 	}
 
 	@Override
