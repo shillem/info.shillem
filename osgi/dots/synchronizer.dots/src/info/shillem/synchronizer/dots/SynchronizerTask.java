@@ -8,6 +8,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.sql.DataSource;
+
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.UnrecognizedOptionException;
@@ -20,10 +22,12 @@ import com.ibm.dots.task.RunWhen;
 import info.shillem.domino.factory.DominoFactory;
 import info.shillem.domino.factory.LocalDominoFactory;
 import info.shillem.domino.util.DatabasePath;
-import info.shillem.domino.util.DominoStream;
+import info.shillem.domino.util.DominoLoop;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.domino.util.SingleDominoSilo;
 import info.shillem.domino.util.StringDbIdentifier;
+import info.shillem.sql.dots.SqlActivator;
+import info.shillem.sql.factory.SqlFactory;
 import info.shillem.synchronizer.dots.Program.RunMode;
 import info.shillem.synchronizer.dto.Record;
 import info.shillem.synchronizer.lang.ProcessorException;
@@ -33,7 +37,6 @@ import info.shillem.synchronizer.util.ProcessorDominoToSql;
 import info.shillem.synchronizer.util.ProcessorHelper;
 import info.shillem.synchronizer.util.ProcessorHelper.Mode;
 import info.shillem.synchronizer.util.ProcessorSqlToDomino;
-import info.shillem.synchronizer.util.SqlFactory;
 import info.shillem.util.Unthrow;
 import info.shillem.util.dots.Commands;
 import info.shillem.util.dots.DotsProgressMonitor;
@@ -47,7 +50,6 @@ import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
-import lotus.domino.ViewEntry;
 import lotus.domino.ViewNavigator;
 
 public class SynchronizerTask extends AbstractServerTask {
@@ -64,10 +66,6 @@ public class SynchronizerTask extends AbstractServerTask {
         PRINT(Option.builder("p")
                 .longOpt("print-config")
                 .desc("print configuration")
-                .build()),
-        PRINT_SERVICES(Option.builder()
-                .longOpt("print-services")
-                .desc("print services")
                 .build()),
         RELOAD(Option.builder()
                 .longOpt("reload-config")
@@ -118,63 +116,63 @@ public class SynchronizerTask extends AbstractServerTask {
 
     private Map<String, Program> getPrograms() {
         synchronized (SynchronizerTask.class) {
-            if (PROGRAMS == null) {
-                DatabasePath path = new DatabasePath(getTaskPreferences()
-                        .getProperty(PreferenceProperty.SYNCHRONIZER.name())
-                        .getValue(String.class));
-
-                Database db = null;
-                View vwIds = null;
-                View vwPrograms = null;
-                ViewNavigator vwNav = null;
-                Map<String, Document> connectionDocs = new HashMap<>();
-
-                try {
-                    db = getSession().getDatabase(path.getServerName(), path.getFilePath());
-                    vwIds = db.getView("($Uuid)");
-                    vwPrograms = db.getView("($Program)");
-                    vwPrograms.setAutoUpdate(false);
-                    vwNav = vwPrograms.createViewNavFromCategory(getSession().getServerName());
-
-                    try (Stream<ViewEntry> stream = DominoStream.stream(vwNav)) {
-                        View vwIdsFinal = vwIds;
-
-                        PROGRAMS = stream
-                                .map((entry) -> Unthrow.on(() -> {
-                                    Document programDoc = entry.getDocument();
-
-                                    String connectionName = Program.Builder
-                                            .getConnectionName(programDoc);
-
-                                    Document connectionDoc = connectionDocs.computeIfAbsent(
-                                            "SqlConnection:" + connectionName,
-                                            (key) -> Unthrow.on(
-                                                    () -> vwIdsFinal.getDocumentByKey(key, true)));
-
-                                    if (connectionDoc == null) {
-                                        logMessage(String.format(
-                                                "Cannot load connection document %s for program %s",
-                                                connectionName,
-                                                Program.Builder.getTitle(programDoc)));
-
-                                        return null;
-                                    }
-
-                                    return new Program.Builder(programDoc, connectionDoc).build();
-                                }))
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toMap(Program::getId, Function.identity()));
-                    }
-                } catch (NotesException e) {
-                    throw new DotsException(e);
-                } finally {
-                    DominoUtil.recycle(connectionDocs.values());
-                    DominoUtil.recycle(vwNav, vwPrograms, vwIds, db);
-                }
+            if (PROGRAMS != null) {
+                return PROGRAMS;
             }
-        }
 
-        return PROGRAMS;
+            DatabasePath path = new DatabasePath(getTaskPreferences()
+                    .getProperty(PreferenceProperty.SYNCHRONIZER.name())
+                    .getValue(String.class));
+
+            Database db = null;
+            View vwIds = null;
+            View vwPrograms = null;
+            ViewNavigator vwNav = null;
+            Map<String, Document> connectionDocs = new HashMap<>();
+
+            try {
+                db = getSession().getDatabase(path.getServerName(), path.getFilePath());
+                vwIds = db.getView("($Uuid)");
+                vwPrograms = db.getView("($Program)");
+                vwPrograms.setAutoUpdate(false);
+                vwNav = vwPrograms.createViewNavFromCategory(getSession().getServerName());
+                View vwIdsFinal = vwIds;
+
+                PROGRAMS = DominoLoop.read(vwNav, new DominoLoop.ViewEntryOptions<Program>()
+                        .setConverter((e) -> Unthrow.on(() -> {
+                            Document prog = e.getDocument();
+
+                            String connName = Program.Builder.getConnectionName(prog);
+
+                            Document conn = connectionDocs.computeIfAbsent(
+                                    "SqlConnection:" + connName,
+                                    (key) -> Unthrow
+                                            .on(() -> vwIdsFinal.getDocumentByKey(key, true)));
+
+                            if (conn == null) {
+                                logMessage(String.format(
+                                        "Cannot load connection document %s for program %s",
+                                        connName,
+                                        Program.Builder.getTitle(prog)));
+
+                                return null;
+                            }
+
+                            return new Program.Builder(prog, conn).build();
+                        })))
+                        .getData()
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toMap(Program::getId, Function.identity()));
+            } catch (NotesException e) {
+                throw new DotsException(e);
+            } finally {
+                DominoUtil.recycle(connectionDocs.values());
+                DominoUtil.recycle(vwNav, vwPrograms, vwIds, db);
+            }
+
+            return PROGRAMS;
+        }
     }
 
     private Commands getTaskCommands() {
@@ -223,9 +221,9 @@ public class SynchronizerTask extends AbstractServerTask {
     }
 
     private SqlFactory newSqlFactory(Program program) throws ClassNotFoundException {
-        return new SqlFactory(
-                SynchronizerActivator.getSqlDriver(program.getConnectionDriverClassName()),
-                program.getConnectionUrl());
+        DataSource ds = SqlActivator.getDataSource(program.getConnectionProperties());
+        
+        return new SqlFactory(ds);
     }
 
     @Override
@@ -304,24 +302,6 @@ public class SynchronizerTask extends AbstractServerTask {
                             String.valueOf(p.getIntervalInMinutes()) + " min.",
                             p.getRunMode().name(),
                             p.getStatus().name())));
-
-            logMessage(builder.toString());
-
-            return;
-        }
-        case PRINT_SERVICES: {
-            StringBuilder builder = new StringBuilder();
-
-            String templateHeader = "\n---%-50s";
-            String templateBody = templateHeader.replace("---", "   ");
-
-            builder.append(String.format(templateHeader, "(1) SQL Drivers"));
-            SynchronizerActivator.getSqlDriverClassNames()
-                    .forEach((name) -> builder.append(String.format(templateBody, name)));
-
-            builder.append(String.format(templateHeader, "(2) Processes"));
-            SynchronizerActivator.getProcessorClassNames()
-                    .forEach((name) -> builder.append(String.format(templateBody, name)));
 
             logMessage(builder.toString());
 

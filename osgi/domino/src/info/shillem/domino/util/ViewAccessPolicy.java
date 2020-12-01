@@ -7,10 +7,10 @@ import info.shillem.domino.dao.DominoQueryOption;
 
 public enum ViewAccessPolicy {
 	STALE,
-	UPDATED;
+	FRESH;
 	
 	public static ViewAccessPolicy valueOf(Set<Enum<? extends QueryOption>> set) {
-	    return set.contains(DominoQueryOption.FETCH_STALE) ? STALE : UPDATED;
+	    return set.contains(DominoQueryOption.FETCH_STALE) ? STALE : FRESH;
 	}
 	
 }

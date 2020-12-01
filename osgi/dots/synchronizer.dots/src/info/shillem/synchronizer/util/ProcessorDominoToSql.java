@@ -320,7 +320,7 @@ public class ProcessorDominoToSql<T extends Record> extends Processor<T> {
         try (SqlHelper sqlHelper = new SqlHelper(helper.getSqlFactory().getConnection())) {
             helper.logMessage("Processing records...");
 
-            View view = getView(ViewAccessPolicy.REFRESH);
+            View view = getView(ViewAccessPolicy.FRESH);
             Document doc = null;
 
             try {

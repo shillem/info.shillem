@@ -11,6 +11,7 @@ Option Declare
 '++LotusScript Development Environment:2:5:(Forward):0:1
 Declare Function ViewPaste(coll As NotesDocumentCollection) As Boolean
 Declare Function ViewPasteForbidden() As Boolean
+Declare Sub UINewProgram(nature As String)
 
 '++LotusScript Development Environment:2:5:(Declarations):0:10
 Private Const UUID_FORMULA = _
@@ -19,6 +20,8 @@ x := 1;
 y := 999;
 @LowerCase(@Implode(@Abstract([DropVowels]:[Abbrev];4;"";"Form"):@Unique:@Text(@Integer((y - x) * @Random + x));"-"))
 }
+
+'++LotusScript Development Environment:2:2:Terminate:0:2
 
 '++LotusScript Development Environment:2:1:ViewPaste:1:8
 Function ViewPaste(coll As NotesDocumentCollection) As Boolean
@@ -64,3 +67,18 @@ Function ViewPasteForbidden() As Boolean
 	MessageBox "Copy and pasting of documents is forbidden.", 0 + 16, s.CurrentDatabase.Title
 		
 End Function
+
+'++LotusScript Development Environment:2:2:UINewProgram:1:8
+Sub UINewProgram(nature As String)
+	
+	Dim wks As New NotesUIWorkspace
+	Dim s As New NotesSession
+	Dim doc As NotesDocument
+	
+	Set doc = s.CurrentDatabase.CreateDocument
+	Call doc.ReplaceItemValue("Form", "Program")
+	Call doc.ReplaceItemValue("nature", nature)
+	
+	Call wks.EditDocument(True, doc)
+	
+End Sub

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.function.Function;
@@ -38,8 +39,7 @@ public class Program {
                 Pattern.compile("(\\w*)\\:(\\w*)\\|(\\w*)\\:(\\w*)");
 
         private String id;
-        private String connectionDriverClassName;
-        private String connectionUrl;
+        private Properties connectionProperties;
         private DatabasePath databasePath;
         private LocalDateTime lastSuccessfullyStarted;
         private LocalDateTime lastSuccessfullyStopped;
@@ -85,8 +85,22 @@ public class Program {
 
         private void setConnectionPreferences(Document programDoc, Document connectionDoc)
                 throws NotesException {
-            connectionDriverClassName = DominoUtil.getItemString(connectionDoc, "driver");
-            connectionUrl = DominoUtil.getItemString(connectionDoc, "url");
+            connectionProperties = new Properties();
+
+            connectionProperties.setProperty("name",
+                    DominoUtil.getItemString(connectionDoc, "title"));
+            connectionProperties.setProperty("driverClassName",
+                    DominoUtil.getItemString(connectionDoc, "driver"));
+            connectionProperties.setProperty("url",
+                    DominoUtil.getItemString(connectionDoc, "url"));
+            connectionProperties.setProperty("username",
+                    DominoUtil.getItemString(connectionDoc, "username"));
+            connectionProperties.setProperty("password",
+                    DominoUtil.getItemString(connectionDoc, "password"));
+            connectionProperties.setProperty("connectionProperties",
+                    DominoUtil.getItemStrings(connectionDoc, "additionalProperties")
+                            .stream()
+                            .collect(Collectors.joining(";")));
             queryReferenceTable = DominoUtil.getItemString(programDoc, "query_reference_table");
             queryStatement = DominoUtil.getItemString(programDoc, "query_stmt");
             queryTimeout = DominoUtil.getItemInteger(programDoc, "query_timeout");
@@ -221,8 +235,7 @@ public class Program {
     }
 
     private final String id;
-    private final String connectionDriverClassName;
-    private final String connectionUrl;
+    private final Properties connectionProperties;
     private final DatabasePath databasePath;
     private final FieldPair fieldDeletion;
     private final FieldPair fieldKey;
@@ -250,8 +263,7 @@ public class Program {
 
     public Program(Builder builder) {
         id = builder.id;
-        connectionDriverClassName = builder.connectionDriverClassName;
-        connectionUrl = builder.connectionUrl;
+        connectionProperties = builder.connectionProperties;
         databasePath = builder.databasePath;
         fieldDeletion = builder.fieldDeletion;
         fieldKey = builder.fieldKey;
@@ -277,12 +289,8 @@ public class Program {
         viewName = builder.viewName;
     }
 
-    public String getConnectionDriverClassName() {
-        return connectionDriverClassName;
-    }
-
-    public String getConnectionUrl() {
-        return connectionUrl;
+    public Properties getConnectionProperties() {
+        return connectionProperties;
     }
 
     public DatabasePath getDatabasePath() {
@@ -474,10 +482,10 @@ public class Program {
                             .collect(Collectors.toCollection(Vector::new));
 
                     DominoUtil.recycle(doc.replaceItemValue("processorVariables", values));
-                    
+
                     processorVariables.putAll(processorVariablesAtRuntime);
                 }
-                
+
                 processorVariablesAtRuntime.clear();
 
                 DominoUtil.setDate(
@@ -496,13 +504,13 @@ public class Program {
         }
     }
 
+    public void setProcessorVariable(String name, String value) {
+        processorVariablesAtRuntime.put(name, value);
+    }
+
     @Override
     public String toString() {
         return String.format("%s (%s)", title, id);
-    }
-
-    public void setProcessorVariable(String name, String value) {
-        processorVariablesAtRuntime.put(name, value);
     }
 
     private static LocalDateTime getLastSuccessfullyStartedDate(Document doc)
@@ -516,10 +524,18 @@ public class Program {
     }
 
     private static Date toDate(LocalDateTime value) {
+        if (value == null) {
+            return null;
+        }
+
         return Date.from(value.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     private static LocalDateTime toLocalDateTime(Date value) {
+        if (value == null) {
+            return null;
+        }
+
         return LocalDateTime.ofInstant(value.toInstant(), ZoneId.systemDefault());
     }
 

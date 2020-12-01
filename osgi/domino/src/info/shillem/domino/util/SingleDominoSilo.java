@@ -116,7 +116,7 @@ public class SingleDominoSilo implements DominoSilo {
             viewHandles.put(viewPath.getName(), vw);
         }
 
-        if (accessPolicy == ViewAccessPolicy.UPDATED) {
+        if (accessPolicy == ViewAccessPolicy.FRESH) {
             vw.refresh();
         }
 

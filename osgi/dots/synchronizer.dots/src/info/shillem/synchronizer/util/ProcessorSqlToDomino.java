@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -26,10 +27,12 @@ import lotus.domino.View;
 
 public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
-    private boolean cachedView;
+    private ViewAccessPolicy vap;
 
     public ProcessorSqlToDomino(ProcessorHelper helper, Supplier<T> recordSupplier) {
         super(helper, recordSupplier);
+        
+        vap = ViewAccessPolicy.FRESH;
     }
 
     protected void afterExecution() throws ProcessorException {
@@ -99,7 +102,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                                 helper.logVerboseMessage(() -> Unthrow.on(
                                         () -> "Deleted record " + record.getValue(keyFieldName)));
 
-                                setCachedView(false);
+                                setViewAccessPolicy(ViewAccessPolicy.FRESH);
                             }
 
                             tracker.addDeleted();
@@ -139,7 +142,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                         if (!helper.isMode(Mode.TEST)) {
                             doc.save();
 
-                            setCachedView(false);
+                            setViewAccessPolicy(ViewAccessPolicy.FRESH);
                         }
 
                         tracker.addModified(record.isNew());
@@ -166,10 +169,10 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
     protected Optional<Document> findDocument(T record) throws ProcessorException {
         try {
-            View view = getView(ViewAccessPolicy.withCache(cachedView));
+            View view = getView(getViewAccessPolicy());
 
-            if (!cachedView) {
-                setCachedView(true);
+            if (!isStaleView()) {
+                setViewAccessPolicy(ViewAccessPolicy.STALE);
             }
 
             Document doc = view.getDocumentByKey(getKeyValue(record), true);
@@ -182,6 +185,10 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         } catch (NotesException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected final ViewAccessPolicy getViewAccessPolicy() {
+        return vap;
     }
 
     protected Document initializeDocument(T record) throws ProcessorException {
@@ -202,13 +209,13 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         }
     }
 
-    protected final boolean isCachedView() {
-        return cachedView;
-    }
-
     @Override
     public final boolean isNature(Nature nature) {
         return nature == Nature.SQL_TO_DOMINO;
+    }
+
+    protected final boolean isStaleView() {
+        return vap == ViewAccessPolicy.STALE;
     }
 
     protected void pullResultSet(ResultSet resultSet, T record) throws ProcessorException {
@@ -280,7 +287,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
         return changes;
     }
-
+    
     protected ValueChange pushRecordValue(T record, Document doc, FieldPair pair)
             throws ProcessorException {
         Field to = pair.getTo();
@@ -347,8 +354,8 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         }
     }
 
-    protected final void setCachedView(boolean flag) {
-        this.cachedView = flag;
+    protected final void setViewAccessPolicy(ViewAccessPolicy value) {
+        vap = Objects.requireNonNull(value, "View access policy cannot be null");
     }
 
 }

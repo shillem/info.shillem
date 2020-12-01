@@ -3,7 +3,9 @@ package info.shillem.sql;
 import java.sql.Driver;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
 
 import javax.sql.DataSource;
 
@@ -17,11 +19,11 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 
 public class DataSourceService {
 
-    private final SqlActivator activator;
+    private final Function<String, Driver> loader;
     private final Map<String, DataSource> sources;
 
-    DataSourceService(SqlActivator activator) {
-        this.activator = activator;
+    public DataSourceService(Function<String, Driver> loader) {
+        this.loader = Objects.requireNonNull(loader, "Driver loader cannot be null");
         this.sources = new HashMap<>();
     }
 
@@ -30,8 +32,8 @@ public class DataSourceService {
             throw new IllegalArgumentException("'name' property is mandatory");
         }
 
-        if (!properties.containsKey("driver")) {
-            throw new IllegalArgumentException("'driver' property is mandatory");
+        if (!properties.containsKey("driverClassName")) {
+            throw new IllegalArgumentException("'driverClassName' property is mandatory");
         }
 
         if (!properties.containsKey("url")) {
@@ -39,19 +41,8 @@ public class DataSourceService {
         }
 
         return sources.computeIfAbsent(properties.getProperty("name"), (k) -> {
-            String driverClassName = properties.getProperty("driver");
-            Driver connectionDriver = activator
-                    .loadDriver(driverClassName)
-                    .orElseGet(() -> {
-                        try {
-                            activator.startBundle(
-                                    driverClassName.substring(0, driverClassName.lastIndexOf(".")));
-
-                            return activator.loadDriver(driverClassName).orElse(null);
-                        } catch (Exception e) {
-                            return null;
-                        }
-                    });
+            String driverClassName = properties.getProperty("driverClassName");
+            Driver connectionDriver = loader.apply(driverClassName);
 
             if (connectionDriver == null) {
                 throw new IllegalArgumentException(driverClassName + " driver is unavailable");
@@ -60,6 +51,8 @@ public class DataSourceService {
             Properties connectionProperties = new Properties();
             connectionProperties.setProperty("username", properties.getProperty("username"));
             connectionProperties.setProperty("password", properties.getProperty("password"));
+            connectionProperties.setProperty("connectionProperties",
+                    properties.getProperty("connectionProperties"));
 
             ConnectionFactory connectionFactory = new DriverConnectionFactory(
                     connectionDriver,

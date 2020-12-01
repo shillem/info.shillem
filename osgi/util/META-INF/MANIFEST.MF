@@ -10,7 +10,6 @@ Export-Package: info.shillem.dao,
  info.shillem.lang,
  info.shillem.rest,
  info.shillem.util
-Automatic-Module-Name: info.shillem.domino
 Import-Package: com.fasterxml.jackson.annotation;version="2.11.2",
  com.fasterxml.jackson.core;version="2.11.2",
  com.fasterxml.jackson.databind;version="2.11.2",
@@ -20,4 +19,3 @@ Import-Package: com.fasterxml.jackson.annotation;version="2.11.2",
  com.fasterxml.jackson.databind.node;version="2.11.2",
  com.fasterxml.jackson.databind.ser.std;version="2.11.2",
  com.fasterxml.jackson.databind.type;version="2.11.2"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8

@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -22,6 +24,7 @@ import info.shillem.dto.BaseField;
 import info.shillem.sql.factory.SqlFactory;
 import info.shillem.sql.util.QueryConverter;
 import info.shillem.sql.util.SqlSearchQueryConverter;
+import info.shillem.sql.util.TablePath;
 import info.shillem.util.ComparisonOperator;
 import info.shillem.util.LogicalOperator;
 import info.shillem.util.OrderOperator;
@@ -32,7 +35,22 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
     protected final SqlFactory factory;
 
     protected AbstractSqlDao(SqlFactory factory) {
-        this.factory = factory;
+        this.factory = Objects.requireNonNull(factory, "Factory cannot be null");
+    }
+
+    protected String composeFrom(TablePath path, Set<E> schema) {
+        return path.composeFrom();
+    }
+
+    protected String composeOrder(PageQuery<E> query) {
+        if (query.getSorters().isEmpty()) {
+            return null;
+        }
+
+        return "ORDER BY " + query.getSorters().entrySet().stream()
+                .map((e) -> getColumnName(e.getKey())
+                        + " " + (e.getValue() == OrderOperator.ASCENDING ? "ASC" : "DESC"))
+                .collect(Collectors.joining(", "));
     }
 
     protected String composeSelect(Query<E> query) {
@@ -71,17 +89,6 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
 
         throw new UnsupportedOperationException(
                 "WHERE composition for " + query.getClass().getName() + " is not supported");
-    }
-
-    protected String composeOrder(PageQuery<E> query) {
-        if (query.getSorters().isEmpty()) {
-            return null;
-        }
-
-        return "ORDER BY " + query.getSorters().entrySet().stream()
-                .map((e) -> getColumnName(e.getKey())
-                        + " " + (e.getValue() == OrderOperator.ASCENDING ? "ASC" : "DESC"))
-                .collect(Collectors.joining(", "));
     }
 
     protected String getColumnName(E field) {
@@ -147,6 +154,10 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         return type.cast(value);
     }
 
+    protected RuntimeException wrappedPullColumnException(Exception e, E field) {
+        return new RuntimeException(String.format("Unable to pull column %s", field.name()), e);
+    }
+
     protected T wrapRow(ResultSet resultSet, Supplier<T> supplier, Query<E> query)
             throws SQLException {
         T wrapper = supplier.get();
@@ -186,10 +197,6 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    protected RuntimeException wrappedPullColumnException(Exception e, E field) {
-        return new RuntimeException(String.format("Unable to pull column %s", field.name()), e);
     }
 
 }

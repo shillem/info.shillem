@@ -16,5 +16,3 @@ Export-Package: info.shillem.util.xsp.component,
  info.shillem.util.xsp.model,
  info.shillem.util.xsp.renderer,
  info.shillem.util.xsp.validator
-Automatic-Module-Name: info.shillem.util.xsp
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8

@@ -1,16 +1,12 @@
 package info.shillem.synchronizer.dots;
 
-import java.sql.Driver;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
 import info.shillem.synchronizer.util.ProcessorBuilder;
@@ -19,70 +15,30 @@ public class SynchronizerActivator implements BundleActivator {
 
     public static final String PLUGIN_ID = SynchronizerActivator.class.getPackage().getName();
 
-    private static ServiceTracker sqlDriverServiceTracker;
-    private static ServiceTracker processorServiceTracker;
+    private static ServiceTracker BUILDERS;
 
-    public void start(BundleContext bundleContext) throws Exception {
-        sqlDriverServiceTracker = new ServiceTracker(
-                bundleContext, java.sql.Driver.class.getName(), null);
-        sqlDriverServiceTracker.open();
-
-        processorServiceTracker = new ServiceTracker(
-                bundleContext, ProcessorBuilder.class.getName(), null);
-        processorServiceTracker.open();
+    public void start(BundleContext context) throws Exception {
+        BUILDERS = new ServiceTracker(context, ProcessorBuilder.class.getName(), null);
+        BUILDERS.open();
     }
 
-    public void stop(BundleContext bundleContext) throws Exception {
-        processorServiceTracker.close();
-
-        sqlDriverServiceTracker.close();
+    public void stop(BundleContext context) throws Exception {
+        BUILDERS.close();
+        BUILDERS = null;
     }
 
-    static ProcessorBuilder getProcessorBuilder(String className)
-            throws ClassNotFoundException {
-        return getProcessorServiceReferences()
-                .filter((ref) -> className.equals(ref.getProperty("className")))
-                .findFirst()
-                .map((ref) -> (ProcessorBuilder) processorServiceTracker.getService(ref))
-                .orElseThrow(() -> new ClassNotFoundException(className));
-    }
+    public static ProcessorBuilder getProcessorBuilder(
+            String className) throws ClassNotFoundException {
+        Objects.requireNonNull(className, "Processor builder class name cannot be null");
 
-    static List<String> getProcessorClassNames() {
-        return getProcessorServiceReferences()
-                .map((ref) -> (String) ref.getProperty("className"))
-                .sorted()
-                .collect(Collectors.toList());
-    }
-
-    private static Stream<ServiceReference> getProcessorServiceReferences() {
-        return Optional
-                .ofNullable(processorServiceTracker.getServiceReferences())
+        return Optional.ofNullable(BUILDERS.getServiceReferences())
                 .map(Arrays::asList)
                 .orElse(Collections.emptyList())
-                .stream();
-    }
-
-    static Driver getSqlDriver(String className) throws ClassNotFoundException {
-        return getSqlDriverServiceReferences()
+                .stream()
                 .filter((ref) -> className.equals(ref.getProperty("className")))
                 .findFirst()
-                .map((ref) -> (Driver) sqlDriverServiceTracker.getService(ref))
+                .map((ref) -> (ProcessorBuilder) BUILDERS.getService(ref))
                 .orElseThrow(() -> new ClassNotFoundException(className));
-    }
-
-    static List<String> getSqlDriverClassNames() {
-        return getSqlDriverServiceReferences()
-                .map((ref) -> (String) ref.getProperty("className"))
-                .sorted()
-                .collect(Collectors.toList());
-    }
-
-    private static Stream<ServiceReference> getSqlDriverServiceReferences() {
-        return Optional
-                .ofNullable(sqlDriverServiceTracker.getServiceReferences())
-                .map(Arrays::asList)
-                .orElse(Collections.emptyList())
-                .stream();
     }
 
 }

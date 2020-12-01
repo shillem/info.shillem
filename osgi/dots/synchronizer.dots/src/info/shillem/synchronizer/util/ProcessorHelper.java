@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import info.shillem.domino.factory.DominoFactory;
+import info.shillem.sql.factory.SqlFactory;
 import info.shillem.synchronizer.dots.Program;
 import info.shillem.util.ProgressMonitor;
 
