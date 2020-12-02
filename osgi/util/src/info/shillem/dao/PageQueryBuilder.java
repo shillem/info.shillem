@@ -9,7 +9,6 @@ import info.shillem.util.OrderOperator;
 
 class PageQueryBuilder<E extends Enum<E> & BaseField> {
 
-    boolean cached;
     int limit;
     int offset;
     Map<E, OrderOperator> sorters;
@@ -29,14 +28,6 @@ class PageQueryBuilder<E extends Enum<E> & BaseField> {
 
     public int getOffset() {
         return offset;
-    }
-
-    public boolean isCached() {
-        return cached;
-    }
-
-    public void setCache(boolean flag) {
-        this.cached = flag;
     }
 
     public void setLimit(int limit) {

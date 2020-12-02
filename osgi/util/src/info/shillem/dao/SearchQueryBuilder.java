@@ -85,12 +85,6 @@ public class SearchQueryBuilder<E extends Enum<E> & BaseField> {
         return this;
     }
 
-    public SearchQueryBuilder<E> setCache(boolean flag) {
-        page.setCache(flag);
-
-        return this;
-    }
-
     public SearchQueryBuilder<E> setLimit(int limit) {
         page.setLimit(limit);
 

@@ -79,12 +79,6 @@ public class FilterQueryBuilder<E extends Enum<E> & BaseField> {
         return page.getOffset();
     }
 
-    public FilterQueryBuilder<E> setCache(boolean flag) {
-        page.setCache(flag);
-
-        return this;
-    }
-
     public FilterQueryBuilder<E> setLimit(int limit) {
         page.setLimit(limit);
 
