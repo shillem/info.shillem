@@ -618,24 +618,51 @@ End Sub
 </tablecell>
 </tablerow>
 <tablerow>
+<tablecell columnspan="2" borderwidth="0px">
+<pardef id="18" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+<par def="18">
+<border outsidewidth="5px"/>
+<actionhotspot hotspotstyle="none">
+<code event="click">
+<formula>$selectLeft := @Trim(selectLeft);
+$selectRight := @Trim(selectRight);
+
+@If(($selectLeft="" &amp; $selectRight="") |  typeLeft="" | typeRight="";
+	@Do(@Prompt([Ok];@DbTitle;"All left and right fields must be filled out.");@Return(""));
+	""
+);
+
+$key := $selectLeft + ":" + typeLeft + "|" + $selectRight + ":" + typeRight;
+@SetField("mapping";@Unique(@If(@Elements(mapping) = 0;$key;mapping:$key)));
+@SetField("selectLeft";"");
+@SetField("selectRight";"");
+@PostedCommand([ViewRefreshFields])</formula>
+</code>
+<run>
+<font size="8pt" style="bold underline" color="blue"/>Add</run>
+</actionhotspot>
+</par>
+</tablecell>
+</tablerow>
+<tablerow>
 <tablecell borderwidth="0px 1px 0px 0px">
-<pardef id="17" align="center" hide="notes web" keepwithnext="true" keeptogether="true"/>
-<par def="17"/>
+<pardef id="19" align="center" hide="notes web" keepwithnext="true" keeptogether="true"/>
+<par def="19"/>
 <table widthtype="fitmargins" leftmargin="0" refwidth="2.5000in">
 <tablecolumn width="50%"/>
 <tablecolumn width="50%"/>
 <tablerow>
 <tablecell borderwidth="0px">
-<pardef id="19" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-<par def="19">
+<pardef id="21" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+<par def="21">
 <border outsidewidth="5px"/>
 <run>
 <font size="8pt" style="bold underline"/>Name</run>
 </par>
 </tablecell>
 <tablecell borderwidth="0px">
-<pardef id="20" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-<par def="20">
+<pardef id="22" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+<par def="22">
 <border outsidewidth="5px"/>
 <run>
 <font size="8pt" style="bold underline"/>Type</run>
@@ -644,7 +671,7 @@ End Sub
 </tablerow>
 <tablerow>
 <tablecell borderwidth="0px">
-<par def="19">
+<par def="21">
 <border outsidewidth="5px"/>
 <run>
 <font size="8pt"/>
@@ -659,7 +686,7 @@ Yg4BAIQAAAAAAAAAAAA=
 </par>
 </tablecell>
 <tablecell borderwidth="0px">
-<par def="20">
+<par def="22">
 <border outsidewidth="5px"/>
 <run>
 <font size="8pt"/>
@@ -681,23 +708,23 @@ Yg4BAIQAAAAAAAAAAAA=
 </table>
 </tablecell>
 <tablecell borderwidth="0px 0px 0px 1px">
-<pardef id="22" align="center" hide="notes web" keepwithnext="true" keeptogether="true"/>
-<par def="22"/>
+<pardef id="24" align="center" hide="notes web" keepwithnext="true" keeptogether="true"/>
+<par def="24"/>
 <table widthtype="fitmargins" leftmargin="0.0104in" refwidth="2.4903in">
 <tablecolumn width="50%"/>
 <tablecolumn width="50%"/>
 <tablerow>
 <tablecell borderwidth="0px">
-<pardef id="24" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-<par def="24">
+<pardef id="26" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+<par def="26">
 <border outsidewidth="5px"/>
 <run>
 <font size="8pt" style="bold underline"/>Name</run>
 </par>
 </tablecell>
 <tablecell borderwidth="0px">
-<pardef id="25" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-<par def="25">
+<pardef id="27" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+<par def="27">
 <border outsidewidth="5px"/>
 <run>
 <font size="8pt" style="bold underline"/>Type</run>
@@ -706,7 +733,7 @@ Yg4BAIQAAAAAAAAAAAA=
 </tablerow>
 <tablerow>
 <tablecell borderwidth="0px">
-<par def="24">
+<par def="26">
 <border outsidewidth="5px"/>
 <run>
 <font size="8pt"/>
@@ -721,7 +748,7 @@ Yg4BAIQAAAAAAAAAAAA=
 </par>
 </tablecell>
 <tablecell borderwidth="0px">
-<par def="25">
+<par def="27">
 <border outsidewidth="5px"/>
 <run>
 <font size="8pt"/>
@@ -745,30 +772,12 @@ Yg4BAIQAAAAAAAAAAAA=
 </tablerow>
 <tablerow>
 <tablecell columnspan="2" borderwidth="0px">
-<pardef id="27" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
-<par def="27">
+<pardef id="29" align="center" hide="read print preview" keepwithnext="true" keeptogether="true"/>
+<par def="29">
 <border outsidewidth="5px"/>
-<actionhotspot hotspotstyle="none">
-<code event="click">
-<formula>$selectLeft := @Trim(selectLeft);
-$selectRight := @Trim(selectRight);
-
-@If(($selectLeft="" &amp; $selectRight="") |  typeLeft="" | typeRight="";
-	@Do(@Prompt([Ok];@DbTitle;"All left and right fields must be filled out.");@Return(""));
-	""
-);
-
-$key := $selectLeft + ":" + typeLeft + "|" + $selectRight + ":" + typeRight;
-@SetField("mapping";@Unique(@If(@Elements(mapping) = 0;$key;mapping:$key)));
-@SetField("selectLeft";"");
-@SetField("selectRight";"");
-@PostedCommand([ViewRefreshFields])</formula>
-</code>
 <run>
-<font size="8pt" style="bold underline" color="blue"/>Add</run>
-</actionhotspot>
-<run>
-<font size="8pt" style="bold"/> - </run>
+<font size="8pt" style="bold"/>
+</run>
 <actionhotspot hotspotstyle="none">
 <code event="click">
 <formula>$mapping := @Prompt([OkCancelListMult];@DbTitle;"Select to remove:";"";mapping);
@@ -789,12 +798,12 @@ $key := $selectLeft + ":" + typeLeft + "|" + $selectRight + ":" + typeRight;
 </tablerow>
 <tablerow>
 <tablecell borderwidth="0px 1px 0px 0px">
-<pardef id="28" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
+<pardef id="30" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
 <code event="hidewhen">
 <formula>@Elements(mapping) = 0</formula>
 </code>
 </pardef>
-<par def="28">
+<par def="30">
 <border outsidewidth="5px 0px 0px"/>
 <run>
 <font size="8pt" color="gray"/>
@@ -813,12 +822,12 @@ Yg4BAIQAAAAAAAAAAAA=
 </par>
 </tablecell>
 <tablecell borderwidth="0px 0px 0px 1px">
-<pardef id="29" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
+<pardef id="31" align="center" linespacing="2" keepwithnext="true" keeptogether="true">
 <code event="hidewhen">
 <formula>@Elements(mapping) = 0</formula>
 </code>
 </pardef>
-<par def="29">
+<par def="31">
 <border outsidewidth="5px 0px 0px"/>
 <run>
 <font size="8pt" color="gray"/>
@@ -935,8 +944,8 @@ Yg4BAIQAAAAAAAAAAAA=
 </tablerow>
 <tablerow tablabel="Processor">
 <tablecell borderwidth="0px">
-<pardef id="31" leftmargin="0" hide="notes web" keepwithnext="true" keeptogether="true"/>
-<par def="31"/>
+<pardef id="33" leftmargin="0" hide="notes web" keepwithnext="true" keeptogether="true"/>
+<par def="33"/>
 <table cellbordercolor="black" leftmargin="0" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
 <tablecolumn width="2in"/>
 <tablecolumn width="5in"/>
@@ -1071,8 +1080,8 @@ Yg4BAIQAAAAAAAAAAAA=
 <tablecolumn width="100%"/>
 <tablerow>
 <tablecell borderwidth="0px" bgcolor="#f7f7f7">
-<pardef id="32" align="center" keepwithnext="true" keeptogether="true"/>
-<par def="32">
+<pardef id="34" align="center" keepwithnext="true" keeptogether="true"/>
+<par def="34">
 <run>
 <font size="8pt" style="bold"/>Last Execution</run>
 </par>
@@ -1080,8 +1089,8 @@ Yg4BAIQAAAAAAAAAAAA=
 </tablerow>
 <tablerow>
 <tablecell borderwidth="0px">
-<pardef id="33" keepwithnext="true" keeptogether="true"/>
-<par def="33">
+<pardef id="35" keepwithnext="true" keeptogether="true"/>
+<par def="35">
 <run>
 <font size="8pt"/>
 </run>

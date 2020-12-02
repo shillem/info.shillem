@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sharedcolumn xmlns="http://www.lotus.com/dxl" name="status">
+<column align="center" hidedetailrows="false" itemname="$3" width="5" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
+<font size="8pt"/>
+<columnheader align="center" title="Status">
+<font size="8pt" style="bold"/>
+</columnheader>
+<code event="value">
+<formula>@If(
+	status="STARTED";	95;
+	93
+)</formula>
+</code>
+</column>
+<item name="$SourceSeqTime">
+<datetime>20201202T101153,17+01</datetime>
+</item>
+<item name="$SourceSequence">
+<text>00000001</text>
+</item>
+</sharedcolumn>

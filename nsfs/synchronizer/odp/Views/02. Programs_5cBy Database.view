@@ -54,31 +54,26 @@ End Sub</lotusscript>
 </code>
 </action>
 </sharedactionref>
-<sharedactionref id="3">
-<action title="Filter Enabled" icon="108">
-<code event="click">
-<formula>$var := "SynchronizerFilter";
-$val := @Environment($var);
-$val := @If($val="ENABLED";"";"ENABLED");
-@SetEnvironment($var;$val);
-@SetViewInfo([SetViewFilter];$val;"runMode";1)</formula>
-</code>
-</action>
-</sharedactionref>
 </actionbar>
-<column align="center" sort="ascending" hidedetailrows="false" itemname="database" width="6" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" categorized="true" twisties="true">
+<column align="center" sort="ascending" hidedetailrows="false" itemname="$3" width="6" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" categorized="true" twisties="true">
 <font size="8pt" style="bold"/>
 <columnheader title="Database">
 <font size="8pt" style="bold"/>
 </columnheader>
+<code event="value">
+<formula>@ReplaceSubstring(database;"\\";"/")</formula>
+</code>
 </column>
+<sharedcolumnref name="order">
 <column sort="ascending" hidedetailrows="false" itemname="order" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Order">
 <font size="8pt" style="bold"/>
 </columnheader>
 </column>
-<column align="center" hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
+</sharedcolumnref>
+<sharedcolumnref name="interval">
+<column hidedetailrows="false" itemname="$1" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
 <font size="8pt"/>
 <columnheader title="Interval">
 <font size="8pt" style="bold"/>
@@ -92,37 +87,51 @@ $val := @If($val="ENABLED";"";"ENABLED");
 )</formula>
 </code>
 </column>
-<column align="center" sort="ascending" hidedetailrows="false" itemname="timeFrame" width="10" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
+</sharedcolumnref>
+<sharedcolumnref name="time-frame">
+<column sort="ascending" hidedetailrows="false" itemname="timeFrame" width="10" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
 <font size="8pt"/>
 <columnheader title="Time Frame">
 <font size="8pt" style="bold"/>
 </columnheader>
+<datetimeformat show="time" date="yearmonthday" fourdigityearfor21stcentury="true" time="hourminute" zone="never" dateformat="weekdaymonthdayyear" dayformat="twodigitday" monthformat="twodigitmonth" yearformat="fourdigityear" weekdayformat="shortname" dateseparator1=" " dateseparator2="/" dateseparator3="/" timeseparator=":" preference="usersetting"/>
+<numberformat format="general" punctuated="false" parens="false" percent="false" bytes="false"/>
 </column>
+</sharedcolumnref>
+<sharedcolumnref name="title">
 <column hidedetailrows="false" itemname="title" width="15.2500" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Title">
 <font size="8pt" style="bold"/>
 </columnheader>
 </column>
+</sharedcolumnref>
+<sharedcolumnref name="nature">
 <column hidedetailrows="false" itemname="nature" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Nature">
 <font size="8pt" style="bold"/>
 </columnheader>
 </column>
+</sharedcolumnref>
+<sharedcolumnref name="description">
 <column hidedetailrows="false" itemname="description" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" extwindowwidth="true">
 <font size="8pt"/>
 <columnheader title="Description">
 <font size="8pt" style="bold"/>
 </columnheader>
 </column>
+</sharedcolumnref>
+<sharedcolumnref name="run-mode">
 <column align="center" hidedetailrows="false" itemname="runMode" width="9" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader align="center" title="Run Mode">
 <font size="8pt" style="bold"/>
 </columnheader>
 </column>
-<column align="center" hidedetailrows="false" itemname="$3" width="5" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
+</sharedcolumnref>
+<sharedcolumnref name="status">
+<column align="center" hidedetailrows="false" itemname="$2" width="5" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
 <font size="8pt"/>
 <columnheader align="center" title="Status">
 <font size="8pt" style="bold"/>
@@ -134,18 +143,23 @@ $val := @If($val="ENABLED";"";"ENABLED");
 )</formula>
 </code>
 </column>
+</sharedcolumnref>
+<sharedcolumnref name="started">
 <column hidedetailrows="false" itemname="started" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" extwindowwidth="true">
 <font size="8pt"/>
 <columnheader title="Started">
 <font size="8pt" style="bold"/>
 </columnheader>
 </column>
+</sharedcolumnref>
+<sharedcolumnref name="stopped">
 <column hidedetailrows="false" itemname="stopped" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" extwindowwidth="true">
 <font size="8pt"/>
 <columnheader title="Stopped">
 <font size="8pt" style="bold"/>
 </columnheader>
 </column>
+</sharedcolumnref>
 <sharedcolumnref name="uuid">
 <column hidedetailrows="false" itemname="uuid" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
