@@ -1,9 +1,12 @@
 package info.shillem.synchronizer.dots;
 
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,6 +32,7 @@ import info.shillem.domino.util.StringDbIdentifier;
 import info.shillem.sql.dots.SqlActivator;
 import info.shillem.sql.factory.SqlFactory;
 import info.shillem.synchronizer.dots.Program.RunMode;
+import info.shillem.synchronizer.dots.Program.Status;
 import info.shillem.synchronizer.dto.Record;
 import info.shillem.synchronizer.lang.ProcessorException;
 import info.shillem.synchronizer.util.Processor;
@@ -222,7 +226,7 @@ public class SynchronizerTask extends AbstractServerTask {
 
     private SqlFactory newSqlFactory(Program program) throws ClassNotFoundException {
         DataSource ds = SqlActivator.getDataSource(program.getConnectionProperties());
-        
+
         return new SqlFactory(ds);
     }
 
@@ -312,7 +316,7 @@ public class SynchronizerTask extends AbstractServerTask {
                 Program firstRunningProgram = getPrograms()
                         .values()
                         .stream()
-                        .filter(Program::isRunning)
+                        .filter((p) -> p.getStatus() == Program.Status.STARTED)
                         .findFirst()
                         .orElse(null);
 
@@ -342,69 +346,75 @@ public class SynchronizerTask extends AbstractServerTask {
 
     private void runProgram(Program program, TaskRun taskRun, boolean verbose) {
         ProcessorHelper helper = null;
-        boolean failed = false;
-
-        if (!program.setAsStarted(getSession())) {
-            logMessage(String.format(
-                    "Program %s can't run because it's already running", program));
-
-            return;
-        }
 
         try {
-            Processor<? extends Record> processor;
+            if (!program.setAsStarted(getSession())) {
+                switch (program.getStatus()) {
+                case ARCHIVED:
+                    logMessage(String.format(
+                            "Program %s won't run because it's been archived", program));
 
-            try {
-                helper = new ProcessorHelper.Builder(
-                        program, new DotsProgressMonitor(taskRun.getProgressMonitor()))
-                                .setMode(Mode.VERBOSE, verbose)
-                                .setMode(Mode.TEST, program.isRunMode(RunMode.DRY_RUN))
-                                .setDominoFactory(newDominoFactory(program))
-                                .setSqlFactory(newSqlFactory(program))
-                                .build();
+                    return;
+                case FAILED:
+                    logMessage(String.format(
+                            "Program %s can't run because it previously failed", program));
 
-                processor = Optional
-                        .ofNullable(program.getProcessorBuilderClassName())
-                        .map((name) -> Unthrow.on(() -> SynchronizerActivator
-                                .getProcessorBuilder(name)))
-                        .orElseGet(() -> {
-                            switch (program.getNature()) {
-                            case DOMINO_TO_SQL:
-                                return new ProcessorBuilder() {
-                                    @Override
-                                    public Processor<? extends Record> build(
-                                            ProcessorHelper helper) {
-                                        return new ProcessorDominoToSql<Record>(
-                                                helper, () -> new Record());
-                                    }
-                                };
-                            case SQL_TO_DOMINO:
-                                return new ProcessorBuilder() {
-                                    @Override
-                                    public Processor<? extends Record> build(
-                                            ProcessorHelper helper) {
-                                        return new ProcessorSqlToDomino<Record>(
-                                                helper, () -> new Record());
-                                    }
-                                };
-                            default:
-                                throw new UnsupportedOperationException(
-                                        "Nature " + program.getNature() + " is not supported");
-                            }
-                        })
-                        .build(helper);
-            } catch (ClassNotFoundException e) {
-                logException(e);
+                    return;
+                case LOCKED:
+                    logMessage(String.format(
+                            "Program %s can't run because its document is locked", program));
 
-                return;
+                    return;
+                case STARTED:
+                    logMessage(String.format(
+                            "Program %s can't run because it's already running", program));
+
+                    return;
+                default:
+                    return;
+                }
             }
+
+            helper = new ProcessorHelper.Builder(
+                    program, new DotsProgressMonitor(taskRun.getProgressMonitor()))
+                            .setMode(Mode.VERBOSE, verbose)
+                            .setMode(Mode.TEST, program.isRunMode(RunMode.DRY_RUN))
+                            .setDominoFactory(newDominoFactory(program))
+                            .setSqlFactory(newSqlFactory(program))
+                            .build();
+
+            Processor<? extends Record> processor = Optional
+                    .ofNullable(program.getProcessorBuilderClassName())
+                    .map((name) -> Unthrow.on(() -> SynchronizerActivator
+                            .getProcessorBuilder(name)))
+                    .orElseGet(() -> {
+                        switch (program.getNature()) {
+                        case DOMINO_TO_SQL:
+                            return new ProcessorBuilder() {
+                                @Override
+                                public Processor<? extends Record> build(ProcessorHelper helper) {
+                                    return new ProcessorDominoToSql<Record>(helper, Record::new);
+                                }
+                            };
+                        case SQL_TO_DOMINO:
+                            return new ProcessorBuilder() {
+                                @Override
+                                public Processor<? extends Record> build(ProcessorHelper helper) {
+                                    return new ProcessorSqlToDomino<Record>(helper, Record::new);
+                                }
+                            };
+                        default:
+                            throw new UnsupportedOperationException(
+                                    "Nature " + program.getNature() + " is not supported");
+                        }
+                    })
+                    .build(helper);
 
             helper.logMessage(String.format(
                     "Program %s started with modes %s", program, helper.getModes()));
 
             if (!processor.execute()) {
-                String abortMessage = String.format(
-                        "Program %s was aborted", program);
+                String abortMessage = String.format("Program %s was aborted", program);
 
                 if (program.isPrintSummary()) {
                     logMessage(abortMessage);
@@ -426,26 +436,40 @@ public class SynchronizerTask extends AbstractServerTask {
 
             helper.logMessage(summary);
         } catch (Exception e) {
-            failed = true;
+            Consumer<String> endProgram = (message) -> {
+                if (e.getCause() instanceof SQLException) {
+                    String m = Optional.ofNullable(e.getCause().getMessage()).orElse("");
 
-            Optional
-                    .ofNullable(helper)
-                    .ifPresent((h) -> h.logException(e));
+                    if (m.toLowerCase().contains("time")) {
+                        program.setAsStopped(getSession(), message);
 
-            if (e instanceof ProcessorException) {
-                logMessage(e.getMessage());
+                        return;
+                    }
+                }
+
+                program.setAsFailed(getSession(), message);
+            };
+
+            if (helper != null) {
+                helper.logException(e);
+
+                endProgram.accept(helper.getLog());
             } else {
-                logException(e);
+                if (e instanceof ProcessorException) {
+                    logMessage(e.getMessage());
+                } else {
+                    logException(e);
+                }
+
+                endProgram.accept(e.getMessage());
             }
         } finally {
-            if (helper == null) {
-                program.setAsStopped(getSession(), "Program threw an exception", failed);
-            } else {
-                helper.getDominoFactory().recycle();
+            if (helper != null) {
+                helper.recycle();
+            }
 
-                helper.getSqlFactory().recycle();
-
-                program.setAsStopped(getSession(), helper.getLog(), failed);
+            if (program.getStatus() == Program.Status.STARTED) {
+                program.setAsStopped(getSession(), helper.getLog());
             }
         }
     }
@@ -459,16 +483,25 @@ public class SynchronizerTask extends AbstractServerTask {
             return;
         }
 
-        for (Program program : getPrograms().values()) {
+        for (Iterator<Map.Entry<String, Program>> iterator =
+                getPrograms().entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry<String, Program> entry = iterator.next();
+
             if (taskRun.getProgressMonitor().isCanceled()) {
                 return;
             }
+
+            Program program = entry.getValue();
 
             if (!program.isDue()) {
                 continue;
             }
 
             runProgram(program, taskRun, false);
+
+            if (program.getStatus() == Status.ARCHIVED) {
+                iterator.remove();
+            }
         }
     }
 

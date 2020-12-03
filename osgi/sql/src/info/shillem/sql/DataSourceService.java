@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 
@@ -49,10 +50,12 @@ public class DataSourceService {
             }
 
             Properties connectionProperties = new Properties();
-            connectionProperties.setProperty("username", properties.getProperty("username"));
-            connectionProperties.setProperty("password", properties.getProperty("password"));
-            connectionProperties.setProperty("connectionProperties",
-                    properties.getProperty("connectionProperties"));
+
+            Stream.of("username", "password", "connectionProperties").forEach((p) -> {
+                if (properties.containsKey(p)) {
+                    connectionProperties.setProperty(p, properties.getProperty(p));
+                }
+            });
 
             ConnectionFactory connectionFactory = new DriverConnectionFactory(
                     connectionDriver,

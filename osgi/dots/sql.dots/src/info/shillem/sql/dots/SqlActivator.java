@@ -3,6 +3,7 @@ package info.shillem.sql.dots;
 import java.sql.Driver;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
@@ -73,6 +74,8 @@ public class SqlActivator implements BundleActivator {
     }
 
     public static DataSource getDataSource(Properties properties) {
+        Objects.requireNonNull(properties, "Data source properties cannot be null");
+        
         return SERVICE.getDataSource(properties);
     }
 

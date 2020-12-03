@@ -24,7 +24,9 @@ import info.shillem.domino.util.DominoUtil;
 import info.shillem.synchronizer.util.Field;
 import info.shillem.synchronizer.util.FieldPair;
 import info.shillem.synchronizer.util.RecordPolicy;
+import info.shillem.util.CastUtil;
 import info.shillem.util.StringUtil;
+import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.RichTextItem;
@@ -231,7 +233,7 @@ public class Program {
     }
 
     public enum Status {
-        STARTED, STOPPED
+        ARCHIVED, FAILED, LOCKED, STARTED, STOPPED
     }
 
     private final String id;
@@ -263,7 +265,7 @@ public class Program {
 
     public Program(Builder builder) {
         id = builder.id;
-        connectionProperties = builder.connectionProperties;
+        connectionProperties = (Properties) builder.connectionProperties.clone();
         databasePath = builder.databasePath;
         fieldDeletion = builder.fieldDeletion;
         fieldKey = builder.fieldKey;
@@ -287,6 +289,10 @@ public class Program {
         timeFrame = builder.timeFrame;
         title = builder.title;
         viewName = builder.viewName;
+    }
+
+    private boolean canStart() {
+        return status == Status.LOCKED || status == Status.STOPPED;
     }
 
     public Properties getConnectionProperties() {
@@ -374,8 +380,7 @@ public class Program {
     }
 
     public boolean isDue() {
-        if (isRunning()
-                || runMode != RunMode.ENABLED) {
+        if (!canStart() || runMode != RunMode.ENABLED) {
             return false;
         }
 
@@ -401,49 +406,86 @@ public class Program {
         return runMode == mode;
     }
 
-    public boolean isRunning() {
-        return status == Program.Status.STARTED;
+    public synchronized boolean setAsFailed(Session session, String log) {
+        return setAsStopped(session, log, Status.FAILED);
     }
 
     public synchronized boolean setAsStarted(Session session) {
-        if (isRunning()) {
+        if (!canStart()) {
             return false;
         }
 
+        Database db = null;
         Document doc = null;
 
         try {
             doc = (Document) session.resolve(notesUrl);
+            db = doc.getParentDatabase();
+
+            if (Boolean.valueOf(doc.getItemValueString("archived"))) {
+                setStatus(Status.ARCHIVED);
+
+                return false;
+            }
+
+            if (db.isDocumentLockingEnabled()) {
+                Vector<String> holders = CastUtil.toAnyVector(doc.getLockHolders());
+                
+                if (!holders.isEmpty() && !"".equals(holders.get(0))) {
+                    setStatus(Status.LOCKED);
+
+                    return false;
+                }
+
+                doc.lock();
+            }
+
             doc.setPreferJavaDates(true);
-
-            Status newStatus = Program.Status.STARTED;
-
-            doc.replaceItemValue("status", newStatus.name());
+            doc.replaceItemValue("status", Status.STARTED.name());
             DominoUtil.setDate(session, doc, "started", new Date());
             doc.replaceItemValue("stopped", null);
-            doc.save(true, false);
 
-            status = newStatus;
+            if (!doc.save(true, false)) {
+                return false;
+            }
+
+            setStatus(Status.STARTED);
 
             return true;
         } catch (NotesException e) {
             throw new RuntimeException(e);
         } finally {
-            DominoUtil.recycle(doc);
+            DominoUtil.recycle(doc, db);
         }
     }
 
-    public synchronized boolean setAsStopped(Session session, String log, boolean failed) {
-        if (!isRunning()) {
+    public synchronized boolean setAsStopped(Session session, String log) {
+        return setAsStopped(session, log, Status.STOPPED);
+    }
+
+    private boolean setAsStopped(Session session, String log, Status status) {
+        if (getStatus() != Status.STARTED) {
             return false;
         }
 
+        Database db = null;
         Document doc = null;
         RichTextItem rtItem = null;
         RichTextStyle rtStyle = null;
 
         try {
             doc = (Document) session.resolve(notesUrl);
+            db = doc.getParentDatabase();
+
+            if (db.isDocumentLockingEnabled()) {
+                String username = session.getUserName();
+                Vector<String> holders = CastUtil.toAnyVector(doc.getLockHolders());
+
+                if (holders.isEmpty() || !holders.contains(username)) {
+                    return false;
+                }
+            }
+
             doc.setPreferJavaDates(true);
 
             rtItem = (RichTextItem) doc.getFirstItem("log");
@@ -460,16 +502,18 @@ public class Program {
             rtItem.appendStyle(rtStyle);
             rtItem.appendText(log);
 
-            Status newStatus = Program.Status.STOPPED;
+            doc.replaceItemValue("status", status.name());
 
-            doc.replaceItemValue("status", newStatus.name());
-
-            if (failed) {
+            switch (status) {
+            case FAILED: {
                 DominoUtil.setDate(
                         session, doc, "started", Program.toDate(lastSuccessfullyStarted));
                 DominoUtil.setDate(
                         session, doc, "stopped", Program.toDate(lastSuccessfullyStopped));
-            } else {
+
+                break;
+            }
+            case STOPPED: {
                 lastSuccessfullyStarted = getLastSuccessfullyStartedDate(doc);
                 lastSuccessfullyStopped = LocalDateTime.now();
 
@@ -490,11 +534,22 @@ public class Program {
 
                 DominoUtil.setDate(
                         session, doc, "stopped", Program.toDate(lastSuccessfullyStopped));
+
+                break;
+            }
+            default:
+                return false;
             }
 
-            doc.save(true, false);
+            if (!doc.save(true, false)) {
+                return false;
+            }
 
-            status = newStatus;
+            if (db.isDocumentLockingEnabled()) {
+                doc.unlock();
+            }
+
+            setStatus(status);
 
             return true;
         } catch (NotesException e) {
@@ -506,6 +561,10 @@ public class Program {
 
     public void setProcessorVariable(String name, String value) {
         processorVariablesAtRuntime.put(name, value);
+    }
+
+    private void setStatus(Status status) {
+        this.status = status;
     }
 
     @Override

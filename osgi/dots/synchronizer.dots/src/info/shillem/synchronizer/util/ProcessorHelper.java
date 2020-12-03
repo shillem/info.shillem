@@ -1,8 +1,9 @@
 package info.shillem.synchronizer.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -164,17 +165,41 @@ public class ProcessorHelper {
     }
 
     public void logException(Throwable e) {
-        Arrays.stream(e.getStackTrace())
-                .forEach((line) -> log.append("\n" + line));
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        
+        e.printStackTrace(pw);
+        
+        log.append(sw.toString());
     }
 
     public void logMessage(String message) {
         log.append("\n" + Instant.now().atZone(ZoneOffset.systemDefault()) + " " + message);
     }
 
+    public void logVerboseMessage(String message) {
+        if (isMode(Mode.VERBOSE) && tracker.getTouched() < 250) {
+            logMessage(message);
+        }
+    }
+    
     public void logVerboseMessage(Supplier<String> message) {
         if (isMode(Mode.VERBOSE) && tracker.getTouched() < 250) {
             logMessage(message.get());
+        }
+    }
+
+    public final void recycle() {
+        try {
+            getDominoFactory().recycle();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            getSqlFactory().recycle();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

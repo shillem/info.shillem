@@ -2,6 +2,7 @@ package info.shillem.synchronizer.util;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -126,7 +127,11 @@ public abstract class Processor<T extends Record> {
             }
 
             if (Field.Type.DATE == destinationType) {
-                return DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(stringValue);
+                try {
+                    return DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(stringValue);
+                } catch (DateTimeParseException e) {
+                    return null;
+                }
             }
 
             if (Field.Type.DECIMAL == destinationType) {

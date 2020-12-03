@@ -10,7 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Vector;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.domino.util.ViewAccessPolicy;
@@ -20,6 +22,7 @@ import info.shillem.synchronizer.dto.ValueChange;
 import info.shillem.synchronizer.lang.ProcessorException;
 import info.shillem.synchronizer.util.ProcessorHelper.Mode;
 import info.shillem.util.Unthrow;
+import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.Item;
 import lotus.domino.NotesException;
@@ -31,7 +34,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
     public ProcessorSqlToDomino(ProcessorHelper helper, Supplier<T> recordSupplier) {
         super(helper, recordSupplier);
-        
+
         vap = ViewAccessPolicy.FRESH;
     }
 
@@ -43,18 +46,22 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
     }
 
-    protected void deleteDocument(Document doc) throws ProcessorException {
-        try {
-            if (getDominoSilo().isDocumentLockingEnabled()) {
-                if (!doc.lock()) {
-                    throw new RuntimeException("Unable to acquire lock on note " + doc.getNoteID());
-                }
-            }
+    protected Document createDocument() throws NotesException {
+        return createDocument(getDominoSilo().getDatabase());
+    }
 
-            doc.removePermanently(true);
-        } catch (NotesException e) {
-            throw new RuntimeException(e);
+    protected Document createDocument(Database db) throws NotesException {
+        return helper.getDominoFactory().setDefaults(db.createDocument());
+    }
+
+    protected void deleteDocument(Document doc) throws NotesException {
+        if (getDominoSilo().isDocumentLockingEnabled()) {
+            if (!doc.lock()) {
+                throw new RuntimeException("Unable to acquire lock on note " + doc.getNoteID());
+            }
         }
+
+        doc.removePermanently(true);
     }
 
     @Override
@@ -72,8 +79,6 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                 ProcessorTracker tracker = helper.getTracker();
 
                 helper.logMessage("Processing records...");
-
-                String keyFieldName = getKeyField().getName();
 
                 while (resultSet.next()) {
                     if (helper.isExecutionCanceled()) {
@@ -99,8 +104,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                             if (doc != null && !helper.isMode(Mode.TEST)) {
                                 deleteDocument(doc);
 
-                                helper.logVerboseMessage(() -> Unthrow.on(
-                                        () -> "Deleted record " + record.getValue(keyFieldName)));
+                                helper.logVerboseMessage("Deleted record " + getKeyValue(record));
 
                                 setViewAccessPolicy(ViewAccessPolicy.FRESH);
                             }
@@ -126,18 +130,20 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                             continue;
                         }
 
-                        // TODO never seen error thrown at runtime with this code!!!
-                        // Maybe lambdas are involved
-//                        helper.logVerboseMessage(() -> Unthrow.on(() -> {
-//                            StringBuilder summary = new StringBuilder(
-//                                    (record.isNew() ? "New" : "Updated")
-//                                            + " record " + record.getValue(keyFieldName));
-//
-//                            changes.forEach((name, change) -> summary.append(
-//                                    String.format("\n\t%s %s", name, change)));
-//
-//                            return summary.toString();
-//                        }));
+                        helper.logVerboseMessage(() -> {
+                            String header = String.format(
+                                    "%s record %s",
+                                    record.isNew() ? "New" : "Updated",
+                                    getKeyValue(record));
+                            String fields = changes
+                                    .entrySet()
+                                    .stream()
+                                    .map((e) -> String.format("\t%s %s", e.getKey(),
+                                            e.getValue()))
+                                    .collect(Collectors.joining("\n"));
+
+                            return header + "\n" + fields;
+                        });
 
                         if (!helper.isMode(Mode.TEST)) {
                             doc.save();
@@ -153,13 +159,13 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                     }
                 }
             }
+
+            afterExecution();
+
+            return true;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        afterExecution();
-
-        return true;
     }
 
     protected void finalizeDocument(Document doc, T record, Map<String, ValueChange> changes)
@@ -167,46 +173,47 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
     }
 
-    protected Optional<Document> findDocument(T record) throws ProcessorException {
-        try {
-            View view = getView(getViewAccessPolicy());
+    protected Optional<Document> findDocument(T record) throws NotesException {
+        View view = getView(getViewAccessPolicy());
 
-            if (!isStaleView()) {
-                setViewAccessPolicy(ViewAccessPolicy.STALE);
-            }
-
-            Document doc = view.getDocumentByKey(getKeyValue(record), true);
-
-            if (doc == null) {
-                return Optional.empty();
-            }
-
-            return Optional.of(helper.getDominoFactory().setDefaults(doc));
-        } catch (NotesException e) {
-            throw new RuntimeException(e);
+        if (!isStaleView()) {
+            setViewAccessPolicy(ViewAccessPolicy.STALE);
         }
+
+        return findDocument(view, getKeyValue(record));
+    }
+
+    protected final Optional<Document> findDocument(View view, Object key) throws NotesException {
+        if (key == null) {
+            throw new IllegalArgumentException("View key cannot be null");
+        }
+
+        Document doc = key instanceof Vector
+                ? view.getDocumentByKey((Vector<?>) key, true)
+                : view.getDocumentByKey(key, true);
+
+        if (doc == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(helper.getDominoFactory().setDefaults(doc));
     }
 
     protected final ViewAccessPolicy getViewAccessPolicy() {
         return vap;
     }
 
-    protected Document initializeDocument(T record) throws ProcessorException {
-        try {
-            Document doc = helper.getDominoFactory().setDefaults(
-                    getDominoSilo().getDatabase().createDocument());
+    protected Document initializeDocument(T record) throws NotesException {
+        Document doc = createDocument();
 
-            helper.getVariable("Form")
-                    .ifPresent((formName) -> Unthrow.on(() -> {
-                        Item itm = doc.replaceItemValue("Form", formName);
+        helper.getVariable("Form")
+                .ifPresent((formName) -> Unthrow.on(() -> {
+                    Item itm = doc.replaceItemValue("Form", formName);
 
-                        DominoUtil.recycle(itm);
-                    }));
+                    DominoUtil.recycle(itm);
+                }));
 
-            return doc;
-        } catch (NotesException e) {
-            throw new RuntimeException(e);
-        }
+        return doc;
     }
 
     @Override
@@ -218,7 +225,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         return vap == ViewAccessPolicy.STALE;
     }
 
-    protected void pullResultSet(ResultSet resultSet, T record) throws ProcessorException {
+    protected void pullResultSet(ResultSet resultSet, T record) {
         for (FieldPair pair : helper.getFieldPairs()) {
             Field from = pair.getFrom();
             Field to = pair.getTo();
@@ -273,8 +280,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         }
     }
 
-    private Map<String, ValueChange> pushRecord(T record, Document doc)
-            throws ProcessorException {
+    private Map<String, ValueChange> pushRecord(T record, Document doc) {
         Map<String, ValueChange> changes = new HashMap<>();
 
         for (FieldPair pair : helper.getFieldPairs()) {
@@ -287,9 +293,8 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
         return changes;
     }
-    
-    protected ValueChange pushRecordValue(T record, Document doc, FieldPair pair)
-            throws ProcessorException {
+
+    protected ValueChange pushRecordValue(T record, Document doc, FieldPair pair) {
         Field to = pair.getTo();
 
         if (helper.getFieldTemporary().containsKey(to.getName())) {

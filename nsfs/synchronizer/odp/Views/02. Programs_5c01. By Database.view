@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<view xmlns="http://www.lotus.com/dxl" name="02. Programs\By Tag" showinmenu="false" publicaccess="false" unreadmarks="none" onopengoto="lastopened" onrefresh="displayindicator" headers="beveled" opencollapsed="false" showresponsehierarchy="true" showmargin="true" shrinkrows="false" extendlastcolumn="false" showhierarchies="false" unreadcolor="black" rowlinecount="1" headerlinecount="1" rowspacing="1.25" bgcolor="white" totalscolor="black" headerbgcolor="white" boldunreadrows="false" evaluateactions="false" allownewdocuments="false" allowcustomizations="true" hidemarginborder="false" marginwidth="0px" marginbgcolor="white" gridstyle="solid" gridcolor="#efefef" uniquekeys="false">
+<view xmlns="http://www.lotus.com/dxl" name="02. Programs\01. By Database" showinmenu="false" publicaccess="false" unreadmarks="none" onopengoto="lastopened" onrefresh="displayindicator" headers="beveled" opencollapsed="false" showresponsehierarchy="true" showmargin="true" shrinkrows="false" extendlastcolumn="false" showhierarchies="false" unreadcolor="black" rowlinecount="1" headerlinecount="1" rowspacing="1.25" bgcolor="white" totalscolor="black" headerbgcolor="white" boldunreadrows="false" evaluateactions="false" allownewdocuments="false" allowcustomizations="true" hidemarginborder="false" marginwidth="0px" marginbgcolor="white" gridstyle="solid" gridcolor="#efefef" uniquekeys="false">
 <code event="selection">
-<formula>SELECT Form="Program"</formula>
+<formula>SELECT Form="Program" &amp; runMode="ENABLED" &amp; archived != "true"</formula>
 </code>
 <code event="options">
 <lotusscript>Use "View"
@@ -55,11 +55,14 @@ End Sub</lotusscript>
 </action>
 </sharedactionref>
 </actionbar>
-<column align="center" sort="ascending" hidedetailrows="false" itemname="tags" width="6" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" categorized="true" twisties="true">
+<column align="center" sort="ascending" hidedetailrows="false" itemname="$3" width="6" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" categorized="true" twisties="true">
 <font size="8pt" style="bold"/>
-<columnheader title="Tag">
+<columnheader title="Database">
 <font size="8pt" style="bold"/>
 </columnheader>
+<code event="value">
+<formula>@ReplaceSubstring(database;"\\";"-")</formula>
+</code>
 </column>
 <sharedcolumnref name="order">
 <column sort="ascending" hidedetailrows="false" itemname="order" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
@@ -70,7 +73,7 @@ End Sub</lotusscript>
 </column>
 </sharedcolumnref>
 <sharedcolumnref name="interval">
-<column hidedetailrows="false" itemname="$1" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
+<column hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
 <font size="8pt"/>
 <columnheader title="Interval">
 <font size="8pt" style="bold"/>
@@ -119,24 +122,17 @@ End Sub</lotusscript>
 </columnheader>
 </column>
 </sharedcolumnref>
-<sharedcolumnref name="run-mode">
-<column align="center" hidedetailrows="false" itemname="runMode" width="9" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false">
-<font size="8pt"/>
-<columnheader align="center" title="Run Mode">
-<font size="8pt" style="bold"/>
-</columnheader>
-</column>
-</sharedcolumnref>
 <sharedcolumnref name="status">
-<column align="center" hidedetailrows="false" itemname="$2" width="5" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showasicons="true">
+<column align="center" hidedetailrows="false" itemname="$2" width="5" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" showascolor="true" hidden="true">
 <font size="8pt"/>
 <columnheader align="center" title="Status">
 <font size="8pt" style="bold"/>
 </columnheader>
 <code event="value">
 <formula>@If(
-	status="STARTED";	95;
-	93
+	status="STOPPED";	0:100:0:245:245:245;
+	status="STARTED";	255:165:0:245:245:245;
+	139:0:0:245:245:245
 )</formula>
 </code>
 </column>

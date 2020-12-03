@@ -257,6 +257,35 @@ Yg4BAIQAAAAAAAAAAAA=
 </par>
 </tablecell>
 </tablerow>
+<tablerow>
+<tablecell valign="center" borderwidth="0px" bgcolor="#f7f7f7">
+<par def="6">
+<run>
+<font size="8pt" style="bold"/>Archived:</run>
+</par>
+</tablecell>
+<tablecell valign="center" borderwidth="0px">
+<par def="7">
+<run>
+<font size="8pt"/>
+</run>
+<run>
+<font size="8pt"/>
+<field showdelimiters="false" borderstyle="none" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="archived">
+<keywords helperbutton="false" columns="2" ui="radiobutton">
+<textlist>
+<text>No|false</text>
+<text>Yes|true</text>
+</textlist>
+</keywords>
+<code event="defaultvalue">
+<formula>"false"</formula>
+</code>
+</field>
+</run>
+</par>
+</tablecell>
+</tablerow>
 </table>
 <par def="2"/>
 <table rowdisplay="tabs" widthtype="fixedleft" refwidth="7.2000in">
