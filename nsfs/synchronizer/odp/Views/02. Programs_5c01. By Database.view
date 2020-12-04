@@ -61,19 +61,21 @@ End Sub</lotusscript>
 <font size="8pt" style="bold"/>
 </columnheader>
 <code event="value">
-<formula>@ReplaceSubstring(database;"\\";"-")</formula>
+<formula>@ReplaceSubstring(database;"\\";"/")</formula>
 </code>
 </column>
-<sharedcolumnref name="order">
-<column sort="ascending" hidedetailrows="false" itemname="order" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
-<font size="8pt"/>
-<columnheader title="Order">
-<font size="8pt" style="bold"/>
+<sharedcolumnref name="interval-sort">
+<column sort="ascending" hidedetailrows="false" itemname="$4" width="1" resizable="false" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" hidden="true">
+<columnheader>
+<font size="9pt" style="bold"/>
 </columnheader>
+<code event="value">
+<formula>@TextToNumber(interval)</formula>
+</code>
 </column>
 </sharedcolumnref>
 <sharedcolumnref name="interval">
-<column hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
+<column hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Interval">
 <font size="8pt" style="bold"/>
@@ -88,8 +90,16 @@ End Sub</lotusscript>
 </code>
 </column>
 </sharedcolumnref>
+<sharedcolumnref name="order">
+<column sort="ascending" hidedetailrows="false" itemname="order" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<font size="8pt"/>
+<columnheader title="Order">
+<font size="8pt" style="bold"/>
+</columnheader>
+</column>
+</sharedcolumnref>
 <sharedcolumnref name="time-frame">
-<column sort="ascending" hidedetailrows="false" itemname="timeFrame" width="10" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
+<column sort="ascending" hidedetailrows="false" itemname="timeFrame" width="8" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Time Frame">
 <font size="8pt" style="bold"/>
@@ -99,7 +109,7 @@ End Sub</lotusscript>
 </column>
 </sharedcolumnref>
 <sharedcolumnref name="title">
-<column hidedetailrows="false" itemname="title" width="15.2500" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<column hidedetailrows="false" itemname="title" width="20" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Title">
 <font size="8pt" style="bold"/>

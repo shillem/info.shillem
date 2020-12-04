@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sharedcolumn xmlns="http://www.lotus.com/dxl" name="interval">
-<column hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
+<column hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Interval">
 <font size="8pt" style="bold"/>

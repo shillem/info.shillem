@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<view xmlns="http://www.lotus.com/dxl" name="02. Programs\03. By Tag" showinmenu="false" publicaccess="false" unreadmarks="none" onopengoto="lastopened" onrefresh="displayindicator" headers="beveled" opencollapsed="false" showresponsehierarchy="true" showmargin="true" shrinkrows="false" extendlastcolumn="false" showhierarchies="false" unreadcolor="black" rowlinecount="1" headerlinecount="1" rowspacing="1.25" bgcolor="white" totalscolor="black" headerbgcolor="white" boldunreadrows="false" evaluateactions="false" allownewdocuments="false" allowcustomizations="true" hidemarginborder="false" marginwidth="0px" marginbgcolor="white" gridstyle="solid" gridcolor="#efefef" uniquekeys="false">
+<view xmlns="http://www.lotus.com/dxl" name="02. Programs\04. By Tag" showinmenu="false" publicaccess="false" unreadmarks="none" onopengoto="lastopened" onrefresh="displayindicator" headers="beveled" opencollapsed="false" showresponsehierarchy="true" showmargin="true" shrinkrows="false" extendlastcolumn="false" showhierarchies="false" unreadcolor="black" rowlinecount="1" headerlinecount="1" rowspacing="1.25" bgcolor="white" totalscolor="black" headerbgcolor="white" boldunreadrows="false" evaluateactions="false" allownewdocuments="false" allowcustomizations="true" hidemarginborder="false" marginwidth="0px" marginbgcolor="white" gridstyle="solid" gridcolor="#efefef" uniquekeys="false">
 <code event="selection">
 <formula>SELECT Form="Program" &amp; runMode="ENABLED" &amp; archived != "true"</formula>
 </code>
@@ -18,7 +18,7 @@ End Sub
 </code>
 <actionbar bgcolor="#f0f0f0" bordercolor="black">
 <actionbuttonstyle bgcolor="#f0f0f0"/>
-<font size="9pt" color="system"/>
+<font color="system"/>
 <border style="solid" width="0px 0px 1px" color="system"/>
 <sharedactionref id="1">
 <action title="New Sql To Domino" icon="30">
@@ -33,8 +33,7 @@ Use "View"
 	
 	Call UINewProgram("SQL_TO_DOMINO")
 	
-End Sub
-</lotusscript>
+End Sub</lotusscript>
 </code>
 </action>
 </sharedactionref>
@@ -51,8 +50,7 @@ Use "View"
 	
 	Call UINewProgram("DOMINO_TO_SQL")
 	
-End Sub
-</lotusscript>
+End Sub</lotusscript>
 </code>
 </action>
 </sharedactionref>
@@ -63,16 +61,18 @@ End Sub
 <font size="8pt" style="bold"/>
 </columnheader>
 </column>
-<sharedcolumnref name="order">
-<column sort="ascending" hidedetailrows="false" itemname="order" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
-<font size="8pt"/>
-<columnheader title="Order">
-<font size="8pt" style="bold"/>
+<sharedcolumnref name="interval-sort">
+<column sort="ascending" hidedetailrows="false" itemname="$0" width="1" resizable="false" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" hidden="true">
+<columnheader>
+<font size="9pt" style="bold"/>
 </columnheader>
+<code event="value">
+<formula>@TextToNumber(interval)</formula>
+</code>
 </column>
 </sharedcolumnref>
 <sharedcolumnref name="interval">
-<column hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
+<column hidedetailrows="false" itemname="$5" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Interval">
 <font size="8pt" style="bold"/>
@@ -87,8 +87,16 @@ End Sub
 </code>
 </column>
 </sharedcolumnref>
+<sharedcolumnref name="order">
+<column sort="ascending" hidedetailrows="false" itemname="order" width="6" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<font size="8pt"/>
+<columnheader title="Order">
+<font size="8pt" style="bold"/>
+</columnheader>
+</column>
+</sharedcolumnref>
 <sharedcolumnref name="time-frame">
-<column sort="ascending" hidedetailrows="false" itemname="timeFrame" width="10" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" twisties="true">
+<column sort="ascending" hidedetailrows="false" itemname="timeFrame" width="8" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Time Frame">
 <font size="8pt" style="bold"/>
@@ -98,7 +106,7 @@ End Sub
 </column>
 </sharedcolumnref>
 <sharedcolumnref name="title">
-<column hidedetailrows="false" itemname="title" width="15.2500" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<column hidedetailrows="false" itemname="title" width="20" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Title">
 <font size="8pt" style="bold"/>
