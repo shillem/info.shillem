@@ -18,7 +18,7 @@ End Sub
 </code>
 <actionbar bgcolor="#f0f0f0" bordercolor="black">
 <actionbuttonstyle bgcolor="#f0f0f0"/>
-<font size="9pt" color="system"/>
+<font color="system"/>
 <border style="solid" width="0px 0px 1px" color="system"/>
 <sharedactionref id="1">
 <action title="New Sql To Domino" icon="30">
@@ -33,8 +33,7 @@ Use "View"
 	
 	Call UINewProgram("SQL_TO_DOMINO")
 	
-End Sub
-</lotusscript>
+End Sub</lotusscript>
 </code>
 </action>
 </sharedactionref>
@@ -51,8 +50,7 @@ Use "View"
 	
 	Call UINewProgram("DOMINO_TO_SQL")
 	
-End Sub
-</lotusscript>
+End Sub</lotusscript>
 </code>
 </action>
 </sharedactionref>
@@ -78,6 +76,14 @@ End Sub
 <column hidedetailrows="false" itemname="nature" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
 <font size="8pt"/>
 <columnheader title="Nature">
+<font size="8pt" style="bold"/>
+</columnheader>
+</column>
+</sharedcolumnref>
+<sharedcolumnref name="processor-record-policy">
+<column hidedetailrows="false" itemname="processorRecordPolicy" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<font size="8pt"/>
+<columnheader title="Record Policy">
 <font size="8pt" style="bold"/>
 </columnheader>
 </column>

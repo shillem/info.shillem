@@ -103,6 +103,8 @@ public class ProcessorDominoToSql<T extends Record> extends Processor<T> {
                 }
 
                 try (ResultSet resultSet = readStatement.executeQuery()) {
+                    RecordPolicy policy = helper.getRecordPolicy();
+
                     while (resultSet.next()) {
                         Object keyValue = transformValue(resultSet.getObject(
                                 getKeyField().getName()),
@@ -110,7 +112,11 @@ public class ProcessorDominoToSql<T extends Record> extends Processor<T> {
 
                         T record = batch.get(keyValue);
 
-                        if (record != null) {
+                        if (record == null) {
+                            continue;
+                        }
+
+                        if (policy == RecordPolicy.UPDATE || policy == RecordPolicy.UPSERT) {
                             Map<String, ValueChange> changes = pushRecord(record, resultSet);
 
                             if (!changes.isEmpty()) {
@@ -124,13 +130,15 @@ public class ProcessorDominoToSql<T extends Record> extends Processor<T> {
 
                                 helper.getTracker().addModified();
                             }
-
-                            batch.remove(keyValue);
+                        } else {
+                            helper.getTracker().addSkipped();
                         }
+
+                        batch.remove(keyValue);
                     }
 
                     if (!batch.isEmpty()) {
-                        if (helper.getRecordPolicy() == RecordPolicy.UPSERT) {
+                        if (policy == RecordPolicy.INSERT || policy == RecordPolicy.UPSERT) {
                             for (T record : batch.values()) {
                                 prepareStatement(getInsertStatement(), record).addBatch();
 

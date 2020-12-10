@@ -121,6 +121,14 @@ End Sub</lotusscript>
 </columnheader>
 </column>
 </sharedcolumnref>
+<sharedcolumnref name="processor-record-policy">
+<column hidedetailrows="false" itemname="processorRecordPolicy" width="15" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<font size="8pt"/>
+<columnheader title="Record Policy">
+<font size="8pt" style="bold"/>
+</columnheader>
+</column>
+</sharedcolumnref>
 <sharedcolumnref name="description">
 <column hidedetailrows="false" itemname="description" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" extwindowwidth="true">
 <font size="8pt"/>

@@ -1059,6 +1059,7 @@ Yg4BAIQAAAAAAAAAAAA=
 <field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" kind="editable" name="processorRecordPolicy">
 <keywords columns="3" ui="dialoglist">
 <textlist>
+<text>Insert|INSERT</text>
 <text>Update|UPDATE</text>
 <text>Upsert|UPSERT</text>
 </textlist>

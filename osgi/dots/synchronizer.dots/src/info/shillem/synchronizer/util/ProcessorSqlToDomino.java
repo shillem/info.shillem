@@ -94,12 +94,6 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                     try {
                         doc = findDocument(record).orElse(null);
 
-                        if (doc == null && helper.getRecordPolicy() == RecordPolicy.UPDATE) {
-                            tracker.addSkipped();
-
-                            continue;
-                        }
-
                         if (record.isDeleted()) {
                             if (doc != null && !helper.isMode(Mode.TEST)) {
                                 deleteDocument(doc);
@@ -114,10 +108,22 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                             continue;
                         }
 
+                        RecordPolicy policy = helper.getRecordPolicy();
+                        
                         if (doc == null) {
+                            if (policy == RecordPolicy.UPDATE) {
+                                tracker.addSkipped();
+
+                                continue;
+                            }
+                            
                             doc = initializeDocument(record);
 
                             record.setNew(true);
+                        } else if (policy == RecordPolicy.INSERT) {
+                            tracker.addSkipped();
+
+                            continue;
                         }
 
                         Map<String, ValueChange> changes = pushRecord(record, doc);
