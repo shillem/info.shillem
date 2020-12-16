@@ -24,6 +24,7 @@ import lotus.domino.Item;
 import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
 import lotus.domino.NotesException;
+import lotus.domino.RichTextItem;
 import lotus.domino.Session;
 
 public enum DominoUtil {
@@ -84,6 +85,17 @@ public enum DominoUtil {
     public static List<Integer> getItemIntegers(Document doc, String itemName)
             throws NotesException {
         return getItemValues(doc, itemName, (val) -> ((Number) val).intValue());
+    }
+
+    public static RichTextItem getItemRichText(Document doc, String itemName)
+            throws NotesException {
+        Item item = doc.getFirstItem(itemName);
+
+        if (item == null) {
+            return null;
+        }
+
+        return (RichTextItem) item;
     }
 
     public static String getItemString(Document doc, String itemName)
@@ -296,10 +308,13 @@ public enum DominoUtil {
     }
 
     public static void recycle(Collection<? extends Object> objs) {
-        objs.stream()
-                .filter(o -> o instanceof Base)
-                .map(o -> (Base) o)
-                .forEach(DominoUtil::recycle);
+        if (objs != null) {
+            objs.stream()
+                    .filter(o -> o instanceof Base)
+                    .map(o -> (Base) o)
+                    .forEach(DominoUtil::recycle);
+
+        }
     }
 
     public static void setAuthorValue(Document doc, String itemName, Object value)

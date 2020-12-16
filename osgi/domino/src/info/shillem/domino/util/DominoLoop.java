@@ -287,6 +287,7 @@ public class DominoLoop {
         Result<T> result = new Result<>();
 
         Document doc = null;
+        Document temp = null;
 
         try {
             if (options.total != OptionTotal.READ_ONLY) {
@@ -294,6 +295,8 @@ public class DominoLoop {
                 doc = starter.get();
     
                 while (doc != null) {
+                    temp = advancer.apply(doc);
+                    
                     if (options.reader != null) {
                         options.reader.accept(doc);
                     }
@@ -305,9 +308,8 @@ public class DominoLoop {
                     if (!options.isWithinLimit(++count)) {
                         break;
                     }
-    
-                    Document temp = advancer.apply(doc);
-                    DominoUtil.recycle(doc);
+                    
+                    doc.recycle();
                     doc = temp;
                 }
             }
@@ -320,7 +322,7 @@ public class DominoLoop {
 
             return result;
         } finally {
-            DominoUtil.recycle(doc);
+            DominoUtil.recycle(temp, doc);
         }
     }
 
@@ -332,6 +334,7 @@ public class DominoLoop {
         Result<T> result = new Result<>();
 
         ViewEntry entry = null;
+        ViewEntry temp = null;
 
         try {
             if (options.total != OptionTotal.READ_ONLY) {
@@ -339,6 +342,8 @@ public class DominoLoop {
                 entry = starter.get();
     
                 while (entry != null) {
+                    temp = advancer.apply(entry);
+                    
                     if (options.reader != null) {
                         options.reader.accept(entry);
                     }
@@ -350,9 +355,8 @@ public class DominoLoop {
                     if (!options.isWithinLimit(++count)) {
                         break;
                     }
-    
-                    ViewEntry temp = advancer.apply(entry);
-                    DominoUtil.recycle(entry);
+                    
+                    entry.recycle();
                     entry = temp;
                 }
             }
@@ -365,7 +369,7 @@ public class DominoLoop {
 
             return result;
         } finally {
-            DominoUtil.recycle(entry);
+            DominoUtil.recycle(temp, entry);
         }
     }
 
