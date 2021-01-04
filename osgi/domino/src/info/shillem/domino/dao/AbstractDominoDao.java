@@ -42,7 +42,7 @@ import info.shillem.domino.util.DominoLoop.OptionTotal;
 import info.shillem.domino.util.DominoLoop.Result;
 import info.shillem.domino.util.DominoSilo;
 import info.shillem.domino.util.DominoUtil;
-import info.shillem.domino.util.FullTextSearchQueryConverter;
+import info.shillem.domino.util.FullTextSearchQuery;
 import info.shillem.domino.util.MimeContentType;
 import info.shillem.domino.util.ViewManager;
 import info.shillem.domino.util.ViewMatch;
@@ -801,8 +801,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
     protected List<T> searchFullText(View vw, Supplier<T> supplier, SearchQuery<E> query)
             throws DaoException {
-        String syntax = new FullTextSearchQueryConverter<>(
-                query, this::getDocumentItemName).toString();
+        String syntax = new FullTextSearchQuery<>(query)
+                .withNamer(this::getDocumentItemName)
+                .output();
 
         try {
             vw.FTSearchSorted(syntax, query.getLimit());
