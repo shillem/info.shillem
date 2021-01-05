@@ -1,6 +1,7 @@
 package info.shillem.sql.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -223,7 +224,9 @@ public class SelectQuery {
     }
 
     public SelectQuery join(IJoin.Type type, String table, String column) {
-        joins().add(new Join(type, table).on(from, column));
+        Join join = new Join(type, table);
+        join.on(from, column);
+        joins.add(join);
 
         return this;
     }
@@ -349,12 +352,20 @@ public class SelectQuery {
         return builder.toString();
     }
 
-    public boolean requiresTable(String name) {
+    public boolean requiresAnyTable(String name, String... names) {
         if (schema != null) {
+            List<String> n = new ArrayList<>();
+
+            n.add(name);
+
+            if (names != null) {
+                n.addAll(Arrays.asList(names));
+            }
+
             for (Column col : columns) {
                 Map.Entry<String, Schema.Table> t = schema.getColumnTable(col.getName());
 
-                if (t != null && t.getKey().equals(name)) {
+                if (t != null && n.contains(t.getKey())) {
                     return true;
                 }
             }

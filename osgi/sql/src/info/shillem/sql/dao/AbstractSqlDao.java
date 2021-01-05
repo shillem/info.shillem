@@ -17,10 +17,6 @@ import info.shillem.dao.FilterQuery;
 import info.shillem.dao.PageQuery;
 import info.shillem.dao.Query;
 import info.shillem.dao.SearchQuery;
-import info.shillem.dao.SearchQuery.Group;
-import info.shillem.dao.SearchQuery.Logical;
-import info.shillem.dao.SearchQuery.Value;
-import info.shillem.dao.SearchQuery.Values;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseField;
 import info.shillem.sql.factory.SqlFactory;
@@ -89,7 +85,7 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
 
     @SuppressWarnings("unchecked")
     private void populateSelectQueryWhere(LWhere wheres, SearchQuery.Piece piece) {
-        if (piece instanceof Group) {
+        if (piece instanceof SearchQuery.Group) {
             SearchQuery.Group group = (SearchQuery.Group) piece;
 
             if (group.isEmpty()) {
@@ -101,24 +97,32 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
             group.getPieces().forEach((p) -> populateSelectQueryWhere(wg.wheres(), piece));
 
             wheres.add(wg);
+
+            return;
         }
 
-        if (piece instanceof Logical) {
+        if (piece instanceof SearchQuery.Logical) {
             SearchQuery.Logical p = (SearchQuery.Logical) piece;
 
             wheres.add(p.getOperator() == LogicalOperator.AND ? WhereLogic.AND : WhereLogic.OR);
+
+            return;
         }
 
-        if (piece instanceof Value) {
+        if (piece instanceof SearchQuery.Value) {
             SearchQuery.Value<E> p = (SearchQuery.Value<E>) piece;
 
             wheres.add(new WhereColumn(p.getField().name(), p.getOperator(), p.getValue()));
+
+            return;
         }
 
-        if (piece instanceof Values) {
+        if (piece instanceof SearchQuery.Values) {
             SearchQuery.Values<E> p = (SearchQuery.Values<E>) piece;
 
             wheres.add(new WhereColumn(p.getField().name(), p.getOperator(), p.getValues()));
+
+            return;
         }
 
         throw new UnsupportedOperationException(piece.getClass().getName()

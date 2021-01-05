@@ -4,18 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import info.shillem.sql.util.Schema.Table;
 
 public class Join implements IJoin {
 
-    class Column implements Instruction {
+    public class Column implements Instruction {
 
         private final String acol;
         private final String btab;
         private final String bcol;
+
+        private String afun;
+        private String bfun;
 
         Column(String acol, String btab) {
             this(acol, btab, null);
@@ -29,27 +32,48 @@ public class Join implements IJoin {
 
         @Override
         public String output(Schema schema) {
-            Function<String, String> columner;
+            BiFunction<String, String, String> columner;
 
             if (schema != null) {
-                columner = (n) -> {
-                    Schema.Column c = schema.getColumn(n);
+                columner = (n, fn) -> {
+                    String name = Optional
+                            .ofNullable(schema.getColumn(n))
+                            .map(Schema.Column::getName)
+                            .orElse(n);
 
-                    return c != null ? c.getName() : n;
+                    return fn != null ? String.format(fn, name) : name;
                 };
             } else {
-                columner = (n) -> n;
+                columner = (n, fn) -> fn != null ? String.format(fn, n) : n;
             }
 
             return new StringBuilder()
-                    .append(table)
-                    .append(".")
-                    .append(columner.apply(acol))
+                    .append(columner.apply(table.concat(".").concat(acol), afun))
                     .append(" = ")
-                    .append(btab)
-                    .append(".")
-                    .append(columner.apply(Optional.ofNullable(bcol).orElse(acol)))
+                    .append(columner.apply(btab.concat(".")
+                            .concat(Optional.ofNullable(bcol).orElse(acol)), bfun))
                     .toString();
+        }
+
+        private String validateFunction(String function) {
+            if (function != null && !function.contains("%s")) {
+                throw new IllegalArgumentException(
+                        "Function must contain '%s' token for replacement");
+            }
+
+            return function;
+        }
+
+        public Column withDestinationFunction(String function) {
+            this.bfun = validateFunction(function);
+
+            return this;
+        }
+
+        public Column withSourceFunction(String function) {
+            this.afun = validateFunction(function);
+
+            return this;
         }
 
     }
@@ -77,10 +101,12 @@ public class Join implements IJoin {
         this.instructions = new ArrayList<>();
     }
 
-    public Join on(String table, String column) {
-        instructions.add(new Column(column, table));
+    public Column on(String table, String column) {
+        Column c = new Column(column, table);
 
-        return this;
+        instructions.add(c);
+
+        return c;
     }
 
     @Override
