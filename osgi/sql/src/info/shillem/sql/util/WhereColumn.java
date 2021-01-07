@@ -86,7 +86,15 @@ public class WhereColumn implements IWhere {
         }
 
         if (value instanceof String) {
-            return "'" + ((String) value).replaceAll("'", "''") + "'";
+            String val = ((String) value).replaceAll("'", "''");
+
+            if (operator != ComparisonOperator.LIKE) {
+                return "'".concat(val).concat("'");
+            }
+
+            val.replace('*', '%');
+
+            return "'".concat(val.contains("%") ? val : "%".concat(val).concat("%")).concat("'");
         }
 
         if (value instanceof Date) {

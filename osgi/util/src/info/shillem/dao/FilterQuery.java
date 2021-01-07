@@ -28,6 +28,9 @@ public class FilterQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
         Map<String, Object> properties = new HashMap<>();
 
         properties.put("filters", filters);
+        properties.put("limit", getLimit());
+        properties.put("offset", getOffset());
+        properties.put("sorters", getSorters());
 
         return properties.toString();
     }

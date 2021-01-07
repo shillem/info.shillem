@@ -40,7 +40,7 @@ public class LocalDominoFactory extends AbstractDominoFactory {
     private final Set<Option> options;
 
     protected LocalDominoFactory(Builder builder) throws NotesException {
-        super(builder.session);
+        super(Objects.requireNonNull(builder, "Builder cannot be null").session);
 
         options = builder.options;
 

@@ -94,7 +94,7 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
 
             WhereGroup wg = new WhereGroup();
 
-            group.getPieces().forEach((p) -> populateSelectQueryWhere(wg.wheres(), piece));
+            group.getPieces().forEach((p) -> populateSelectQueryWhere(wg.wheres(), p));
 
             wheres.add(wg);
 

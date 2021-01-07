@@ -3,6 +3,8 @@ package info.shillem.dao;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -31,7 +33,7 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
         public Group and(Piece piece) {
             return add(Logical.AND, piece);
         }
-        
+
         public Collection<Piece> getPieces() {
             return deque;
         }
@@ -43,7 +45,7 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
         public Group or(Piece piece) {
             return add(Logical.OR, piece);
         }
-        
+
         @Override
         public String toString() {
             return deque.toString();
@@ -61,7 +63,7 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
         private Logical(LogicalOperator operator) {
             this.operator = operator;
         }
-        
+
         public LogicalOperator getOperator() {
             return operator;
         }
@@ -74,7 +76,7 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
     }
 
     public interface Piece {
-        
+
     }
 
     public static class Value<E extends Enum<E> & BaseField> implements Piece {
@@ -92,11 +94,11 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
             this.operator = Objects.requireNonNull(operator, "Operator cannot be null");
             this.value = value;
         }
-        
+
         public E getField() {
             return field;
         }
-        
+
         public ComparisonOperator getOperator() {
             return operator;
         }
@@ -125,20 +127,20 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
         public Values(E field, Set<Object> values, ComparisonOperator operator) {
             this.field = Objects.requireNonNull(field, "Field cannot be null");
             this.operator = Objects.requireNonNull(operator, "Operator cannot be null");
-            
+
             Objects.requireNonNull(operator, "Values cannot be null");
-            
+
             if (values.isEmpty()) {
                 throw new IllegalArgumentException("Values cannot be empty");
             }
-            
+
             this.values = values;
         }
-        
+
         public E getField() {
             return field;
         }
-        
+
         public ComparisonOperator getOperator() {
             return operator;
         }
@@ -164,6 +166,18 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
 
     public Collection<Piece> getPieces() {
         return group.getPieces();
+    }
+
+    @Override
+    public String toString() {
+        Map<String, Object> properties = new HashMap<>();
+
+        properties.put("limit", getLimit());
+        properties.put("offset", getOffset());
+        properties.put("pieces", getPieces());
+        properties.put("sorters", getSorters());
+
+        return properties.toString();
     }
 
 }
