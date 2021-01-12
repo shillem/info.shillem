@@ -37,27 +37,11 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         this.factory = Objects.requireNonNull(factory, "Factory cannot be null");
     }
 
-    protected void pullColumn(
+    protected WhereColumn createSelectQueryWhereColumn(
             E field,
-            ResultSet resultSet,
-            T wrapper,
-            Locale locale)
-            throws SQLException {
-        Class<? extends Serializable> type = field.getProperties().getType();
-
-        try {
-            Object value = resultSet.getObject(field.toString());
-
-            wrapper.presetValue(field, pullValue(type, value));
-        } catch (Exception e) {
-            throw wrappedPullColumnException(e, field);
-        }
-    }
-
-    protected void pullRow(ResultSet resultSet, T wrapper, Query<E> query) throws SQLException {
-        for (E field : query.getSchema()) {
-            pullColumn(field, resultSet, wrapper, query.getLocale());
-        }
+            ComparisonOperator operator,
+            Object value) {
+        return new WhereColumn(field.name(), operator, value);
     }
 
     protected void populateSelectQuery(SelectQuery select, PageQuery<E> query) {
@@ -68,8 +52,8 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
 
             LWhere wheres = select.wheres();
 
-            q.getFilters().forEach((f, value) -> wheres
-                    .and(new WhereColumn(f.name(), ComparisonOperator.EQUAL, value)));
+            q.getFilters().forEach((f, value) -> wheres.and(
+                    createSelectQueryWhereColumn(f, ComparisonOperator.EQUAL, value)));
         }
 
         if (query instanceof SearchQuery) {
@@ -83,8 +67,7 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         query.getSorters().forEach((f, op) -> select.order(f.name(), op));
     }
 
-    @SuppressWarnings("unchecked")
-    private void populateSelectQueryWhere(LWhere wheres, SearchQuery.Piece piece) {
+    protected void populateSelectQueryWhere(LWhere wheres, SearchQuery.Piece piece) {
         if (piece instanceof SearchQuery.Group) {
             SearchQuery.Group group = (SearchQuery.Group) piece;
 
@@ -110,23 +93,48 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         }
 
         if (piece instanceof SearchQuery.Value) {
+            @SuppressWarnings("unchecked")
             SearchQuery.Value<E> p = (SearchQuery.Value<E>) piece;
 
-            wheres.add(new WhereColumn(p.getField().name(), p.getOperator(), p.getValue()));
+            wheres.add(createSelectQueryWhereColumn(p.getField(), p.getOperator(), p.getValue()));
 
             return;
         }
 
         if (piece instanceof SearchQuery.Values) {
+            @SuppressWarnings("unchecked")
             SearchQuery.Values<E> p = (SearchQuery.Values<E>) piece;
 
-            wheres.add(new WhereColumn(p.getField().name(), p.getOperator(), p.getValues()));
+            wheres.add(createSelectQueryWhereColumn(p.getField(), p.getOperator(), p.getValues()));
 
             return;
         }
 
-        throw new UnsupportedOperationException(piece.getClass().getName()
-                .concat(" joining is not implemented"));
+        throw new UnsupportedOperationException(
+                piece.getClass().getName().concat(" joining is not implemented"));
+    }
+
+    protected void pullColumn(
+            E field,
+            ResultSet resultSet,
+            T wrapper,
+            Locale locale)
+            throws SQLException {
+        Class<? extends Serializable> type = field.getProperties().getType();
+
+        try {
+            Object value = resultSet.getObject(field.toString());
+
+            wrapper.presetValue(field, pullValue(type, value));
+        } catch (Exception e) {
+            throw wrappedPullColumnException(e, field);
+        }
+    }
+
+    protected void pullRow(ResultSet resultSet, T wrapper, Query<E> query) throws SQLException {
+        for (E field : query.getSchema()) {
+            pullColumn(field, resultSet, wrapper, query.getLocale());
+        }
     }
 
     private <V> V pullValue(Class<V> type, Object value) {

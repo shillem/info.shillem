@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import info.shillem.util.ComparisonOperator;
@@ -17,6 +18,9 @@ public class WhereColumn implements IWhere {
     private final ComparisonOperator operator;
     private final Object value;
 
+    private String nfun;
+    private String vfun;
+
     public WhereColumn(String name, ComparisonOperator operator, Object value) {
         this.name = Objects.requireNonNull(name, "Name cannot be null");
         this.operator = Objects.requireNonNull(operator, "Operator cannot be null");
@@ -27,7 +31,7 @@ public class WhereColumn implements IWhere {
     public String output(Schema schema) {
         if (operator == ComparisonOperator.IN
                 || operator == ComparisonOperator.NOT_IN) {
-            return new StringBuilder(SelectQuery.getColumner(schema).apply(name))
+            return new StringBuilder(outputColumn(schema))
                     .append(" ")
                     .append(outputOperator())
                     .append(" ")
@@ -37,7 +41,7 @@ public class WhereColumn implements IWhere {
                     .toString();
         }
 
-        String left = SelectQuery.getColumner(schema).apply(name)
+        String left = outputColumn(schema)
                 .concat(" ")
                 .concat(outputOperator())
                 .concat(" ");
@@ -53,6 +57,12 @@ public class WhereColumn implements IWhere {
         }
 
         return left.concat(outputValue(value));
+    }
+
+    private String outputColumn(Schema schema) {
+        String n = SelectQuery.getColumner(schema).apply(name);
+
+        return nfun != null ? String.format(nfun, n) : n;
     }
 
     private String outputOperator() {
@@ -81,27 +91,33 @@ public class WhereColumn implements IWhere {
     }
 
     private String outputValue(Object value) {
+        Function<String, String> formatter = vfun != null
+                ? (v) -> String.format(vfun, v)
+                : Function.identity();
+
         if (value == null) {
-            return "NULL";
+            return formatter.apply("NULL");
         }
 
         if (value instanceof String) {
             String val = ((String) value).replaceAll("'", "''");
 
             if (operator != ComparisonOperator.LIKE) {
-                return "'".concat(val).concat("'");
+                return formatter.apply("'".concat(val).concat("'"));
             }
 
             val.replace('*', '%');
 
-            return "'".concat(val.contains("%") ? val : "%".concat(val).concat("%")).concat("'");
+            return formatter.apply("'"
+                    .concat(val.contains("%") ? val : "%".concat(val).concat("%"))
+                    .concat("'"));
         }
 
         if (value instanceof Date) {
-            return SHORT_DATE_FORMAT.format((Date) value);
+            return formatter.apply(SHORT_DATE_FORMAT.format((Date) value));
         }
 
-        return value.toString();
+        return formatter.apply(value.toString());
     }
 
     private String outputValues() {
@@ -116,6 +132,27 @@ public class WhereColumn implements IWhere {
         }
 
         return outputValue(value);
+    }
+
+    private String validateFunction(String function) {
+        if (function != null && !function.contains("%s")) {
+            throw new IllegalArgumentException(
+                    "Function must contain '%s' token for replacement");
+        }
+
+        return function;
+    }
+
+    public WhereColumn withNameFunction(String function) {
+        this.nfun = validateFunction(function);
+
+        return this;
+    }
+
+    public WhereColumn withValueFunction(String function) {
+        this.vfun = validateFunction(function);
+
+        return this;
     }
 
 }

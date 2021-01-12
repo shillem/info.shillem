@@ -396,7 +396,7 @@ public class SelectQuery {
 
     static Function<String, String> getColumner(Schema schema) {
         if (schema == null) {
-            return (n) -> n;
+            return Function.identity();
         }
 
         return (n) -> {
