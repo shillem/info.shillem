@@ -27,11 +27,6 @@ public class TypedDataObject<T> implements DataObject, Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    public T getCastValue(Object key) {
-        return (T) getValue(key);
-    }
-
-    @SuppressWarnings("unchecked")
     @Override
     public Class<T> getType(Object key) {
         Object value = getValue(Objects.requireNonNull(key));
@@ -40,7 +35,7 @@ public class TypedDataObject<T> implements DataObject, Serializable {
     }
 
     @Override
-    public Object getValue(Object key) {
+    public T getValue(Object key) {
         return values.computeIfAbsent(key.toString(), (k) -> fn.apply(cls, k));
     }
 

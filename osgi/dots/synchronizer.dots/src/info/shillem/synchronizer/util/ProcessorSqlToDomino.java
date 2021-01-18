@@ -174,7 +174,10 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         }
     }
 
-    protected void finalizeDocument(Document doc, T record, Map<String, ValueChange> changes)
+    protected void finalizeDocument(
+            Document doc,
+            T record,
+            Map<String, ValueChange> changes)
             throws ProcessorException {
 
     }

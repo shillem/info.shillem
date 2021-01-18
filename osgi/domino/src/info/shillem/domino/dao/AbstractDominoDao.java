@@ -329,7 +329,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             wrapper.setLastModified(DominoUtil.getLastModified(doc));
         }
 
-        if (query.containsOption(DominoQueryOption.FETCH_NOTES_URL)) {
+        if (query.containsOption(DominoQueryOption.FETCH_DATABASE_URL)) {
             wrapper.setDatabaseUrl(doc.getNotesURL());
         }
     }
@@ -530,7 +530,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                     columnValues.get(lastModifiedIndex)));
         }
 
-        if (query.containsOption(DominoQueryOption.FETCH_NOTES_URL)) {
+        if (query.containsOption(DominoQueryOption.FETCH_DATABASE_URL)) {
             wrapper.setDatabaseUrl(manager.getDatabaseUrl(entry));
         }
     }

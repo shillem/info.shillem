@@ -227,7 +227,7 @@ public class SynchronizerTask extends AbstractServerTask {
     private SqlFactory newSqlFactory(Program program) throws ClassNotFoundException {
         DataSource ds = SqlActivator.getDataSource(program.getConnectionProperties());
 
-        return new SqlFactory(ds);
+        return new SqlFactory.Builder(ds).build();
     }
 
     @Override
