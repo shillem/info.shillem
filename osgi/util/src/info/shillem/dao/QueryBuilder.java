@@ -10,7 +10,7 @@ import info.shillem.dto.BaseField;
 
 public class QueryBuilder<E extends Enum<E> & BaseField> {
 
-    final Set<Enum<? extends QueryOption>> options;
+    final Set<String> options;
     final Set<E> schema;
 
     Locale locale;
@@ -20,15 +20,13 @@ public class QueryBuilder<E extends Enum<E> & BaseField> {
         schema = new HashSet<>();
     }
 
-    public QueryBuilder<E> addOption(Enum<? extends QueryOption> value) {
+    public QueryBuilder<E> addOption(String value) {
         options.add(Objects.requireNonNull(value, "Option cannot be null"));
 
         return this;
     }
 
-    public QueryBuilder<E> addOption(
-            Enum<? extends QueryOption> value,
-            @SuppressWarnings("unchecked") Enum<? extends QueryOption>... values) {
+    public QueryBuilder<E> addOption(String value, String... values) {
         addOption(value);
 
         if (options != null) {

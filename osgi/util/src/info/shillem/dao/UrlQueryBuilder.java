@@ -17,15 +17,13 @@ public class UrlQueryBuilder<E extends Enum<E> & BaseField> {
         this.url = Objects.requireNonNull(url, "Url cannot be null");
     }
     
-    public UrlQueryBuilder<E> addOption(Enum<? extends QueryOption> value) {
+    public UrlQueryBuilder<E> addOption(String value) {
         base.addOption(value);
 
         return this;
     }
 
-    public UrlQueryBuilder<E> addOption(
-            Enum<? extends QueryOption> value,
-            @SuppressWarnings("unchecked") Enum<? extends QueryOption>... values) {
+    public UrlQueryBuilder<E> addOption(String value, String... values) {
         base.addOption(value, values);
         
         return this;

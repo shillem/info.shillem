@@ -27,15 +27,13 @@ public class SearchQueryBuilder<E extends Enum<E> & BaseField> {
         return this;
     }
     
-    public SearchQueryBuilder<E> addOption(Enum<? extends QueryOption> value) {
+    public SearchQueryBuilder<E> addOption(String value) {
         base.addOption(value);
 
         return this;
     }
 
-    public SearchQueryBuilder<E> addOption(
-            Enum<? extends QueryOption> value,
-            @SuppressWarnings("unchecked") Enum<? extends QueryOption>... values) {
+    public SearchQueryBuilder<E> addOption(String value, String... values) {
         base.addOption(value, values);
         
         return this;

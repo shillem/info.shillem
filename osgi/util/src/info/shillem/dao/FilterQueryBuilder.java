@@ -21,15 +21,13 @@ public class FilterQueryBuilder<E extends Enum<E> & BaseField> {
         this.filters = new LinkedHashMap<>();
     }
     
-    public FilterQueryBuilder<E> addOption(Enum<? extends QueryOption> value) {
+    public FilterQueryBuilder<E> addOption(String value) {
         base.addOption(value);
 
         return this;
     }
 
-    public FilterQueryBuilder<E> addOption(
-            Enum<? extends QueryOption> value,
-            @SuppressWarnings("unchecked") Enum<? extends QueryOption>... values) {
+    public FilterQueryBuilder<E> addOption(String value, String... values) {
         base.addOption(value, values);
         
         return this;

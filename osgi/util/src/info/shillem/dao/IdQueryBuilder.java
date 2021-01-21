@@ -17,15 +17,13 @@ public class IdQueryBuilder<E extends Enum<E> & BaseField> {
         this.id = Objects.requireNonNull(id, "Id cannot be null");
     }
     
-    public IdQueryBuilder<E> addOption(Enum<? extends QueryOption> value) {
+    public IdQueryBuilder<E> addOption(String value) {
         base.addOption(value);
 
         return this;
     }
 
-    public IdQueryBuilder<E> addOption(
-            Enum<? extends QueryOption> value,
-            @SuppressWarnings("unchecked") Enum<? extends QueryOption>... values) {
+    public IdQueryBuilder<E> addOption(String value, String... values) {
         base.addOption(value, values);
         
         return this;

@@ -8,7 +8,7 @@ import info.shillem.dto.BaseField;
 public class Query<E extends Enum<E> & BaseField> {
 
     private final Locale locale;
-    private final Set<Enum<? extends QueryOption>> options;
+    private final Set<String> options;
     private final Set<E> schema;
 
     private QuerySummary summary;
@@ -19,8 +19,8 @@ public class Query<E extends Enum<E> & BaseField> {
         schema = builder.schema;
     }
 
-    public boolean containsOption(Enum<? extends QueryOption> value) {
-        return options.contains(value);
+    public boolean containsOption(String name) {
+        return options.contains(name);
     }
 
     public QuerySummary createSummary() {
@@ -35,7 +35,7 @@ public class Query<E extends Enum<E> & BaseField> {
         return locale;
     }
 
-    public Set<Enum<? extends QueryOption>> getOptions() {
+    public Set<String> getOptions() {
         return options;
     }
 

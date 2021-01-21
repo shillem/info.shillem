@@ -65,6 +65,12 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         }
 
         query.getSorters().forEach((f, op) -> select.order(f.name(), op));
+
+        if (query.getLimit() > 0
+                && !query.containsOption("FETCH_TOTAL")
+                && !query.containsOption("FETCH_TOTAL_ONLY")) {
+            select.top(query.getLimit());
+        }
     }
 
     protected void populateSelectQueryWhere(LWhere wheres, SearchQuery.Piece piece) {

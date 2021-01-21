@@ -291,9 +291,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             options.setOffset(pq.getOffset());
         }
 
-        if (query.containsOption(DominoQueryOption.FETCH_TOTAL_ONLY)) {
+        if (query.containsOption("FETCH_TOTAL_ONLY")) {
             options.setTotal(OptionTotal.READ_ONLY);
-        } else if (query.containsOption(DominoQueryOption.FETCH_TOTAL)) {
+        } else if (query.containsOption("FETCH_TOTAL")) {
             options.setTotal(OptionTotal.READ);
         }
 
@@ -310,9 +310,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             options.setOffset(pq.getOffset());
         }
 
-        if (query.containsOption(DominoQueryOption.FETCH_TOTAL_ONLY)) {
+        if (query.containsOption("FETCH_TOTAL_ONLY")) {
             options.setTotal(OptionTotal.READ_ONLY);
-        } else if (query.containsOption(DominoQueryOption.FETCH_TOTAL)) {
+        } else if (query.containsOption("FETCH_TOTAL")) {
             options.setTotal(OptionTotal.READ);
         }
 
@@ -329,7 +329,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             wrapper.setLastModified(DominoUtil.getLastModified(doc));
         }
 
-        if (query.containsOption(DominoQueryOption.FETCH_DATABASE_URL)) {
+        if (query.containsOption("FETCH_DATABASE_URL")) {
             wrapper.setDatabaseUrl(doc.getNotesURL());
         }
     }
@@ -530,7 +530,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                     columnValues.get(lastModifiedIndex)));
         }
 
-        if (query.containsOption(DominoQueryOption.FETCH_DATABASE_URL)) {
+        if (query.containsOption("FETCH_DATABASE_URL")) {
             wrapper.setDatabaseUrl(manager.getDatabaseUrl(entry));
         }
     }
