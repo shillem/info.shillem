@@ -66,11 +66,14 @@
 		</converter-class>
 		
 		<property>
-			<description>The optional enum class used for the conversion. When absent it will be guessed.
+			<description>
+				The optional enum class used for the conversion.
+				It can be either string or the class itself.
+				When absent it will be guessed.
 			</description>
 			<display-name>Enum Class Name</display-name>
-			<property-name>classForName</property-name>
-			<property-class>java.lang.String</property-class>
+			<property-name>className</property-name>
+			<property-class>java.lang.Object</property-class>
 		</property>
 
 		<converter-extension>

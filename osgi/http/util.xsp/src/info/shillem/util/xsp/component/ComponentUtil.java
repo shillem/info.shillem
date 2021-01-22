@@ -37,6 +37,10 @@ public class ComponentUtil {
             return CastUtil.toAnyMap(component.getAttributes());
         }
 
+        public String getAttributeString(String key) {
+            return (String) getAttributes().get(key);
+        }
+
         public Map<String, String> getFacesAttrs() {
             if (facesAttrs == null) {
                 facesAttrs = ComponentUtil.getFacesAttrs(component);
@@ -46,8 +50,10 @@ public class ComponentUtil {
         }
 
         public boolean isAttributeTrue(String name) {
-            return Optional.ofNullable((String) getAttributes().get(name))
-                    .map(Boolean::valueOf)
+            return Optional.ofNullable(getAttributes().get(name))
+                    .map((o) -> o instanceof Boolean
+                            ? (Boolean) o
+                            : Boolean.valueOf(String.valueOf(o)))
                     .orElse(Boolean.FALSE);
         }
 
@@ -87,9 +93,9 @@ public class ComponentUtil {
     }
 
     public static Map<String, String> getFacesAttrs(
-            UIComponent component, Predicate<Attr> predicate) {
-        Stream<Attr> stream = getFacesAttrList(component).stream()
-                .filter(Attr::isRendered);
+            UIComponent component,
+            Predicate<Attr> predicate) {
+        Stream<Attr> stream = getFacesAttrList(component).stream().filter(Attr::isRendered);
 
         if (predicate != null) {
             stream.filter(predicate);
@@ -101,7 +107,9 @@ public class ComponentUtil {
     }
 
     public static Map<String, String> getFacesAttrs(
-            UIComponent component, String name, String... names) {
+            UIComponent component,
+            String name,
+            String... names) {
         List<String> filters = new ArrayList<>();
 
         filters.add(name);

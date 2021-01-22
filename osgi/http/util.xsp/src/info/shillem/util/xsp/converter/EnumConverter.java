@@ -5,15 +5,15 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
-import javax.faces.el.ValueBinding;
+
+import info.shillem.util.StringUtil;
 
 public class EnumConverter implements Converter {
-    
+
     public static final String CONVERTER_ID = "info.shillem.xsp.EnumConverter";
 
-    private String classForName;
+    private Object className;
 
-    @SuppressWarnings("unchecked")
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
         if (value == null || value.isEmpty()) {
@@ -21,7 +21,7 @@ public class EnumConverter implements Converter {
         }
 
         try {
-            return Enum.valueOf(getEnumClass(context, component), value);
+            return StringUtil.enumFromString(getEnumClass(context, component), value);
         } catch (Exception e) {
             FacesMessage message = new FacesMessage(e.getMessage());
             message.setSeverity(FacesMessage.SEVERITY_ERROR);
@@ -34,36 +34,43 @@ public class EnumConverter implements Converter {
         return value.toString();
     }
 
-    public String getClassForName() {
-        return classForName;
+    public Object getClassName() {
+        return className;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Class<? extends Enum> getEnumClass(FacesContext context, UIComponent component)
+    protected Class<?> getEnumClass(
+            FacesContext context,
+            UIComponent component)
             throws ClassNotFoundException {
-        ValueBinding binding = component.getValueBinding("value");
+        if (className != null) {
+            if (className instanceof Class) {
+                return (Class<?>) className;
+            }
 
-        return (classForName != null && classForName.length() > 0)
-                ? (Class<? extends Enum>) Class.forName(classForName)
-                : (Class<? extends Enum>) binding.getType(context);
+            if (className instanceof String) {
+                return Class.forName((String) className);
+            }
+        }
+
+        return component.getValueBinding("value").getType(context);
     }
 
     public void restoreState(FacesContext context, Object state) {
         Object[] values = (Object[]) state;
 
-        classForName = ((String) values[0]);
+        className = values[0];
     }
 
     public Object saveState(FacesContext context) {
         Object[] values = new Object[1];
 
-        values[0] = classForName;
+        values[0] = className;
 
         return values;
     }
 
-    public void setClassForName(String classForName) {
-        this.classForName = classForName;
+    public void setClassName(Object name) {
+        this.className = name;
     }
 
 }

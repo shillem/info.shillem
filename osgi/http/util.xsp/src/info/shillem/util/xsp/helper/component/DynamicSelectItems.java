@@ -55,7 +55,7 @@ public class DynamicSelectItems extends StaticSelectItems {
     }
 
     protected final boolean isDynamicItemValue(Object value) {
-        return (dynamicValue != null && dynamicValue.getValue().equals(value));
+        return dynamicValue != null && dynamicValue.getValue().equals(value);
     }
 
     @Override

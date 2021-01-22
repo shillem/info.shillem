@@ -1,5 +1,7 @@
 package info.shillem.util;
 
+import java.util.Objects;
+
 public enum StringUtil {
 	;
 	
@@ -31,6 +33,8 @@ public enum StringUtil {
 	}
 
 	public static Enum<?> enumFromString(Class<?> cls, String s) throws IllegalArgumentException {
+	    Objects.requireNonNull(cls, "Class cannot be null");
+	    
 		if (StringUtil.isEmpty(s)) {
 			return null;
 		}
