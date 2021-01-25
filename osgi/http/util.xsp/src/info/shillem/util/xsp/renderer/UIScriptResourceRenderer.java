@@ -2,12 +2,15 @@ package info.shillem.util.xsp.renderer;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 
+import com.ibm.xsp.component.FacesAttrsObject;
 import com.ibm.xsp.component.UIViewRootEx;
+import com.ibm.xsp.renderkit.html_basic.AttrsUtil;
 import com.ibm.xsp.renderkit.html_basic.HtmlRendererUtil;
 import com.ibm.xsp.renderkit.html_basic.ScriptResourceRenderer;
 import com.ibm.xsp.resource.Resource;
@@ -77,11 +80,11 @@ public class UIScriptResourceRenderer extends ScriptResourceRenderer {
             }
 
             String identifier = "resource_"
-                    + ScriptResource.class.getName()
-                    + scriptResource.getSrc()
-                    + '|' + Type.JAVASCRIPT.getType() + '|'
-                    + scriptResource.getCharset()
-                    + tail;
+                    .concat(ScriptResource.class.getName())
+                    .concat(scriptResource.getSrc())
+                    .concat("|" + Type.JAVASCRIPT.getType() + "|")
+                    .concat(Optional.ofNullable(scriptResource.getCharset()).orElse(""))
+                    .concat(tail);
 
             UIViewRootEx root = (UIViewRootEx) facesContext.getViewRoot();
 
@@ -104,7 +107,7 @@ public class UIScriptResourceRenderer extends ScriptResourceRenderer {
             RenderUtil.writeAttribute(writer, attr.getKey(), attr.getValue(), attr.getKey());
         }
 
-        RenderUtil.writeFacesAttrs(facesContext, writer, component);
+        AttrsUtil.encodeAttrs(facesContext, writer, (FacesAttrsObject) scriptResource);
         RenderUtil.writeUnescapedText(writer, scriptResource.getContents());
         RenderUtil.endElement(writer, "script");
         RenderUtil.writeNewLine(writer);

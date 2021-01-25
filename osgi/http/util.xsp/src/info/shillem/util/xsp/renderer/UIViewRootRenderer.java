@@ -6,10 +6,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.context.ResponseWriter;
 import javax.faces.render.Renderer;
 
+import com.ibm.xsp.complex.Attr;
 import com.ibm.xsp.component.UIViewRootEx;
 import com.ibm.xsp.context.FacesContextEx;
 import com.ibm.xsp.context.FacesContextExImpl;
@@ -114,6 +116,49 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
             encodeHtmlHead(facesContext, root, writer);
             response.switchToBody(writer);
         }
+    }
+
+    @Override
+    protected void encodeHtmlAttributes(
+            FacesContext facesContext,
+            UIViewRootEx root,
+            ResponseWriter writer,
+            boolean xhtml) throws IOException {
+        RenderUtil.writeAttribute(writer, "dir", root.getDir());
+        RenderUtil.writeAttribute(writer, "lang", root.getLocale().getLanguage());
+
+        if (xhtml) {
+            RenderUtil.writeAttribute(writer, "xml:lang", root.getLocale().getLanguage());
+        }
+
+        if (root.getAttrs() != null) {
+            for (Attr attr : root.getAttrs()) {
+                if (!attr.getName().startsWith("data")) {
+                    RenderUtil.writeAttribute(writer, attr.getName(), attr.getValue());
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void encodeHtmlBodyStart(
+            FacesContext facesContext,
+            UIViewRootEx root,
+            ResponseWriter writer) throws IOException {
+        RenderUtil.startElement(writer, "body", (UIComponent) root);
+
+        RenderUtil.writeAttribute(writer, "class", root.getStyleClass());
+        RenderUtil.writeAttribute(writer, "style", root.getStyle());
+
+        if (root.getAttrs() != null) {
+            for (Attr attr : root.getAttrs()) {
+                if (attr.getName().startsWith("data")) {
+                    RenderUtil.writeAttribute(writer, attr.getName(), attr.getValue());
+                }
+            }
+        }
+
+        RenderUtil.writeNewLine(writer);
     }
 
     private void encodeHtmlEnd(FacesContext facesContext, UIViewRootEx root, ResponseWriter writer)
