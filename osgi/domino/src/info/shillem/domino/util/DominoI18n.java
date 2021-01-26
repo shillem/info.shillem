@@ -11,8 +11,11 @@ import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.View;
 
-public enum DominoI18n {
-    ;
+public class DominoI18n {
+
+    private DominoI18n() {
+        throw new UnsupportedOperationException();
+    }
 
     public static String getLocaleItemName(String itemName, Locale locale) {
         return locale == null || locale.getLanguage().isEmpty()

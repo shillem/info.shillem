@@ -6,8 +6,11 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-public enum StreamUtil {
-    ;
+public class StreamUtil {
+
+    private StreamUtil() {
+        throw new UnsupportedOperationException();
+    }
 
     public static <T> Stream<T> parallelStream(Iterable<T> value) {
         return StreamSupport.stream(value.spliterator(), true);

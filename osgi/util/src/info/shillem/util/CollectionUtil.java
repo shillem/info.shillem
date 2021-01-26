@@ -3,8 +3,11 @@ package info.shillem.util;
 import java.util.Collection;
 import java.util.Vector;
 
-public enum CollectionUtil {
-    ;
+public class CollectionUtil {
+    
+    private CollectionUtil() {
+        throw new UnsupportedOperationException();
+    }
 
     @SuppressWarnings("unchecked")
     public static <T> Vector<T> asVector(T value) {

@@ -5,8 +5,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public enum OptionalUtil {
-    ;
+public class OptionalUtil {
+    
+    private OptionalUtil() {
+        throw new UnsupportedOperationException();
+    }
     
     @SafeVarargs
     public static <T> Optional<T> firstNonNull(Supplier<T>... suppliers) {

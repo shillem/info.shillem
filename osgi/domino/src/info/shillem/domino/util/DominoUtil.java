@@ -27,14 +27,17 @@ import lotus.domino.NotesException;
 import lotus.domino.RichTextItem;
 import lotus.domino.Session;
 
-public enum DominoUtil {
-    ;
+public class DominoUtil {
 
     private static final Vector<String> MIME_FILTERED_HEADERS = new Vector<>();
 
     static {
         MIME_FILTERED_HEADERS.add("Content-Type");
         MIME_FILTERED_HEADERS.add("Content-Disposition");
+    }
+
+    private DominoUtil() {
+        throw new UnsupportedOperationException();
     }
 
     public static Boolean getItemBoolean(Document doc, String itemName)

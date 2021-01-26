@@ -12,8 +12,11 @@ import java.util.function.Function;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public enum IOUtil {
-    ;
+public class IOUtil {
+    
+    private IOUtil() {
+        throw new UnsupportedOperationException();
+    }
 
     public static void close(Closeable c) {
         if (c != null) {

@@ -9,8 +9,11 @@ import javax.faces.context.ResponseWriter;
 import com.ibm.xsp.component.FacesAttrsObject;
 import com.ibm.xsp.renderkit.html_basic.AttrsUtil;
 
-public enum RenderUtil {
-    ;
+public class RenderUtil {
+
+    private RenderUtil() {
+        throw new UnsupportedOperationException();
+    }
 
     public static void endElement(ResponseWriter writer, String name) throws IOException {
         writer.endElement(name);

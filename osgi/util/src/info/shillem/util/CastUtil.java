@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-public enum CastUtil {
-    ;
+public class CastUtil {
+    
+    private CastUtil() {
+        throw new UnsupportedOperationException();
+    }
 
     @SuppressWarnings("unchecked")
     public static <T> Class<T> toAnyClass(Class<?> value) {

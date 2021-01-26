@@ -34,11 +34,14 @@ import info.shillem.util.CastUtil;
 import info.shillem.util.StreamUtil;
 import info.shillem.util.xsp.component.ComponentUtil;
 
-public enum XPageHelper {
-    ;
+public class XPageHelper {
 
     private static final String FLASH_MESSAGES_KEY = "messages";
     private static final String ON_SUCCESS_REFRESH_ID_PARAM = "onSuccessRefreshId";
+    
+    private XPageHelper() {
+        throw new UnsupportedOperationException();
+    }
 
     public static void addComponentFacesMessage(FacesContext facesContext, Severity severity,
             String componentId, String messageId, Object... params) {
@@ -208,7 +211,7 @@ public enum XPageHelper {
                 .getExternalContext()
                 .getResponse();
 
-        response.setHeader("Application-Error", phaseId.toString());
+        response.setHeader("X-XspError", phaseId.toString());
     }
 
 }

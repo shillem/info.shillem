@@ -7,9 +7,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public enum Unthrow {
-    ;
-    
+public class Unthrow {
+
     @FunctionalInterface
     public interface ThrowableBiConsumer<T, U> extends BiConsumer<T, U> {
         @Override
@@ -23,7 +22,7 @@ public enum Unthrow {
 
         void acceptOrThrow(T t, U u) throws Throwable;
     }
-
+    
     @FunctionalInterface
     public interface ThrowableBiFunction<T, U, R> extends BiFunction<T, U, R> {
         @Override
@@ -112,9 +111,8 @@ public enum Unthrow {
 
     }
 
-    @SuppressWarnings("unchecked")
-    private static <R, T extends Throwable> R rethrow(Throwable t) throws T {
-        throw (T) t;
+    private Unthrow() {
+        throw new UnsupportedOperationException();
     }
 
     public static <T, U> void on(ThrowableBiConsumer<T, U> lambda, T t, U u) {
@@ -136,13 +134,18 @@ public enum Unthrow {
     public static <T> boolean on(ThrowablePredicate<T> lambda, T t) {
         return lambda.test(t);
     }
-    
+
     public static void on(ThrowableRunnable lambda) {
         lambda.run();
     }
-
+    
     public static <T> T on(ThrowableSupplier<T> lambda) {
         return lambda.get();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <R, T extends Throwable> R rethrow(Throwable t) throws T {
+        throw (T) t;
     }
 
 }
