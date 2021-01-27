@@ -12,10 +12,10 @@ public class DaoRecordException extends DaoException {
     private DaoRecordException(DaoErrorCode code) {
         super(code);
     }
-    
-    public DaoRecordException setReferenceId(String value) {
-        setProperty("referenceId", value);
-        
+
+    public DaoRecordException setReference(Object value) {
+        setProperty("reference", value);
+
         return this;
     }
 
@@ -38,21 +38,21 @@ public class DaoRecordException extends DaoException {
         return exception;
     }
 
-    public static DaoRecordException asInvalidValue(BaseField field, Object value) {
-        DaoRecordException exception = new DaoRecordException(DaoErrorCode.INVALID_FIELD_VALUE);
+    public static DaoRecordException asInvalidField(BaseField field, Object value) {
+        DaoRecordException exception = new DaoRecordException(DaoErrorCode.INVALID_FIELD);
 
         exception.setProperty("field", field);
         exception.setProperty("value", value);
 
         return exception;
     }
-    
+
     public static DaoRecordException asMissing(BaseField field, Object value) {
         DaoRecordException exception = new DaoRecordException(DaoErrorCode.MISSING_RECORD);
-        
+
         exception.setProperty("field", field);
         exception.setProperty("value", value);
-        
+
         return exception;
     }
 
@@ -68,6 +68,14 @@ public class DaoRecordException extends DaoException {
         DaoRecordException exception = new DaoRecordException(DaoErrorCode.MISSING_RECORD);
 
         exception.setProperty("identifier", identifier);
+
+        return exception;
+    }
+
+    public static DaoRecordException asMissingField(BaseField field) {
+        DaoRecordException exception = new DaoRecordException(DaoErrorCode.MISSING_FIELD);
+
+        exception.setProperty("field", field);
 
         return exception;
     }

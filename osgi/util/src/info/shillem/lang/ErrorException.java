@@ -39,6 +39,10 @@ public class ErrorException extends Exception {
         return properties;
     }
 
+    public Object getProperty(String name) {
+        return getProperty(name, Object.class);
+    }
+
     public <T> T getProperty(String name, Class<T> cls) {
         return cls.cast(getProperties().get(name));
     }
@@ -51,25 +55,16 @@ public class ErrorException extends Exception {
         getProperties().put(name, value);
     }
 
-    public static boolean exceptionCauseIs(Throwable e, ErrorCode code) {
-        return exceptionCauseIsAny(e, code);
+    public static boolean causeIs(Throwable e, ErrorCode code) {
+        return causeIsAny(e, code);
     }
 
-    public static boolean exceptionCauseIsAny(Throwable e, ErrorCode... codes) {
-        Objects.requireNonNull(e, "Throwable cannot be null");
-        Objects.requireNonNull(codes, "Error code cannot be null");
+    public static boolean causeIsAny(Throwable e, ErrorCode... codes) {
+        ErrorException ee = getCause(e);
 
-        if (e.getCause() == null) {
+        if (e == null) {
             return false;
         }
-
-        Throwable cause = e.getCause();
-
-        if (!(cause instanceof ErrorException)) {
-            return false;
-        }
-
-        ErrorException ee = (ErrorException) cause;
 
         for (ErrorCode code : codes) {
             if (code.equals(ee.getCode())) {
@@ -78,6 +73,28 @@ public class ErrorException extends Exception {
         }
 
         return false;
+    }
+
+    public static Object causeProperty(Throwable e, String name) {
+        return causeProperty(e, name, Object.class);
+    }
+
+    public static <T> T causeProperty(Throwable e, String name, Class<T> cls) {
+        ErrorException ee = getCause(e);
+
+        if (e == null) {
+            return null;
+        }
+
+        return ee.getProperty(name, cls);
+    }
+
+    private static ErrorException getCause(Throwable e) {
+        if (e.getCause() == null || !(e.getCause() instanceof ErrorException)) {
+            return null;
+        }
+
+        return (ErrorException) e.getCause();
     }
 
 }
