@@ -8,13 +8,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.faces.FacesException;
 import javax.faces.application.FacesMessage;
 import javax.faces.application.FacesMessage.Severity;
-import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.PhaseEvent;
@@ -27,7 +25,6 @@ import com.ibm.xsp.component.UIViewRootEx;
 import com.ibm.xsp.component.UIViewRootEx2;
 import com.ibm.xsp.context.FacesContextEx;
 import com.ibm.xsp.event.FacesContextListener;
-import com.ibm.xsp.util.FacesUtil;
 import com.sun.faces.util.MessageFactory;
 
 import info.shillem.util.CastUtil;
@@ -36,52 +33,63 @@ import info.shillem.util.xsp.component.ComponentUtil;
 
 public class XPageHelper {
 
+    public enum RequestParameter {
+        SUCCESS_REFRESH_ID("successRefreshId");
+
+        private final String name;
+
+        RequestParameter(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
     private static final String FLASH_MESSAGES_KEY = "messages";
-    private static final String ON_SUCCESS_REFRESH_ID_PARAM = "onSuccessRefreshId";
-    
+
     private XPageHelper() {
         throw new UnsupportedOperationException();
     }
 
-    public static void addComponentFacesMessage(FacesContext facesContext, Severity severity,
-            String componentId, String messageId, Object... params) {
+    public static void addFacesMessage(
+            FacesContext facesContext,
+            Severity severity,
+            String messageId,
+            Object... params) {
+        addFacesMessage(facesContext, null, severity, messageId, params);
+    }
+
+    public static void addFacesMessage(
+            FacesContext facesContext,
+            String componentId,
+            Severity severity,
+            String messageId,
+            Object... params) {
         FacesMessage msg = MessageFactory.getMessage(facesContext, messageId, params);
 
         msg.setSeverity(severity);
 
-        facesContext.addMessage(componentId, msg);
+        addMessage(facesContext, componentId, msg);
     }
 
-    public static void addComponentMessage(FacesContext facesContext, Severity severity,
-            UIComponent component, String summary, String detail) {
-        FacesUtil.addMessage(facesContext, component, severity, summary, detail);
-    }
-
-    public static void addFacesMessage(
-            FacesContext facesContext, Severity severity, String messageId, Object... params) {
-        addComponentFacesMessage(facesContext, severity, null, messageId, params);
-    }
-
-    public static void addFlashMessage(
-            FacesContext facesContext, Severity severity, String summary) {
-        addFlashMessage(facesContext, severity, summary, "");
-    }
-
-    public static void addFlashMessage(
-            FacesContext facesContext, Severity severity, String summary, String detail) {
+    public static void addFlashMessage(FacesContext facesContext, FacesMessage message) {
         CastUtil.toAnyList((List<?>) XPageScope.FLASH
                 .getValues(facesContext)
                 .computeIfAbsent(FLASH_MESSAGES_KEY, (k) -> new ArrayList<FacesMessage>()))
-                .add(new FacesMessage(severity, summary, detail));
+                .add(message);
     }
 
-    public static void addMessage(FacesContext facesContext, Severity severity, String msg) {
-        addMessage(facesContext, severity, msg, "");
+    public static void addMessage(FacesContext facesContext, FacesMessage message) {
+        addMessage(facesContext, null, message);
     }
 
     public static void addMessage(
-            FacesContext facesContext, Severity severity, String summary, String detail) {
-        FacesUtil.addMessage(facesContext, severity, null, summary, detail);
+            FacesContext facesContext,
+            String componentId,
+            FacesMessage message) {
+        facesContext.addMessage(componentId, message);
     }
 
     public static void addRequestListener(
@@ -90,27 +98,32 @@ public class XPageHelper {
         ((FacesContextEx) facesContext).addRequestListener(listener);
     }
 
-    public static void applyOnSuccessRefreshId(FacesContext facesContext) {
+    public static void applySuccessRefreshId(FacesContext facesContext) {
         if (!AjaxUtil.isAjaxPartialRefresh(facesContext)) {
             throw new UnsupportedOperationException();
         }
 
-        String refreshId = getRequestParameterMap(facesContext).get(ON_SUCCESS_REFRESH_ID_PARAM);
+        String refreshId = getRequestParameter(
+                facesContext,
+                RequestParameter.SUCCESS_REFRESH_ID.getName());
 
         if (refreshId != null) {
             ((FacesContextEx) facesContext).setPartialRefreshId(refreshId);
         }
     }
 
-    public static void applyOnSuccessRefreshId(FacesContext facesContext, ActionEvent event) {
+    public static void applySuccessRefreshId(FacesContext facesContext, ActionEvent event) {
         if (!AjaxUtil.isAjaxPartialRefresh(facesContext)) {
             throw new UnsupportedOperationException();
         }
 
-        Optional
-                .ofNullable(ComponentUtil.getHandlerParam(
-                        event.getComponent(), ON_SUCCESS_REFRESH_ID_PARAM))
-                .ifPresent((id) -> ((FacesContextEx) facesContext).setPartialRefreshId(id));
+        String refreshId = ComponentUtil.getHandlerParam(
+                event.getComponent(),
+                RequestParameter.SUCCESS_REFRESH_ID.getName());
+
+        if (refreshId != null) {
+            ((FacesContextEx) facesContext).setPartialRefreshId(refreshId);
+        }
     }
 
     public static void bindBeforeRenderResponseMethod(FacesContext facesContext, String el) {
@@ -171,8 +184,10 @@ public class XPageHelper {
         return ((FacesContextEx) facesContext).getProperty(property);
     }
 
-    public static Map<String, String> getRequestParameterMap(FacesContext facesContext) {
-        return CastUtil.toAnyMap(facesContext.getExternalContext().getRequestParameterMap());
+    public static String getRequestParameter(FacesContext facesContext, String name) {
+        return (String) CastUtil
+                .toAnyMap(facesContext.getExternalContext().getRequestParameterMap())
+                .get(name);
     }
 
     public static UIViewRootEx2 getViewRootEx2(FacesContext facesContext) {
