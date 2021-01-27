@@ -202,6 +202,10 @@ public class XPageHelper {
         return getViewRootEx2(facesContext).isRenderingPhase();
     }
 
+    public static void postScript(FacesContext facesContext, String script) {
+        getViewRootEx2(facesContext).postScript(script);
+    }
+
     public static Object resolveVariable(FacesContext facesContext, String name) {
         return facesContext
                 .getApplication()
