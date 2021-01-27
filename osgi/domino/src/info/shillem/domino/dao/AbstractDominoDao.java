@@ -46,8 +46,8 @@ import info.shillem.domino.util.FullTextSearchQuery;
 import info.shillem.domino.util.MimeContentType;
 import info.shillem.domino.util.ViewManager;
 import info.shillem.domino.util.ViewMatch;
-import info.shillem.dto.AttachmentFile;
-import info.shillem.dto.AttachmentFiles;
+import info.shillem.dto.AttachedFile;
+import info.shillem.dto.AttachedFiles;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseDto.SchemaFilter;
 import info.shillem.dto.BaseField;
@@ -338,8 +338,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         Class<? extends Serializable> type = field.getProperties().getType();
 
         try {
-            if (AttachmentFiles.class.isAssignableFrom(type)) {
-                wrapper.presetValue(field, pullItemAttachmentFiles(field, doc));
+            if (AttachedFiles.class.isAssignableFrom(type)) {
+                wrapper.presetValue(field, pullItemAttachedFiles(field, doc));
             } else if (JsonValue.class.isAssignableFrom(type)) {
                 wrapper.presetValue(field, pullItemJsonValue(field, doc));
             } else if (field.getProperties().isList()) {
@@ -358,7 +358,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    private AttachmentFiles pullItemAttachmentFiles(E field, Document doc)
+    private AttachedFiles pullItemAttachedFiles(E field, Document doc)
             throws IllegalAccessException, IllegalArgumentException, InstantiationException,
             InvocationTargetException, NoSuchMethodException, NotesException, SecurityException {
         String itemName = getDocumentItemName(field);
@@ -380,7 +380,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
 
             try {
-                AttachmentFiles files = (AttachmentFiles) field.getProperties()
+                AttachedFiles files = (AttachedFiles) field.getProperties()
                         .getType()
                         .getDeclaredConstructor()
                         .newInstance();
@@ -560,8 +560,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     protected void pushWrapperField(E field, T wrapper, Document doc) throws NotesException {
         Class<? extends Serializable> type = field.getProperties().getType();
 
-        if (AttachmentFiles.class.isAssignableFrom(type)) {
-            pushWrapperFieldAttachmentFiles(field, wrapper, doc);
+        if (AttachedFiles.class.isAssignableFrom(type)) {
+            pushWrapperFieldAttachedFiles(field, wrapper, doc);
 
             return;
         }
@@ -603,9 +603,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    private void pushWrapperFieldAttachmentFiles(E field, T wrapper, Document doc)
+    private void pushWrapperFieldAttachedFiles(E field, T wrapper, Document doc)
             throws NotesException {
-        AttachmentFiles files = wrapper.getValue(field, AttachmentFiles.class);
+        AttachedFiles files = wrapper.getValue(field, AttachedFiles.class);
 
         if (files == null) {
             return;
@@ -628,8 +628,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
 
             // Removing files
-            List<AttachmentFile> removals = files.getAll().stream()
-                    .filter(AttachmentFile::isRemove)
+            List<AttachedFile> removals = files.getAll().stream()
+                    .filter(AttachedFile::isRemove)
                     .collect(Collectors.toList());
 
             removals.forEach((file) -> Unthrow.on(() -> {
@@ -641,11 +641,11 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }));
 
             // Adding files
-            List<AttachmentFile> additions = files.getAll().stream()
+            List<AttachedFile> additions = files.getAll().stream()
                     .filter((f) -> f.getFile() != null)
                     .collect(Collectors.toList());
 
-            for (AttachmentFile af : additions) {
+            for (AttachedFile af : additions) {
                 InputStream is;
 
                 try {
@@ -761,7 +761,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         Session session = factory.getSession();
         Database database = null;
 
-        if (Objects.isNull(replicaId)) {
+        if (replicaId == null) {
             database = session.getDatabase(host, db);
         } else {
             DbDirectory dir = null;

@@ -6,20 +6,20 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-public class AttachmentFilesSerializer extends StdSerializer<AttachmentFiles> {
+public class AttachedFilesSerializer extends StdSerializer<AttachedFiles> {
 
     private static final long serialVersionUID = 1L;
 
-    public AttachmentFilesSerializer() {
-        super(AttachmentFiles.class, true);
+    public AttachedFilesSerializer() {
+        super(AttachedFiles.class, true);
     }
 
     @Override
-    public void serialize(AttachmentFiles value, JsonGenerator gen, SerializerProvider provider)
+    public void serialize(AttachedFiles value, JsonGenerator gen, SerializerProvider provider)
             throws IOException {
         gen.writeStartArray();
         {
-            for (AttachmentFile file : ((AttachmentFiles) value).getAll()) {
+            for (AttachedFile file : ((AttachedFiles) value).getAll()) {
                 gen.writeObject(file);
             }
         }

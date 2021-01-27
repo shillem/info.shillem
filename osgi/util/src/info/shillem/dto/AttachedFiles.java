@@ -5,34 +5,35 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
-public class AttachmentFiles implements Serializable {
+public class AttachedFiles implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final List<AttachmentFile> values;
+    private final List<AttachedFile> values;
 
-    public AttachmentFiles() {
+    public AttachedFiles() {
         values = new ArrayList<>();
     }
 
     public void add(String name) {
         Objects.requireNonNull(name, "Name cannot be null");
 
-        for (AttachmentFile value : values) {
+        for (AttachedFile value : values) {
             if (name.equalsIgnoreCase(value.getName())) {
                 return;
             }
         }
 
-        values.add(new AttachmentFile(name));
+        values.add(new AttachedFile(name));
     }
 
     public void add(String name, File file) {
         Objects.requireNonNull(name, "Name cannot be null");
         Objects.requireNonNull(file, "File cannot be null");
 
-        for (AttachmentFile value : values) {
+        for (AttachedFile value : values) {
             if (name.equalsIgnoreCase(value.getName())) {
                 value.setFile(file);
 
@@ -40,11 +41,11 @@ public class AttachmentFiles implements Serializable {
             }
         }
 
-        values.add(new AttachmentFile(name, file));
+        values.add(new AttachedFile(name, file));
     }
 
-    public AttachmentFile get(String name) {
-        for (AttachmentFile value : values) {
+    public AttachedFile get(String name) {
+        for (AttachedFile value : values) {
             if (name.equalsIgnoreCase(value.getName())) {
                 return value;
             }
@@ -53,19 +54,25 @@ public class AttachmentFiles implements Serializable {
         return null;
     }
 
-    public List<AttachmentFile> getAll() {
+    public List<AttachedFile> getAll() {
         return new ArrayList<>(values);
     }
 
-    public AttachmentFile getFirst() {
+    public AttachedFile getFirst() {
         if (values.isEmpty()) {
             return null;
         }
 
         return values.get(0);
     }
-    
-    public void remove(AttachmentFile value) {
+
+    public List<AttachedFile> getPending() {
+        return getAll().stream()
+                .filter((f) -> f.getFile() != null)
+                .collect(Collectors.toList());
+    }
+
+    public void remove(AttachedFile value) {
         values.remove(value);
     }
 
