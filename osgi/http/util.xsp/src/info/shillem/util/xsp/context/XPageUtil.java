@@ -31,7 +31,7 @@ import info.shillem.util.CastUtil;
 import info.shillem.util.StreamUtil;
 import info.shillem.util.xsp.component.ComponentUtil;
 
-public class XPageHelper {
+public class XPageUtil {
 
     public enum RequestParameter {
         SUCCESS_REFRESH_ID("successRefreshId");
@@ -49,7 +49,7 @@ public class XPageHelper {
 
     private static final String FLASH_MESSAGES_KEY = "messages";
 
-    private XPageHelper() {
+    private XPageUtil() {
         throw new UnsupportedOperationException();
     }
 

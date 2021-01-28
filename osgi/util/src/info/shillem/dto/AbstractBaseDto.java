@@ -54,34 +54,34 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     public Boolean getBoolean(E key) {
         return getValue(key, Boolean.class);
     }
-    
+
     @Override
     public String getDatabaseUrl() {
         return databaseUrl;
     }
 
     @Override
-    public final Date getDate(E key) {
+    public Date getDate(E key) {
         return getValue(key, Date.class);
     }
 
     @Override
-    public final Double getDouble(E key) {
+    public Double getDouble(E key) {
         return getValue(key, Double.class);
     }
 
     @Override
-    public final String getId() {
+    public String getId() {
         return id;
     }
 
     @Override
-    public final Integer getInteger(E key) {
+    public Integer getInteger(E key) {
         return getValue(key, Integer.class);
     }
 
     @Override
-    public final Date getLastModified() {
+    public Date getLastModified() {
         return lastModified != null ? new Date(lastModified.getTime()) : null;
     }
 
@@ -117,7 +117,7 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     }
 
     @Override
-    public final String getString(E key) {
+    public String getString(E key) {
         return getValue(key, String.class);
     }
 
@@ -156,7 +156,7 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     }
 
     @Override
-    public final boolean isNew() {
+    public boolean isNew() {
         return id == null;
     }
 
@@ -196,17 +196,17 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     }
 
     @Override
-    public final void setId(String id) {
+    public void setId(String id) {
         this.id = id;
     }
 
     @Override
-    public final void setLastModified(Date lastModified) {
+    public void setLastModified(Date lastModified) {
         this.lastModified = lastModified != null ? new Date(lastModified.getTime()) : null;
     }
 
     @Override
-    public final void setValue(E key, Object value) {
+    public void setValue(E key, Object value) {
         ValueHolder valueHolder = getValueHolder(key);
         Class<?> type = key.getProperties().getFullType();
 

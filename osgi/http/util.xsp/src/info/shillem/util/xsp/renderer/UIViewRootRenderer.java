@@ -23,7 +23,7 @@ import com.ibm.xsp.util.FacesUtil;
 import com.ibm.xsp.webapp.XspHttpServletResponse;
 
 import info.shillem.util.Unthrow;
-import info.shillem.util.xsp.context.XPageHelper;
+import info.shillem.util.xsp.context.XPageUtil;
 
 public class UIViewRootRenderer extends ViewRootRendererEx2 {
 
@@ -40,7 +40,7 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
             List<Resource> resources) throws IOException {
         super.addCommonResources(facesContext, root, resources);
 
-        if (XPageHelper.isPropertyEnabled(facesContext, "xsp.client.script.jQuery.defineAmd")) {
+        if (XPageUtil.isPropertyEnabled(facesContext, "xsp.client.script.jQuery.defineAmd")) {
             resources.add(JQUERY_DEFINE_AMD);
         }
     }

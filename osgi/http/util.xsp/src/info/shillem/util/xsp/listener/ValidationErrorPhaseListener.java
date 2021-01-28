@@ -5,7 +5,7 @@ import javax.faces.event.PhaseEvent;
 import javax.faces.event.PhaseId;
 import javax.faces.event.PhaseListener;
 
-import info.shillem.util.xsp.context.XPageHelper;
+import info.shillem.util.xsp.context.XPageUtil;
 
 public class ValidationErrorPhaseListener implements PhaseListener {
 
@@ -16,7 +16,7 @@ public class ValidationErrorPhaseListener implements PhaseListener {
         FacesContext facesContext = phaseEvent.getFacesContext();
 
         if (facesContext.getMessages().hasNext()) {
-            XPageHelper.setResponseErrorHeader(facesContext, getPhaseId());
+            XPageUtil.setResponseErrorHeader(facesContext, getPhaseId());
         }
     }
 

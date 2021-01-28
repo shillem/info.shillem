@@ -5,7 +5,7 @@ import javax.faces.event.PhaseEvent;
 import javax.faces.event.PhaseId;
 import javax.faces.event.PhaseListener;
 
-import info.shillem.util.xsp.context.XPageHelper;
+import info.shillem.util.xsp.context.XPageUtil;
 import info.shillem.util.xsp.context.XPageScope;
 
 public class FlashScopePhaseListener implements PhaseListener {
@@ -16,7 +16,7 @@ public class FlashScopePhaseListener implements PhaseListener {
     public void afterPhase(PhaseEvent phaseEvent) {
         FacesContext facesContext = phaseEvent.getFacesContext();
 
-        if (!"POST".equals(XPageHelper.getHttpServletRequest(facesContext).getMethod())) {
+        if (!"POST".equals(XPageUtil.getHttpServletRequest(facesContext).getMethod())) {
             XPageScope.FLASH.getValues(facesContext, false).clear();
         }
     }
