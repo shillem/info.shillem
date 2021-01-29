@@ -281,15 +281,11 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return Optional.of(factory.setDefaults(entry));
     }
 
-    protected DominoLoop.DocumentOptions<T> newLoopDocumentOption(Query<E> query) {
+    protected DominoLoop.DocumentOptions<T> newLoopDocumentOption(PageQuery<E> query) {
         DominoLoop.DocumentOptions<T> options = new DominoLoop.DocumentOptions<>();
 
-        if (query instanceof PageQuery) {
-            PageQuery<E> pq = (PageQuery<E>) query;
-
-            options.setLimit(pq.getLimit());
-            options.setOffset(pq.getOffset());
-        }
+        options.setLimit(query.getLimit());
+        options.setOffset(query.getOffset());
 
         if (query.containsOption("FETCH_TOTAL_ONLY")) {
             options.setTotal(OptionTotal.READ_ONLY);
@@ -300,15 +296,11 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return options;
     }
 
-    protected DominoLoop.ViewEntryOptions<T> newLoopViewEntryOption(Query<E> query) {
+    protected DominoLoop.ViewEntryOptions<T> newLoopViewEntryOption(PageQuery<E> query) {
         DominoLoop.ViewEntryOptions<T> options = new DominoLoop.ViewEntryOptions<>();
 
-        if (query instanceof PageQuery) {
-            PageQuery<E> pq = (PageQuery<E>) query;
-
-            options.setLimit(pq.getLimit());
-            options.setOffset(pq.getOffset());
-        }
+        options.setLimit(query.getLimit());
+        options.setOffset(query.getOffset());
 
         if (query.containsOption("FETCH_TOTAL_ONLY")) {
             options.setTotal(OptionTotal.READ_ONLY);

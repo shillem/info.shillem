@@ -53,13 +53,9 @@ public class Query<E extends Enum<E> & BaseField> {
         return summary;
     }
 
-    public static void require(Query<?> query, Class<?>... classes) {
-        if (classes != null) {
-            for (Class<?> cls : classes) {
-                if (cls.isAssignableFrom(query.getClass())) {
-                    return;
-                }
-            }
+    public static void require(Query<?> query, Class<?> cls) {
+        if (cls.isAssignableFrom(query.getClass())) {
+            return;
         }
 
         throw unsupported(query);
