@@ -11,14 +11,12 @@ import info.shillem.util.OrderOperator;
 
 public class SearchQueryBuilder<E extends Enum<E> & BaseField> {
 
-    final QueryBuilder<E> base;
     final PageQueryBuilder<E> page;
     final Group group;
 
     public SearchQueryBuilder() {
-        this.base = new QueryBuilder<>();
-        this.page = new PageQueryBuilder<>();
-        this.group = new Group();
+        page = new PageQueryBuilder<>();
+        group = new Group();
     }
 
     public SearchQueryBuilder<E> add(Logical logicalPiece, Piece newPiece) {
@@ -26,16 +24,16 @@ public class SearchQueryBuilder<E extends Enum<E> & BaseField> {
 
         return this;
     }
-    
+
     public SearchQueryBuilder<E> addOption(String value) {
-        base.addOption(value);
+        page.addOption(value);
 
         return this;
     }
 
     public SearchQueryBuilder<E> addOption(String value, String... values) {
-        base.addOption(value, values);
-        
+        page.addOption(value, values);
+
         return this;
     }
 
@@ -54,26 +52,26 @@ public class SearchQueryBuilder<E extends Enum<E> & BaseField> {
     }
 
     public SearchQueryBuilder<E> fetch(E field) {
-        base.fetch(field);
+        page.fetch(field);
 
         return this;
     }
 
     public SearchQueryBuilder<E> fetch(E[] fields) {
-        base.fetch(fields);
+        page.fetch(fields);
 
         return this;
     }
 
     public SearchQueryBuilder<E> fetch(Set<E> fields) {
-        base.fetch(fields);
+        page.fetch(fields);
 
         return this;
     }
 
     public SearchQueryBuilder<E> fetchTotal(boolean flag) {
         page.fetchTotal(flag);
-        
+
         return this;
     }
 
@@ -83,20 +81,26 @@ public class SearchQueryBuilder<E extends Enum<E> & BaseField> {
         return this;
     }
 
-    public SearchQueryBuilder<E> setLimit(int limit) {
-        page.setLimit(limit);
+    public SearchQueryBuilder<E> setCollection(String value) {
+        page.setCollection(value);
 
         return this;
     }
 
-    public SearchQueryBuilder<E> setLocale(Locale locale) {
-        base.setLocale(locale);
+    public SearchQueryBuilder<E> setLimit(int value) {
+        page.setLimit(value);
 
         return this;
     }
 
-    public SearchQueryBuilder<E> setOffset(int offset) {
-        page.setOffset(offset);
+    public SearchQueryBuilder<E> setLocale(Locale value) {
+        page.setLocale(value);
+
+        return this;
+    }
+
+    public SearchQueryBuilder<E> setOffset(int value) {
+        page.setOffset(value);
 
         return this;
     }

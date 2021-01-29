@@ -11,25 +11,23 @@ import info.shillem.util.OrderOperator;
 
 public class FilterQueryBuilder<E extends Enum<E> & BaseField> {
 
-    final QueryBuilder<E> base;
     final PageQueryBuilder<E> page;
     final Map<E, Object> filters;
 
     public FilterQueryBuilder() {
-        this.base = new QueryBuilder<>();
         this.page = new PageQueryBuilder<>();
         this.filters = new LinkedHashMap<>();
     }
-    
+
     public FilterQueryBuilder<E> addOption(String value) {
-        base.addOption(value);
+        page.addOption(value);
 
         return this;
     }
 
     public FilterQueryBuilder<E> addOption(String value, String... values) {
-        base.addOption(value, values);
-        
+        page.addOption(value, values);
+
         return this;
     }
 
@@ -38,26 +36,26 @@ public class FilterQueryBuilder<E extends Enum<E> & BaseField> {
     }
 
     public FilterQueryBuilder<E> fetch(E field) {
-        base.fetch(field);
+        page.fetch(field);
 
         return this;
     }
 
     public FilterQueryBuilder<E> fetch(E[] fields) {
-        base.fetch(fields);
+        page.fetch(fields);
 
         return this;
     }
 
     public FilterQueryBuilder<E> fetch(Set<E> fields) {
-        base.fetch(fields);
+        page.fetch(fields);
 
         return this;
     }
 
     public FilterQueryBuilder<E> fetchTotal(boolean flag) {
         page.fetchTotal(flag);
-        
+
         return this;
     }
 
@@ -68,7 +66,7 @@ public class FilterQueryBuilder<E extends Enum<E> & BaseField> {
 
         return this;
     }
-    
+
     public int getLimit() {
         return page.getLimit();
     }
@@ -77,20 +75,26 @@ public class FilterQueryBuilder<E extends Enum<E> & BaseField> {
         return page.getOffset();
     }
 
-    public FilterQueryBuilder<E> setLimit(int limit) {
-        page.setLimit(limit);
+    public FilterQueryBuilder<E> setCollection(String value) {
+        page.setCollection(value);
 
         return this;
     }
 
-    public FilterQueryBuilder<E> setLocale(Locale locale) {
-        base.setLocale(locale);
+    public FilterQueryBuilder<E> setLimit(int value) {
+        page.setLimit(value);
 
         return this;
     }
 
-    public FilterQueryBuilder<E> setOffset(int offset) {
-        page.setOffset(offset);
+    public FilterQueryBuilder<E> setLocale(Locale value) {
+        page.setLocale(value);
+
+        return this;
+    }
+
+    public FilterQueryBuilder<E> setOffset(int value) {
+        page.setOffset(value);
 
         return this;
     }

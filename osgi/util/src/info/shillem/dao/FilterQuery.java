@@ -10,7 +10,7 @@ public class FilterQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
     private final Map<E, Object> filters;
 
     FilterQuery(FilterQueryBuilder<E> builder) {
-        super(builder.base, builder.page);
+        super(builder.page);
 
         filters = builder.filters;
     }

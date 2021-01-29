@@ -159,7 +159,7 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
     private final Group group;
 
     SearchQuery(SearchQueryBuilder<E> builder) {
-        super(builder.base, builder.page);
+        super(builder.page);
 
         group = builder.group;
     }

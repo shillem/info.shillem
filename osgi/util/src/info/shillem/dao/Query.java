@@ -7,6 +7,7 @@ import info.shillem.dto.BaseField;
 
 public class Query<E extends Enum<E> & BaseField> {
 
+    private final String collection;
     private final Locale locale;
     private final Set<String> options;
     private final Set<E> schema;
@@ -14,6 +15,7 @@ public class Query<E extends Enum<E> & BaseField> {
     private QuerySummary summary;
 
     Query(QueryBuilder<E> builder) {
+        collection = builder.collection;
         locale = builder.locale;
         options = builder.options;
         schema = builder.schema;
@@ -29,6 +31,10 @@ public class Query<E extends Enum<E> & BaseField> {
         }
 
         return summary;
+    }
+
+    public String getCollection() {
+        return collection;
     }
 
     public Locale getLocale() {

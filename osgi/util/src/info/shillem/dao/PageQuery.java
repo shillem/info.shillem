@@ -12,8 +12,8 @@ public class PageQuery<E extends Enum<E> & BaseField> extends Query<E> {
 
     private int offset;
 
-    PageQuery(QueryBuilder<E> base, PageQueryBuilder<E> page) {
-        super(base);
+    PageQuery(PageQueryBuilder<E> page) {
+        super(page.base);
 
         limit = page.limit;
         offset = page.offset;

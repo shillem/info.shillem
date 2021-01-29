@@ -13,6 +13,7 @@ public class QueryBuilder<E extends Enum<E> & BaseField> {
     final Set<String> options;
     final Set<E> schema;
 
+    String collection;
     Locale locale;
 
     public QueryBuilder() {
@@ -62,8 +63,14 @@ public class QueryBuilder<E extends Enum<E> & BaseField> {
         return this;
     }
 
-    public QueryBuilder<E> setLocale(Locale locale) {
-        this.locale = locale;
+    public QueryBuilder<E> setCollection(String value) {
+        collection = value;
+        
+        return this;
+    }
+    
+    public QueryBuilder<E> setLocale(Locale value) {
+        locale = value;
 
         return this;
     }
