@@ -1,30 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <faces-config>
 	<faces-config-extension>
-		<namespace-uri>http://shillem.info/xsp/library
-		</namespace-uri>
+		<namespace-uri>http://shillem.info/xsp/library</namespace-uri>
 		<default-prefix>sh</default-prefix>
 	</faces-config-extension>
 
 	<component>
 		<display-name>Li</display-name>
-		<description>A control that may contain other controls or text and acts as list item
+		<description>
+			A control that may contain other controls or text and acts as list item
 		</description>
 		<component-type>info.shillem.xsp.Li</component-type>
-		<component-class>info.shillem.util.xsp.component.UIListItem
-		</component-class>
+		<component-class>info.shillem.util.xsp.component.UIListItem</component-class>
 
-		<group-type-ref>com.ibm.xsp.group.core
-		</group-type-ref>
-		<group-type-ref>com.ibm.xsp.group.events
-		</group-type-ref>
-		<group-type-ref>com.ibm.xsp.group.aria.role
-		</group-type-ref>
+		<group-type-ref>com.ibm.xsp.group.core</group-type-ref>
+		<group-type-ref>com.ibm.xsp.group.events</group-type-ref>
+		<group-type-ref>com.ibm.xsp.group.aria.role</group-type-ref>
 
 		<component-extension>
-			<base-component-type>
-				com.ibm.xsp.Tag
-			</base-component-type>
+			<base-component-type>com.ibm.xsp.Tag</base-component-type>
 
 			<component-family>com.ibm.xsp.Tag</component-family>
 			<renderer-type>info.shillem.xsp.Li</renderer-type>
@@ -38,17 +32,49 @@
 
 	<component>
 		<display-name>New Line</display-name>
-		<description>A control to print a new line in the final HTML source code
-		</description>
-		<component-type>info.shillem.xsp.NewLine
-		</component-type>
-		<component-class>info.shillem.util.xsp.component.UINewLine
-		</component-class>
+		<description>A control to print a new line in the final HTML source code</description>
+		<component-type>info.shillem.xsp.NewLine</component-type>
+		<component-class>info.shillem.util.xsp.component.UINewLine</component-class>
 
 		<component-extension>
 			<tag-name>nl</tag-name>
-			<component-family>info.shillem.xsp.NewLine
-			</component-family>
+			<component-family>info.shillem.xsp.NewLine</component-family>
+			<designer-extension>
+				<generate-id>false</generate-id>
+				<category>Shillem Controls</category>
+			</designer-extension>
+		</component-extension>
+	</component>
+	
+	<component>
+		<display-name>Switch</display-name>
+		<description>
+			A container control that conditionally renders a facet control
+			based either on the selected or default value
+		</description>
+		<component-type>info.shillem.xsp.Switch</component-type>
+		<component-class>info.shillem.util.xsp.component.UISwitch</component-class>
+		
+		<property>
+			<description>
+				The value that determines what control to display as default
+				when the specific value is absent
+			</description>
+			<display-name>Default Value</display-name>
+			<property-name>defaultValue</property-name>
+			<property-class>java.lang.Object</property-class>
+		</property>
+		
+		<property>
+			<description>The value that determines what control to displace</description>
+			<display-name>Value</display-name>
+			<property-name>value</property-name>
+			<property-class>java.lang.Object</property-class>
+		</property>
+
+		<component-extension>
+			<tag-name>switch</tag-name>
+			<component-family>info.shillem.xsp.Switch</component-family>
 			<designer-extension>
 				<generate-id>false</generate-id>
 				<category>Shillem Controls</category>
@@ -57,13 +83,10 @@
 	</component>
 
 	<converter>
-		<description>Converts a given string to an enum
-		</description>
+		<description>Converts a given string to an enum</description>
 		<display-name>Enum Converter</display-name>
-		<converter-id>info.shillem.xsp.EnumConverter
-		</converter-id>
-		<converter-class>info.shillem.util.xsp.converter.EnumConverter
-		</converter-class>
+		<converter-id>info.shillem.xsp.EnumConverter</converter-id>
+		<converter-class>info.shillem.util.xsp.converter.EnumConverter</converter-class>
 		
 		<property>
 			<description>
@@ -82,13 +105,10 @@
 	</converter>
 
 	<converter>
-		<description>Converts a given string to a number
-		</description>
+		<description>Converts a given string to a number</description>
 		<display-name>Number Converter</display-name>
-		<converter-id>info.shillem.xsp.NumberConverter
-		</converter-id>
-		<converter-class>info.shillem.util.xsp.converter.NumberConverter
-		</converter-class>
+		<converter-id>info.shillem.xsp.NumberConverter</converter-id>
+		<converter-class>info.shillem.util.xsp.converter.NumberConverter</converter-class>
 
 		<!-- ======== Sun NumberConverter Properties ====================== -->
 		<property>
@@ -302,8 +322,7 @@
 		</description>
 		<display-name>Length Validator</display-name>
 		<validator-id>javax.faces.Length</validator-id>
-		<validator-class>javax.faces.validator.LengthValidator
-		</validator-class>
+		<validator-class>javax.faces.validator.LengthValidator</validator-class>
 		<property>
 			<description>Specifies the maximum valid length</description>
 			<display-name>Maximum</display-name>
@@ -322,14 +341,15 @@
 	</validator>
 	
 	<validator>
-		<description>Validates the string by means of an expression pattern
-		</description>
+		<description>Validates the string by means of an expression pattern</description>
 		<display-name>Pattern Validator</display-name>
 		<validator-id>info.shillem.xsp.PatternValidator</validator-id>
 		<validator-class>info.shillem.util.xsp.validator.PatternValidator
 		</validator-class>
 		<property>
-			<description>Specifies the message that will be displayed when the validation fails</description>
+			<description>
+				Specifies the message that will be displayed when the validation fails
+			</description>
 			<display-name>Message</display-name>
 			<property-name>message</property-name>
 			<property-class>string</property-class>
