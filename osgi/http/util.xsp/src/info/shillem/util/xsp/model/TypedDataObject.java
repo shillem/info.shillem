@@ -8,6 +8,8 @@ import java.util.function.BiFunction;
 
 import com.ibm.xsp.model.DataObject;
 
+import info.shillem.util.xsp.context.SerializableBiFunction;
+
 public class TypedDataObject<T> implements DataObject, Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -16,7 +18,7 @@ public class TypedDataObject<T> implements DataObject, Serializable {
     private final BiFunction<Class<T>, String, T> fn;
     private final Map<String, T> values;
 
-    public TypedDataObject(Class<T> cls, BiFunction<Class<T>, String, T> fn) {
+    public TypedDataObject(Class<T> cls, SerializableBiFunction<Class<T>, String, T> fn) {
         this.cls = Objects.requireNonNull(cls, "Class cannot be null");
         this.fn = Objects.requireNonNull(fn, "Function cannot be null");
         this.values = new HashMap<>();
@@ -50,7 +52,7 @@ public class TypedDataObject<T> implements DataObject, Serializable {
 
     @Override
     public void setValue(Object key, Object value) {
-        throw new UnsupportedOperationException();
+        values.put((String) key, cls.cast(value));
     }
 
 }

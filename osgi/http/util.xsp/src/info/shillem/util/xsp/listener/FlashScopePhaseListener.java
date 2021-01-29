@@ -17,7 +17,7 @@ public class FlashScopePhaseListener implements PhaseListener {
         FacesContext facesContext = phaseEvent.getFacesContext();
 
         if (!"POST".equals(XPageUtil.getHttpServletRequest(facesContext).getMethod())) {
-            XPageScope.FLASH.getValues(facesContext, false).clear();
+            XPageScope.FLASH.getValues(facesContext).clear();
         }
     }
 

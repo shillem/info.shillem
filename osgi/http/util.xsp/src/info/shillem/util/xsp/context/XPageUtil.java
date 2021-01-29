@@ -164,7 +164,7 @@ public class XPageUtil {
 
     public static List<FacesMessage> getFlashMessages(FacesContext facesContext) {
         return Collections.unmodifiableList(CastUtil.toAnyList((List<?>) XPageScope.FLASH
-                .getValues(facesContext, false)
+                .getValues(facesContext)
                 .getOrDefault(FLASH_MESSAGES_KEY, Collections.emptyList())));
     }
 
