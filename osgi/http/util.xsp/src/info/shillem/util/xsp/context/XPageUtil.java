@@ -34,7 +34,7 @@ import info.shillem.util.xsp.component.ComponentUtil;
 public class XPageUtil {
 
     public enum RequestParameter {
-        SUCCESS_REFRESH_ID("successRefreshId");
+        SUCCESS_REFRESH_ID("$$xspsuccessrefreshid");
 
         private final String name;
 

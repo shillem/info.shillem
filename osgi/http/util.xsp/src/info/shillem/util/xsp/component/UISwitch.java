@@ -11,10 +11,13 @@ import javax.faces.component.visit.VisitCallback;
 import javax.faces.component.visit.VisitContext;
 import javax.faces.component.visit.VisitResult;
 import javax.faces.context.FacesContext;
+import javax.faces.context.ResponseWriter;
 import javax.faces.el.ValueBinding;
 
 import com.ibm.xsp.stylekit.ThemeControl;
 import com.ibm.xsp.util.FacesUtil;
+
+import info.shillem.util.xsp.renderer.RenderUtil;
 
 public class UISwitch extends UIComponentBase implements NamingContainer, ThemeControl {
 
@@ -31,7 +34,18 @@ public class UISwitch extends UIComponentBase implements NamingContainer, ThemeC
 
     @Override
     public void encodeBegin(FacesContext context) throws IOException {
-
+        if (!isRendered()) {
+            return;
+        }
+        
+        if (this.getId().startsWith("_id")) {
+            return;
+        }
+        
+        ResponseWriter writer = context.getResponseWriter();
+        
+        RenderUtil.startElement(writer, "div", this);
+        RenderUtil.writeAttribute(writer, "id", this.getClientId(context));
     }
 
     public void encodeChildren(FacesContext facesContext) throws IOException {
@@ -50,7 +64,17 @@ public class UISwitch extends UIComponentBase implements NamingContainer, ThemeC
 
     @Override
     public void encodeEnd(FacesContext context) throws IOException {
-
+        if (!isRendered()) {
+            return;
+        }
+        
+        if (this.getId().startsWith("_id")) {
+            return;
+        }
+        
+        ResponseWriter writer = context.getResponseWriter();
+        
+        RenderUtil.endElement(writer, "div");
     }
 
     public Object getDefaultValue() {
