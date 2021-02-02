@@ -34,11 +34,6 @@ public class StaticSelectItems implements SelectItems, Serializable {
     }
 
     @Override
-    public void addValue(SelectItem item) {
-        getValues().add(new SelectItem(item.getValue(), item.getLabel()));
-    }
-
-    @Override
     public void addValues(Collection<? extends Object> values) {
         values.forEach(this::addValue);
     }
@@ -68,7 +63,7 @@ public class StaticSelectItems implements SelectItems, Serializable {
     }
 
     @Override
-    public void sortValues(Comparator<SelectItem> comparator) {
+    public void sortItems(Comparator<SelectItem> comparator) {
         getValues().sort(comparator);
     }
 

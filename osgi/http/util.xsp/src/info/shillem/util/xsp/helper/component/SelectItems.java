@@ -16,8 +16,6 @@ public interface SelectItems {
     
     void addValue(Object value, String label);
     
-    void addValue(SelectItem item);
-    
     void addValues(Collection<? extends Object> values);
     
     Object getDefaultValue();
@@ -28,7 +26,7 @@ public interface SelectItems {
     
     void setItems(List<SelectItem> selectItems);
     
-    void sortValues(Comparator<SelectItem> comparator);
+    void sortItems(Comparator<SelectItem> comparator);
     
     void validate(FacesContext facesContext, UIComponent component, Object value);
     
