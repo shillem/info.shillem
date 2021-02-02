@@ -125,6 +125,16 @@ public class XPageUtil {
             ((FacesContextEx) facesContext).setPartialRefreshId(refreshId);
         }
     }
+    
+    public static void applySuccessRefreshId(FacesContext facesContext, String refreshId) {
+        if (!AjaxUtil.isAjaxPartialRefresh(facesContext)) {
+            throw new UnsupportedOperationException();
+        }
+        
+        if (refreshId != null) {
+            ((FacesContextEx) facesContext).setPartialRefreshId(refreshId);
+        }
+    }
 
     public static void bindBeforeRenderResponseMethod(FacesContext facesContext, String el) {
         getViewRootEx2(facesContext).setBeforeRenderResponse(
@@ -186,7 +196,7 @@ public class XPageUtil {
 
     public static String getRequestParameter(FacesContext facesContext, String name) {
         return (String) CastUtil
-                .toAnyMap(facesContext.getExternalContext().getRequestParameterMap())
+                .toAnyMap(facesContext.getExternalContext().getRequestMap())
                 .get(name);
     }
 

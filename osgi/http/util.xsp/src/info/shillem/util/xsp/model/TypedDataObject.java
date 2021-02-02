@@ -24,35 +24,41 @@ public class TypedDataObject<T> implements DataObject, Serializable {
         this.values = new HashMap<>();
     }
 
-    public boolean containsValue(Object key) {
-        return values.containsKey(Objects.requireNonNull(key).toString());
-    }
-
-    @SuppressWarnings("unchecked")
     @Override
+    @SuppressWarnings("unchecked")
     public Class<T> getType(Object key) {
-        Object value = getValue(Objects.requireNonNull(key));
+        Object value = getValue(key);
 
         return value != null ? (Class<T>) value.getClass() : null;
     }
 
     @Override
     public T getValue(Object key) {
-        return values.computeIfAbsent(key.toString(), (k) -> fn.apply(cls, k));
+        String k = key.toString();
+
+        if (values.containsKey(k)) {
+            return values.get(k);
+        }
+
+        T value = fn.apply(cls, k);
+
+        values.put(k, value);
+
+        return value;
     }
 
     @Override
     public boolean isReadOnly(Object key) {
-        return true;
+        return false;
     }
 
-    void removeValue(Object key) {
-        values.remove(key);
+    public void removeValue(Object key) {
+        values.remove(key.toString());
     }
 
     @Override
     public void setValue(Object key, Object value) {
-        values.put((String) key, cls.cast(value));
+        values.put(key.toString(), cls.cast(value));
     }
 
 }
