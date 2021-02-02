@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.faces.FacesException;
@@ -20,7 +19,6 @@ import javax.faces.event.PhaseId;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ibm.xsp.ajax.AjaxUtil;
 import com.ibm.xsp.component.UIViewRootEx;
 import com.ibm.xsp.component.UIViewRootEx2;
 import com.ibm.xsp.context.FacesContextEx;
@@ -99,41 +97,21 @@ public class XPageUtil {
     }
 
     public static void applySuccessRefreshId(FacesContext facesContext) {
-        if (!AjaxUtil.isAjaxPartialRefresh(facesContext)) {
-            throw new UnsupportedOperationException();
-        }
-
-        String refreshId = getRequestParameter(
-                facesContext,
-                RequestParameter.SUCCESS_REFRESH_ID.getName());
-
-        if (refreshId != null) {
-            ((FacesContextEx) facesContext).setPartialRefreshId(refreshId);
-        }
+        applySuccessRefreshId(facesContext,
+                (String) XPageScope.REQUEST.getValue(
+                        facesContext,
+                        RequestParameter.SUCCESS_REFRESH_ID.getName()));
     }
 
     public static void applySuccessRefreshId(FacesContext facesContext, ActionEvent event) {
-        if (!AjaxUtil.isAjaxPartialRefresh(facesContext)) {
-            throw new UnsupportedOperationException();
-        }
-
-        String refreshId = ComponentUtil.getHandlerParam(
-                event.getComponent(),
-                RequestParameter.SUCCESS_REFRESH_ID.getName());
-
-        if (refreshId != null) {
-            ((FacesContextEx) facesContext).setPartialRefreshId(refreshId);
-        }
+        applySuccessRefreshId(facesContext,
+                ComponentUtil.getHandlerParam(
+                        event.getComponent(),
+                        RequestParameter.SUCCESS_REFRESH_ID.getName()));
     }
-    
+
     public static void applySuccessRefreshId(FacesContext facesContext, String refreshId) {
-        if (!AjaxUtil.isAjaxPartialRefresh(facesContext)) {
-            throw new UnsupportedOperationException();
-        }
-        
-        if (refreshId != null) {
-            ((FacesContextEx) facesContext).setPartialRefreshId(refreshId);
-        }
+        ((FacesContextEx) facesContext).setPartialRefreshId(refreshId);
     }
 
     public static void bindBeforeRenderResponseMethod(FacesContext facesContext, String el) {
@@ -194,12 +172,6 @@ public class XPageUtil {
         return ((FacesContextEx) facesContext).getProperty(property);
     }
 
-    public static String getRequestParameter(FacesContext facesContext, String name) {
-        return (String) CastUtil
-                .toAnyMap(facesContext.getExternalContext().getRequestMap())
-                .get(name);
-    }
-
     public static UIViewRootEx2 getViewRootEx2(FacesContext facesContext) {
         return (UIViewRootEx2) facesContext.getViewRoot();
     }
@@ -225,14 +197,6 @@ public class XPageUtil {
 
     public static Object resolveVariable(String name) {
         return resolveVariable(FacesContext.getCurrentInstance(), name);
-    }
-
-    public static void setRequestHeader(FacesContext facesContext, String key, String value) {
-        Map<String, String> params = CastUtil.toAnyMap(facesContext
-                .getExternalContext()
-                .getRequestMap());
-
-        params.put(key, value);
     }
 
     public static void setResponseErrorHeader(FacesContext facesContext, PhaseId phaseId) {

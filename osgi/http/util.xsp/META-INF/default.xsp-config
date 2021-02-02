@@ -45,42 +45,6 @@
 			</designer-extension>
 		</component-extension>
 	</component>
-	
-	<component>
-		<display-name>Switch</display-name>
-		<description>
-			A container control that conditionally renders a facet control
-			based either on the selected or default value
-		</description>
-		<component-type>info.shillem.xsp.Switch</component-type>
-		<component-class>info.shillem.util.xsp.component.UISwitch</component-class>
-		
-		<property>
-			<description>
-				The value that determines what control to display as default
-				when the specific value is absent
-			</description>
-			<display-name>Default Value</display-name>
-			<property-name>defaultValue</property-name>
-			<property-class>java.lang.Object</property-class>
-		</property>
-		
-		<property>
-			<description>The value that determines what control to displace</description>
-			<display-name>Value</display-name>
-			<property-name>value</property-name>
-			<property-class>java.lang.Object</property-class>
-		</property>
-
-		<component-extension>
-			<tag-name>switch</tag-name>
-			<component-family>info.shillem.xsp.Switch</component-family>
-			<designer-extension>
-				<generate-id>false</generate-id>
-				<category>Shillem Controls</category>
-			</designer-extension>
-		</component-extension>
-	</component>
 
 	<converter>
 		<description>Converts a given string to an enum</description>
