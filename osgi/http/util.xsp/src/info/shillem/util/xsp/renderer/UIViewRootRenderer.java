@@ -23,30 +23,48 @@ import com.ibm.xsp.util.FacesUtil;
 import com.ibm.xsp.webapp.XspHttpServletResponse;
 
 import info.shillem.util.Unthrow;
+import info.shillem.util.xsp.XspLoader;
 import info.shillem.util.xsp.context.XPageUtil;
 
 public class UIViewRootRenderer extends ViewRootRendererEx2 {
 
-    private static final ScriptResource JQUERY_DEFINE_AMD;
+    private static final ScriptResource SCRIPT_XSP;
+    private static final ScriptResource SCRIPT_JQUERY_DEFINE_AMD;
 
     static {
-        JQUERY_DEFINE_AMD = new ScriptResource();
-        JQUERY_DEFINE_AMD.setContents("define.amd.jQuery = true;");
-        JQUERY_DEFINE_AMD.setClientSide(true);
+        SCRIPT_JQUERY_DEFINE_AMD = new ScriptResource();
+        SCRIPT_JQUERY_DEFINE_AMD.setContents("define.amd.jQuery = true;");
+        SCRIPT_JQUERY_DEFINE_AMD.setClientSide(true);
+
+        SCRIPT_XSP = new ScriptResource(
+                "/.ibmxspres/.extlib/".concat(XspLoader.NAMESPACE).concat("/js/xsp.js"), true);
     }
 
     @Override
-    protected void addCommonResources(FacesContext facesContext, UIViewRootEx root,
-            List<Resource> resources) throws IOException {
+    protected void addCommonResources(
+            FacesContext facesContext,
+            UIViewRootEx root,
+            List<Resource> resources)
+            throws IOException {
         super.addCommonResources(facesContext, root, resources);
 
+        if ("none".equalsIgnoreCase(
+                XPageUtil.getProperty(
+                        facesContext, "xsp.client.script.libraries"))
+                && XPageUtil.isPropertyEnabled(facesContext,
+                        "xsp.client.script.".concat(XspLoader.NAMESPACE))) {
+            resources.add(SCRIPT_XSP);
+        }
+
         if (XPageUtil.isPropertyEnabled(facesContext, "xsp.client.script.jQuery.defineAmd")) {
-            resources.add(JQUERY_DEFINE_AMD);
+            resources.add(SCRIPT_JQUERY_DEFINE_AMD);
         }
     }
 
     @Override
-    protected void addPageResources(FacesContext facesContext, UIViewRootEx root,
+    protected void addPageResources(
+            FacesContext facesContext,
+            UIViewRootEx root,
             List<Resource> resources)
             throws IOException {
         List<Resource> pageResources = root.getResources();
@@ -68,9 +86,13 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
     }
 
     @Override
-    protected List<Resource> buildResourceList(FacesContext facesContext, UIViewRootEx root,
+    protected List<Resource> buildResourceList(
+            FacesContext facesContext,
+            UIViewRootEx root,
             boolean commonResources,
-            boolean customizerResources, boolean pageResources, boolean encodeResources)
+            boolean customizerResources,
+            boolean pageResources,
+            boolean encodeResources)
             throws IOException {
         List<Resource> resources = new ArrayList<>();
 
@@ -94,7 +116,9 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
     }
 
     @Override
-    protected void encodeEndPage(FacesContext facesContext, ResponseWriter writer,
+    protected void encodeEndPage(
+            FacesContext facesContext,
+            ResponseWriter writer,
             UIViewRootEx root)
             throws IOException {
         XspHttpServletResponse response = null;
@@ -226,7 +250,8 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
     }
 
     private ResourceRenderer getScriptResourceRenderer(
-            FacesContext facesContext, ScriptResource scriptResource) {
+            FacesContext facesContext,
+            ScriptResource scriptResource) {
         Renderer renderer = FacesUtil.getRenderer(
                 facesContext, scriptResource.getFamily(), scriptResource.getRendererType());
 
