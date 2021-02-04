@@ -62,7 +62,7 @@ public class ErrorException extends Exception {
     public static boolean causeIsAny(Throwable e, ErrorCode... codes) {
         ErrorException ee = getCause(e);
 
-        if (e == null) {
+        if (ee == null) {
             return false;
         }
 
@@ -82,7 +82,7 @@ public class ErrorException extends Exception {
     public static <T> T causeProperty(Throwable e, String name, Class<T> cls) {
         ErrorException ee = getCause(e);
 
-        if (e == null) {
+        if (ee == null) {
             return null;
         }
 

@@ -86,7 +86,8 @@ public class MultiDominoSilo implements DominoSilo {
     }
 
     @Override
-    public void setTemplateCreation(DatabasePath templatePath,
+    public void setTemplateCreation(
+            DatabasePath templatePath,
             Consumer<Entry<DbIdentifier, Database>> databaseConsumer) {
         this.templatePath = templatePath;
         this.databaseConsumer = databaseConsumer;
