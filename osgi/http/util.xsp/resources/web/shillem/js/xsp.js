@@ -1,6 +1,17 @@
 function XPages() {
     const _self = this;
 
+    const _SubmitListener = function (formId, listener, clientId, scriptId) {
+        this.formId = formId;
+        this.clientId = clientId;
+        this.scriptId = scriptId;
+        this.listener = listener;
+
+        this.run = function () {
+            return this.listener();
+        };
+    };
+
     const _attachEventOrPartial = function (params) {
         if (!params.eventName) {
             return;
@@ -305,7 +316,7 @@ function XPages() {
         );
     };
     const _processListeners = function (listeners, formId, targetId) {
-        for (let listener in listeners) {
+        for (let listener of listeners) {
             if (listener.formId !== formId) {
                 continue;
             }
@@ -333,6 +344,21 @@ function XPages() {
         }
 
         return text.replace(re, "");
+    };
+    const _pushListener = function (listeners, formId, listener, clientId, scriptId) {
+        if (!scriptId) {
+            this._unnamedSubmitListenerCount++;
+
+            scriptId = "script" + _unnamedSubmitListenerCount.toString();
+        } else {
+            for (let l of listeners) {
+                if (scriptId === l.scriptId) {
+                    return;
+                }
+            }
+        }
+
+        listeners.push(new _SubmitListener(formId, listener, clientId, scriptId));
     };
     const _replaceNode = function (refreshId, text) {
         const element = document.getElementById(refreshId);
@@ -409,6 +435,8 @@ function XPages() {
                 reject(new Error("TIMEOUT"));
             }, ms);
 
+            _preFetchListeners.forEach((l) => l());
+
             promise
                 .then((value) => {
                     clearTimeout(timer);
@@ -417,14 +445,18 @@ function XPages() {
                 .catch((reason) => {
                     clearTimeout(timer);
                     reject(reason);
-                });
+                })
+                .then(() => _postFetchListeners.forEach((l) => l()));
         });
     };
 
     let _onLoadCalled;
     let _onLoadListeners = [];
+    let _postFetchListeners = [];
+    let _preFetchListeners = [];
     let _preSubmitListeners = [];
     let _querySubmitListeners = [];
+    let _unnamedSubmitListenerCount;
 
     this.addOnLoad = function (fn) {
         _onLoadListeners.push(fn);
@@ -434,6 +466,18 @@ function XPages() {
 
             window.addEventListener("DOMContentLoaded", _loaded);
         }
+    };
+    this.addPostFetchListener = function (fn) {
+        _postFetchListeners.push(fn);
+    };
+    this.addPreFetchListener = function (fn) {
+        _preFetchListeners.push(fn);
+    };
+    this.addPreSubmitListener = function (formId, listener, clientId, scriptId) {
+        _pushListener(_preSubmitListeners, formId, listener, clientId, scriptId);
+    };
+    this.addQuerySubmitListener = function (formId, listener, clientId, scriptId) {
+        _pushListener(_querySubmitListeners, formId, listener, clientId, scriptId);
     };
     this.allowSubmit = function () {
         this.lastSubmit = 0;
