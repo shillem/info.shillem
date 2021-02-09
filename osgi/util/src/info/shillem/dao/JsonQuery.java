@@ -14,10 +14,10 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import info.shillem.dto.BaseField;
 import info.shillem.util.ComparisonOperator;
+import info.shillem.util.JsonHandler;
 import info.shillem.util.StreamUtil;
 import info.shillem.util.StringUtil;
 
@@ -33,11 +33,11 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
     }
 
     private final Class<E> cls;
-    private final ObjectMapper mapper;
+    private final JsonHandler handler;
 
-    public JsonQuery(Class<E> cls, ObjectMapper mapper) {
+    public JsonQuery(Class<E> cls, JsonHandler handler) {
         this.cls = Objects.requireNonNull(cls, "Class cannot be null");
-        this.mapper = Objects.requireNonNull(mapper, "Mapper cannot be null");
+        this.handler = Objects.requireNonNull(handler, "Handler cannot be null");
     }
 
     public SearchQuery.Piece deserialize(JsonNode node) {
@@ -63,20 +63,20 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
             return group;
         }
         default:
-            return parseNode(entry);
+            return deserializeNode(entry);
         }
     }
 
-    private SearchQuery.Piece parseNode(Entry<String, JsonNode> node) {
+    private SearchQuery.Piece deserializeNode(Entry<String, JsonNode> node) {
         E field = Enum.valueOf(cls, node.getKey());
         Class<?> type = field.getProperties().getType();
 
         if (!node.getValue().isObject()) {
-            return new SearchQuery.Value<>(field, parseValue(node.getValue(), type));
+            return new SearchQuery.Value<>(field, deserializeValue(node.getValue(), type));
         }
 
         Entry<String, JsonNode> entry = node.getValue().fields().next();
-        ComparisonOperator op = parseOperator(entry.getKey());
+        ComparisonOperator op = deserializeOperator(entry.getKey());
 
         if (op == null) {
             throw new UnsupportedOperationException(
@@ -85,16 +85,16 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
 
         if (entry.getValue().isArray()) {
             Set<Object> values = StreamUtil.stream(entry.getValue().iterator())
-                    .map((val) -> parseValue(val, type))
+                    .map((val) -> deserializeValue(val, type))
                     .collect(Collectors.toSet());
 
             return new SearchQuery.Values<>(field, values, op);
         }
 
-        return new SearchQuery.Value<>(field, parseValue(entry.getValue(), type), op);
+        return new SearchQuery.Value<>(field, deserializeValue(entry.getValue(), type), op);
     }
 
-    private ComparisonOperator parseOperator(String token) {
+    private ComparisonOperator deserializeOperator(String token) {
         switch (token) {
         case "$eq":
             return ComparisonOperator.EQUAL;
@@ -119,7 +119,7 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
         return null;
     }
 
-    private Object parseValue(JsonNode node, Class<?> type) {
+    private Object deserializeValue(JsonNode node, Class<?> type) {
         if (type.isEnum()) {
             return StringUtil.enumFromString(type, node.asText());
         }
@@ -180,7 +180,7 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
 
                 break;
             case SEARCH:
-                builder.and(deserialize(mapper.readTree(value)));
+                builder.and(deserialize(handler.deserialize(value)));
 
                 break;
             default:

@@ -1,7 +1,9 @@
 package info.shillem.dao;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import info.shillem.dto.BaseField;
 
@@ -51,6 +53,23 @@ public class Query<E extends Enum<E> & BaseField> {
 
     public QuerySummary getSummary() {
         return summary;
+    }
+
+    protected Map<String, Object> toMap() {
+        Map<String, Object> properties = new TreeMap<>();
+
+        properties.put("collection", getCollection());
+        properties.put("locale", getLocale());
+        properties.put("options", getOptions());
+        properties.put("schema", getSchema());
+        properties.put("summary", getSummary());
+
+        return properties;
+    }
+
+    @Override
+    public String toString() {
+        return toMap().toString();
     }
 
     public static void require(Query<?> query, Class<?> cls) {

@@ -1,6 +1,5 @@
 package info.shillem.dao;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import info.shillem.dto.BaseField;
@@ -22,17 +21,14 @@ public class FilterQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
     public Map.Entry<E, Object> getFirstFilter() {
         return filters.entrySet().iterator().next();
     }
-
+    
     @Override
-    public String toString() {
-        Map<String, Object> properties = new HashMap<>();
-
-        properties.put("filters", filters);
-        properties.put("limit", getLimit());
-        properties.put("offset", getOffset());
-        properties.put("sorters", getSorters());
-
-        return properties.toString();
+    protected Map<String, Object> toMap() {
+        Map<String, Object> properties = super.toMap();
+        
+        properties.put("filters", getFilters());
+        
+        return properties;
     }
 
 }

@@ -3,7 +3,6 @@ package info.shillem.dao;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -169,15 +168,12 @@ public class SearchQuery<E extends Enum<E> & BaseField> extends PageQuery<E> {
     }
 
     @Override
-    public String toString() {
-        Map<String, Object> properties = new HashMap<>();
+    protected Map<String, Object> toMap() {
+        Map<String, Object> properties = super.toMap();
 
-        properties.put("limit", getLimit());
-        properties.put("offset", getOffset());
         properties.put("pieces", getPieces());
-        properties.put("sorters", getSorters());
 
-        return properties.toString();
+        return properties;
     }
 
 }

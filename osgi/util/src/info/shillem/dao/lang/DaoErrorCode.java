@@ -8,6 +8,7 @@ public enum DaoErrorCode implements ErrorCode {
     DUPLICATE_RECORD,
     INVALID_FIELD,
     INVALID_QUERY,
+    GENERIC,
     MISSING_FIELD,
     MISSING_RECORD,
     UNRESOLVABLE

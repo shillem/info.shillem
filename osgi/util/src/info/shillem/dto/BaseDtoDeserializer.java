@@ -38,27 +38,29 @@ public class BaseDtoDeserializer<T extends BaseDto<?>> extends StdDeserializer<T
 
     private static final long serialVersionUID = 1L;
 
-    public BaseDtoDeserializer(Class<?> t) {
+    private BaseDtoDeserializer(Class<?> t) {
         super(t);
     }
 
     @Override
-    public T deserialize(JsonParser parser, DeserializationContext context)
+    public T deserialize(
+            JsonParser parser,
+            DeserializationContext context)
             throws IOException, JsonProcessingException {
         JsonNode node = parser.readValueAsTree();
 
         try {
             @SuppressWarnings("unchecked")
             T instance = (T) handledType().getConstructor().newInstance();
-            
+
             if (node.has("id")) {
                 instance.setId(node.get("id").asText());
             }
-            
+
             if (node.has("lastModified")) {
                 instance.setLastModified(deserializeDate(node.get("lastModified").asText()));
             }
-            
+
             if (node.has("databaseUrl")) {
                 instance.setDatabaseUrl(node.get("databaseUrl").asText());
             }
@@ -86,7 +88,8 @@ public class BaseDtoDeserializer<T extends BaseDto<?>> extends StdDeserializer<T
             E field,
             JsonNode node,
             BaseDto<?> value,
-            ObjectCodec codec) throws IOException {
+            ObjectCodec codec)
+            throws IOException {
         BaseDto<E> dto = ((BaseDto<E>) value);
         FieldProperties props = field.getProperties();
 

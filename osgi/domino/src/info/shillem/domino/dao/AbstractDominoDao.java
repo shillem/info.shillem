@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,6 +54,7 @@ import info.shillem.dto.FieldProperties;
 import info.shillem.dto.JsonValue;
 import info.shillem.util.CollectionUtil;
 import info.shillem.util.IOUtil;
+import info.shillem.util.JsonHandler;
 import info.shillem.util.StringUtil;
 import info.shillem.util.Unthrow;
 import lotus.domino.Base;
@@ -74,16 +74,14 @@ import lotus.domino.ViewEntryCollection;
 
 public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
 
-    private static class Json {
-        private static final ObjectMapper MAPPER = new ObjectMapper()
-                .setSerializationInclusion(Include.NON_NULL);
-    }
-
     private static final Pattern DOC_NOTES_URL_PATTERN = Pattern.compile("^notes:\\/\\/"
             + "(?<host>\\w+)(?>@\\w+)*\\/"
             + "(?<db>(?>_{2})?(?>(?<replicaId>\\w{32}|\\w{16})|[\\w\\/]+)(?>\\.nsf)?)(?>\\/(?>0|\\w{32}))?\\/"
             + "(?<documentId>\\w+)(?>\\?OpenDocument)?$",
             Pattern.CASE_INSENSITIVE);
+
+    protected static final JsonHandler JSON = new JsonHandler(new ObjectMapper()
+            .setSerializationInclusion(Include.NON_NULL));
 
     protected final DominoFactory factory;
 
@@ -403,23 +401,20 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 return null;
             }
 
-            ObjectMapper mapper = Json.MAPPER;
             FieldProperties props = field.getProperties();
             JavaType type;
 
             if (props.isList()) {
-                type = mapper
+                type = JSON
                         .getTypeFactory()
                         .constructType(props.getType());
             } else {
-                type = mapper
+                type = JSON
                         .getTypeFactory()
-                        .constructCollectionLikeType(ArrayList.class, props.getType());
+                        .constructCollectionType(ArrayList.class, props.getType());
             }
 
-            return mapper.readValue(mimeEntity.getContentAsText(), type);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            return JSON.deserialize(mimeEntity.getContentAsText(), type);
         } finally {
             DominoUtil.recycle(mimeEntity);
 
@@ -707,7 +702,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
         try {
             stm = factory.getSession().createStream();
-            stm.writeText(Json.MAPPER.writeValueAsString(jsonValue));
+            stm.writeText(JSON.serialize(jsonValue));
 
             mimeEntity = DominoUtil.getMimeEntity(doc, itemName, true);
             mimeEntity.setContentFromText(stm,
@@ -715,8 +710,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                     MIMEEntity.ENC_NONE);
 
             stm.close();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
         } finally {
             if (doc.hasItem(itemName)) {
                 doc.closeMIMEEntities(true, itemName);

@@ -40,7 +40,7 @@ public class SqlFactory {
     private final DataSource source;
     private Connection connection;
 
-    public SqlFactory(Builder builder) {
+    private SqlFactory(Builder builder) {
         Objects.requireNonNull(builder, "Builder cannot be null");
 
         source = builder.source;

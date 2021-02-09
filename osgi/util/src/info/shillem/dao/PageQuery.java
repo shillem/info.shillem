@@ -27,15 +27,15 @@ public class PageQuery<E extends Enum<E> & BaseField> extends Query<E> {
     public int getOffset() {
         return offset;
     }
-
+    
     public Map<E, OrderOperator> getSorters() {
         return sorters;
     }
-    
+
     public boolean isUnknownOffset() {
         return offset == Integer.MAX_VALUE;
     }
-
+    
     public int recalculateOffset(int lastRow) {
         if (!isUnknownOffset()) {
             throw new IllegalStateException(
@@ -47,6 +47,17 @@ public class PageQuery<E extends Enum<E> & BaseField> extends Query<E> {
         offset = lastRow - (modulus > 0 ? modulus : limit);
 
         return offset;
+    }
+
+    @Override
+    protected Map<String, Object> toMap() {
+        Map<String, Object> properties = super.toMap();
+
+        properties.put("limit", getLimit());
+        properties.put("offset", getOffset());
+        properties.put("sorters", getSorters());
+        
+        return properties;
     }
 
 }
