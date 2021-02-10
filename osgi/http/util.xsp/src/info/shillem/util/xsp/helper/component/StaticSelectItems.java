@@ -59,7 +59,7 @@ public class StaticSelectItems implements SelectItems, Serializable {
 
     @Override
     public void setItems(List<SelectItem> selectItems) {
-        values = selectItems;
+        values = new ArrayList<>(selectItems);
     }
 
     @Override
@@ -68,7 +68,10 @@ public class StaticSelectItems implements SelectItems, Serializable {
     }
 
     @Override
-    public void validate(FacesContext facesContext, UIComponent component, Object value)
+    public void validate(
+            FacesContext facesContext,
+            UIComponent component,
+            Object value)
             throws ValidatorException {
         // Do nothing
     }
