@@ -40,12 +40,12 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
         this.handler = Objects.requireNonNull(handler, "Handler cannot be null");
     }
 
-    public SearchQuery.Piece deserialize(JsonNode node) {
+    public Query.Clause deserialize(JsonNode node) {
         Entry<String, JsonNode> entry = node.fields().next();
 
         switch (entry.getKey()) {
         case "$and": {
-            SearchQuery.Group group = new SearchQuery.Group();
+            Query.Group group = new Query.Group();
 
             StreamUtil
                     .stream(entry.getValue().iterator())
@@ -54,7 +54,7 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
             return group;
         }
         case "$or": {
-            SearchQuery.Group group = new SearchQuery.Group();
+            Query.Group group = new Query.Group();
 
             StreamUtil
                     .stream(entry.getValue().iterator())
@@ -67,12 +67,12 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
         }
     }
 
-    private SearchQuery.Piece deserializeNode(Entry<String, JsonNode> node) {
+    private Query.Clause deserializeNode(Entry<String, JsonNode> node) {
         E field = Enum.valueOf(cls, node.getKey());
         Class<?> type = field.getProperties().getType();
 
         if (!node.getValue().isObject()) {
-            return new SearchQuery.Value<>(field, deserializeValue(node.getValue(), type));
+            return new Query.Value<>(field, deserializeValue(node.getValue(), type));
         }
 
         Entry<String, JsonNode> entry = node.getValue().fields().next();
@@ -88,10 +88,10 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
                     .map((val) -> deserializeValue(val, type))
                     .collect(Collectors.toSet());
 
-            return new SearchQuery.Values<>(field, values, op);
+            return new Query.Values<>(field, values, op);
         }
 
-        return new SearchQuery.Value<>(field, deserializeValue(entry.getValue(), type), op);
+        return new Query.Value<>(field, deserializeValue(entry.getValue(), type), op);
     }
 
     private ComparisonOperator deserializeOperator(String token) {
@@ -153,8 +153,8 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
         return node.asText();
     }
 
-    public SearchQueryBuilder<E> populate(
-            SearchQueryBuilder<E> builder,
+    public QueryBuilder<E> populate(
+            QueryBuilder<E> builder,
             Set<Parameter> parameters,
             Function<Parameter, String> fn) throws JsonProcessingException {
         for (Parameter param : parameters) {
@@ -180,7 +180,7 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
 
                 break;
             case SEARCH:
-                builder.and(deserialize(handler.deserialize(value)));
+                builder.andClause(deserialize(handler.deserialize(value)));
 
                 break;
             default:

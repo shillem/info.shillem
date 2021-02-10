@@ -26,11 +26,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import info.shillem.dao.IdQuery;
-import info.shillem.dao.PageQuery;
 import info.shillem.dao.Query;
-import info.shillem.dao.SearchQuery;
-import info.shillem.dao.UrlQuery;
 import info.shillem.dao.lang.DaoException;
 import info.shillem.dao.lang.DaoQueryException;
 import info.shillem.dao.lang.DaoRecordException;
@@ -89,7 +85,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         this.factory = factory;
     }
 
-    protected void checkTimestampAlignment(T wrapper, Document doc)
+    protected void checkTimestampAlignment(
+            T wrapper,
+            Document doc)
             throws DaoException, NotesException {
         Date wrapperDate = wrapper.getLastModified();
         Date docDate = DominoUtil.getLastModified(doc);
@@ -104,7 +102,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         create(wrapper, silo, null);
     }
 
-    protected void create(T wrapper, DominoSilo silo, String formName)
+    protected void create(
+            T wrapper,
+            DominoSilo silo,
+            String formName)
             throws DaoException, NotesException {
         if (!wrapper.isNew()) {
             throw new IllegalArgumentException(
@@ -151,7 +152,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return result;
     }
 
-    protected boolean delete(DominoSilo silo, DeletionType deletionType, IdQuery<E> query) {
+    protected boolean delete(DominoSilo silo, DeletionType deletionType, Query<E> query) {
+        query.require(Query.Type.ID);
+
         Document doc = null;
 
         try {
@@ -166,7 +169,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    protected boolean deleteDocument(DominoSilo silo, Document doc, DeletionType deletionType)
+    protected boolean deleteDocument(
+            DominoSilo silo,
+            Document doc,
+            DeletionType deletionType)
             throws NotesException {
         if (silo.isDocumentLockingEnabled()) {
             if (!doc.lock()) {
@@ -177,7 +183,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return doc.removePermanently(deletionType.asBoolean());
     }
 
-    private Optional<Document> getDocumentById(Database database, String id)
+    private Optional<Document> getDocumentById(
+            Database database,
+            String id)
             throws NotesException {
         Objects.requireNonNull(id, "Id cannot be null");
 
@@ -192,12 +200,17 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return Optional.of(factory.setDefaults(doc));
     }
 
-    protected Optional<Document> getDocumentById(DominoSilo silo, String id)
+    protected Optional<Document> getDocumentById(
+            DominoSilo silo,
+            String id)
             throws NotesException {
         return getDocumentById(silo.getDatabase(), id);
     }
 
-    protected Optional<Document> getDocumentByKey(View view, Object key, ViewMatch match)
+    protected Optional<Document> getDocumentByKey(
+            View view,
+            Object key,
+            ViewMatch match)
             throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
@@ -210,7 +223,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return Optional.of(factory.setDefaults(doc));
     }
 
-    protected Optional<Document> getDocumentByKeys(View view, Collection<?> keys, ViewMatch match)
+    protected Optional<Document> getDocumentByKeys(
+            View view,
+            Collection<?> keys,
+            ViewMatch match)
             throws NotesException {
         Objects.requireNonNull(keys, "Key(s) cannot be null");
 
@@ -232,14 +248,19 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected ViewEntryCollection getViewEntriesByKey(
-            View view, Object key, ViewMatch match) throws NotesException {
+            View view,
+            Object key,
+            ViewMatch match)
+            throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
         return view.getAllEntriesByKey(key, match.asBoolean());
     }
 
     protected ViewEntryCollection getViewEntriesByKeys(
-            View view, Collection<?> keys, ViewMatch match) throws NotesException {
+            View view, Collection<?> keys,
+            ViewMatch match)
+            throws NotesException {
         Objects.requireNonNull(keys, "Key(s) cannot be null");
 
         if (keys.isEmpty()) {
@@ -250,7 +271,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected Optional<ViewEntry> getViewEntryByKey(
-            View view, Object key, ViewMatch match) throws NotesException {
+            View view, Object key,
+            ViewMatch match)
+            throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
         ViewEntry entry = view.getEntryByKey(key, match.asBoolean());
@@ -263,7 +286,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected Optional<ViewEntry> getViewEntryByKeys(
-            View view, Collection<?> keys, ViewMatch match) throws NotesException {
+            View view,
+            Collection<?> keys,
+            ViewMatch match)
+            throws NotesException {
         Objects.requireNonNull(keys, "Key(s) cannot be null");
 
         if (keys.isEmpty()) {
@@ -279,7 +305,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return Optional.of(factory.setDefaults(entry));
     }
 
-    protected DominoLoop.DocumentOptions<T> newLoopDocumentOption(PageQuery<E> query) {
+    protected DominoLoop.DocumentOptions<T> newLoopDocumentOption(Query<E> query) {
         DominoLoop.DocumentOptions<T> options = new DominoLoop.DocumentOptions<>();
 
         options.setLimit(query.getLimit());
@@ -294,7 +320,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return options;
     }
 
-    protected DominoLoop.ViewEntryOptions<T> newLoopViewEntryOption(PageQuery<E> query) {
+    protected DominoLoop.ViewEntryOptions<T> newLoopViewEntryOption(Query<E> query) {
         DominoLoop.ViewEntryOptions<T> options = new DominoLoop.ViewEntryOptions<>();
 
         options.setLimit(query.getLimit());
@@ -718,22 +744,12 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             DominoUtil.recycle(stm, mimeEntity);
         }
     }
-
-    protected Optional<Document> resolveDocument(UrlQuery<E> query)
-            throws DaoException, NotesException {
-        return resolveDocumentUrl(query.getUrl());
-    }
-
-    protected Optional<Document> resolveDocumentUrl(String url)
-            throws DaoException, NotesException {
-        if (Objects.requireNonNull(url, "Url cannot be null").isEmpty()) {
-            throw new IllegalArgumentException("Url cannot be empty");
-        }
-
+    
+    protected Optional<Document> resolveDocumentByUrl(String url) throws NotesException {
         Matcher matcher = DOC_NOTES_URL_PATTERN.matcher(url);
 
         if (!matcher.matches()) {
-            throw DaoRecordException.asMissing(url);
+            throw new IllegalArgumentException(url);
         }
 
         String host = matcher.group("host");
@@ -765,26 +781,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return getDocumentById(database, documentId);
     }
 
-    protected Optional<T> resolveWrapper(DominoSilo silo, Supplier<T> supplier, IdQuery<E> query)
-            throws NotesException {
-        Document doc = null;
-
-        try {
-            Optional<Document> optional = getDocumentById(silo, query.getId());
-
-            if (!optional.isPresent()) {
-                return Optional.empty();
-            }
-
-            doc = optional.get();
-
-            return Optional.of(wrapDocument(doc, supplier, query));
-        } finally {
-            DominoUtil.recycle(doc);
-        }
-    }
-
-    protected List<T> searchFullText(View vw, Supplier<T> supplier, SearchQuery<E> query)
+    protected List<T> searchFullText(
+            View vw,
+            Supplier<T> supplier,
+            Query<E> query)
             throws DaoException {
         String syntax = new FullTextSearchQuery<>(query)
                 .withNamer(this::getDocumentItemName)
@@ -833,7 +833,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    protected T wrapDocument(Document doc, Supplier<T> supplier, Query<E> query)
+    protected T wrapDocument(
+            Document doc,
+            Supplier<T> supplier,
+            Query<E> query)
             throws NotesException {
         T wrapper = supplier.get();
 
@@ -843,7 +846,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected RuntimeException wrappedPullColumnValueException(
-            Exception e, E field, ViewEntry entry) {
+            Exception e,
+            E field,
+            ViewEntry entry) {
         try {
             return new RuntimeException(String.format(
                     "Unable to pull column value %s from document %s",
@@ -869,7 +874,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected T wrapViewEntry(
-            ViewEntry entry, Supplier<T> supplier, Query<E> query, ViewManager manager)
+            ViewEntry entry,
+            Supplier<T> supplier,
+            Query<E> query,
+            ViewManager manager)
             throws NotesException {
         T wrapper = supplier.get();
 

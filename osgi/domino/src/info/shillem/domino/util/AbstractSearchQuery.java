@@ -6,13 +6,11 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import info.shillem.dao.FilterQuery;
 import info.shillem.dao.Query;
-import info.shillem.dao.SearchQuery;
-import info.shillem.dao.SearchQuery.Group;
-import info.shillem.dao.SearchQuery.Logical;
-import info.shillem.dao.SearchQuery.Value;
-import info.shillem.dao.SearchQuery.Values;
+import info.shillem.dao.Query.Group;
+import info.shillem.dao.Query.Logical;
+import info.shillem.dao.Query.Value;
+import info.shillem.dao.Query.Values;
 import info.shillem.dto.BaseField;
 import info.shillem.util.ComparisonOperator;
 import info.shillem.util.LogicalOperator;
@@ -26,34 +24,32 @@ abstract class AbstractSearchQuery<E extends Enum<E> & BaseField> {
 
     private Function<E, String> namer;
 
-    public AbstractSearchQuery(FilterQuery<E> query) {
-        this.query = Objects.requireNonNull(query, "Db query cannot be null");
-    }
-
-    public AbstractSearchQuery(SearchQuery<E> query) {
+    public AbstractSearchQuery(Query<E> query) {
         this.query = Objects.requireNonNull(query, "Db query cannot be null");
     }
 
     public String output() {
-        if (query instanceof FilterQuery) {
-            return outputFilterQuery((FilterQuery<E>) query);
+        switch (query.getType()) {
+        case FILTER:
+            return query.getFilters().entrySet().stream()
+                    .map((e) -> String.format("%s %s %s",
+                            outputField(e.getKey()),
+                            outputOperator(ComparisonOperator.EQUAL),
+                            outputStringValue(e.getValue())))
+                    .collect(Collectors.joining(
+                            " ".concat(outputOperator(LogicalOperator.AND)).concat(" ")));
+        case SEARCH:
+            return query.getClauses().stream()
+                    .map(this::outputClause)
+                    .collect(Collectors.joining(" "));
+        default:
+            throw new UnsupportedOperationException(
+                    query.getType().name().concat(" query is not supported"));
         }
-
-        return outputSearchQuery((SearchQuery<E>) query);
     }
 
     protected String outputField(E field) {
         return namer != null ? namer.apply(field) : field.name();
-    }
-
-    protected String outputFilterQuery(FilterQuery<E> query) {
-        return query.getFilters().entrySet().stream()
-                .map((e) -> String.format("%s %s %s",
-                        outputField(e.getKey()),
-                        outputOperator(ComparisonOperator.EQUAL),
-                        outputStringValue(e.getValue())))
-                .collect(Collectors.joining(
-                        " ".concat(outputOperator(LogicalOperator.AND)).concat(" ")));
     }
 
     protected String outputGroup(Group group) {
@@ -63,8 +59,8 @@ abstract class AbstractSearchQuery<E extends Enum<E> & BaseField> {
 
         return new StringBuilder()
                 .append("(")
-                .append(group.getPieces().stream()
-                        .map((piece) -> outputPiece(piece))
+                .append(group.getClauses().stream()
+                        .map((piece) -> outputClause(piece))
                         .collect(Collectors.joining(" ")))
                 .append(")")
                 .toString();
@@ -95,31 +91,25 @@ abstract class AbstractSearchQuery<E extends Enum<E> & BaseField> {
     protected abstract String outputOperator(LogicalOperator value);
 
     @SuppressWarnings("unchecked")
-    protected String outputPiece(SearchQuery.Piece piece) {
-        if (piece instanceof Group) {
-            return outputGroup((Group) piece);
+    protected String outputClause(Query.Clause clause) {
+        if (clause instanceof Group) {
+            return outputGroup((Group) clause);
         }
 
-        if (piece instanceof Logical) {
-            return outputOperator(((Logical) piece).getOperator());
+        if (clause instanceof Logical) {
+            return outputOperator(((Logical) clause).getOperator());
         }
 
-        if (piece instanceof Value) {
-            return outputValue((Value<E>) piece);
+        if (clause instanceof Value) {
+            return outputValue((Value<E>) clause);
         }
 
-        if (piece instanceof Values) {
-            return outputValues((Values<E>) piece);
+        if (clause instanceof Values) {
+            return outputValues((Values<E>) clause);
         }
 
-        throw new UnsupportedOperationException(piece.getClass().getName()
+        throw new UnsupportedOperationException(clause.getClass().getName()
                 .concat(" joining is not implemented"));
-    }
-
-    protected String outputSearchQuery(SearchQuery<E> query) {
-        return query.getPieces().stream()
-                .map(this::outputPiece)
-                .collect(Collectors.joining(" "));
     }
 
     protected abstract String outputStringValue(Object value);

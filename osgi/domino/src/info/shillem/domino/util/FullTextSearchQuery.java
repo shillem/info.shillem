@@ -3,19 +3,14 @@ package info.shillem.domino.util;
 import java.util.Date;
 import java.util.function.Function;
 
-import info.shillem.dao.FilterQuery;
-import info.shillem.dao.SearchQuery;
+import info.shillem.dao.Query;
 import info.shillem.dto.BaseField;
 import info.shillem.util.ComparisonOperator;
 import info.shillem.util.LogicalOperator;
 
 public class FullTextSearchQuery<E extends Enum<E> & BaseField> extends AbstractSearchQuery<E> {
 
-    public FullTextSearchQuery(FilterQuery<E> query) {
-        super(query);
-    }
-
-    public FullTextSearchQuery(SearchQuery<E> query) {
+    public FullTextSearchQuery(Query<E> query) {
         super(query);
     }
 

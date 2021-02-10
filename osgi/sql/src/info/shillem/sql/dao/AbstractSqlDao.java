@@ -13,10 +13,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import info.shillem.dao.FilterQuery;
-import info.shillem.dao.PageQuery;
 import info.shillem.dao.Query;
-import info.shillem.dao.SearchQuery;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseField;
 import info.shillem.sql.factory.SqlFactory;
@@ -44,24 +41,21 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         return new WhereColumn(field.name(), operator, value);
     }
 
-    protected void populateSelectQuery(SelectQuery select, PageQuery<E> query) {
+    protected void populateSelectQuery(SelectQuery select, Query<E> query) {
         query.getSchema().forEach((f) -> select.column(f.name()));
 
-        if (query instanceof FilterQuery) {
-            FilterQuery<E> q = (FilterQuery<E>) query;
-
-            LWhere wheres = select.wheres();
-
-            q.getFilters().forEach((f, value) -> wheres.and(
+        LWhere wheres = select.wheres();
+        
+        switch (query.getType()) {
+        case FILTER: 
+            query.getFilters().forEach((f, value) -> wheres.and(
                     createSelectQueryWhereColumn(f, ComparisonOperator.EQUAL, value)));
-        }
-
-        if (query instanceof SearchQuery) {
-            SearchQuery<E> q = (SearchQuery<E>) query;
-
-            LWhere wheres = select.wheres();
-
-            q.getPieces().forEach((piece) -> populateSelectQueryWhere(wheres, piece));
+            break;
+            
+        case SEARCH: 
+            query.getClauses().forEach((clause) -> populateSelectQueryWhere(wheres, clause));
+        default:
+            // Do nothing
         }
 
         query.getSorters().forEach((f, op) -> select.order(f.name(), op));
@@ -74,9 +68,9 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         }
     }
 
-    protected void populateSelectQueryWhere(LWhere wheres, SearchQuery.Piece piece) {
-        if (piece instanceof SearchQuery.Group) {
-            SearchQuery.Group group = (SearchQuery.Group) piece;
+    protected void populateSelectQueryWhere(LWhere wheres, Query.Clause clause) {
+        if (clause instanceof Query.Group) {
+            Query.Group group = (Query.Group) clause;
 
             if (group.isEmpty()) {
                 return;
@@ -84,33 +78,33 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
 
             WhereGroup wg = new WhereGroup();
 
-            group.getPieces().forEach((p) -> populateSelectQueryWhere(wg.wheres(), p));
+            group.getClauses().forEach((p) -> populateSelectQueryWhere(wg.wheres(), p));
 
             wheres.add(wg);
 
             return;
         }
 
-        if (piece instanceof SearchQuery.Logical) {
-            SearchQuery.Logical p = (SearchQuery.Logical) piece;
+        if (clause instanceof Query.Logical) {
+            Query.Logical p = (Query.Logical) clause;
 
             wheres.add(p.getOperator() == LogicalOperator.AND ? WhereLogic.AND : WhereLogic.OR);
 
             return;
         }
 
-        if (piece instanceof SearchQuery.Value) {
+        if (clause instanceof Query.Value) {
             @SuppressWarnings("unchecked")
-            SearchQuery.Value<E> p = (SearchQuery.Value<E>) piece;
+            Query.Value<E> p = (Query.Value<E>) clause;
 
             wheres.add(createSelectQueryWhereColumn(p.getField(), p.getOperator(), p.getValue()));
 
             return;
         }
 
-        if (piece instanceof SearchQuery.Values) {
+        if (clause instanceof Query.Values) {
             @SuppressWarnings("unchecked")
-            SearchQuery.Values<E> p = (SearchQuery.Values<E>) piece;
+            Query.Values<E> p = (Query.Values<E>) clause;
 
             wheres.add(createSelectQueryWhereColumn(p.getField(), p.getOperator(), p.getValues()));
 
@@ -118,7 +112,7 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         }
 
         throw new UnsupportedOperationException(
-                piece.getClass().getName().concat(" joining is not implemented"));
+                clause.getClass().getName().concat(" joining is not implemented"));
     }
 
     protected void pullColumn(
@@ -193,7 +187,7 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         return wrapper;
     }
 
-    protected List<T> wrapStatement(String syntax, Supplier<T> supplier, PageQuery<E> query)
+    protected List<T> wrapStatement(String syntax, Supplier<T> supplier, Query<E> query)
             throws SQLException {
         try (
                 Statement statement = factory.getConnection().createStatement(
