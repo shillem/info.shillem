@@ -9,7 +9,7 @@ public enum DeletionType {
         this.flag = flag;
     }
     
-    public boolean isHard() {
+    public boolean asBoolean() {
         return flag;
     }
     

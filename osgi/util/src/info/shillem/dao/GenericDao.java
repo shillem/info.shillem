@@ -16,6 +16,10 @@ public interface GenericDao<T extends BaseDto<E>, E extends Enum<E> & BaseField>
         throw new UnsupportedOperationException();
     }
 
+    default void delete(List<T> dtos) throws DaoException {
+        throw new UnsupportedOperationException();
+    }
+    
     default void delete(Query<E> query) throws DaoException {
         throw new UnsupportedOperationException();
     }

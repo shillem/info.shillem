@@ -151,14 +151,14 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         return result;
     }
 
-    protected void delete(DominoSilo silo, DeletionType deletionType, IdQuery<E> query) {
+    protected boolean delete(DominoSilo silo, DeletionType deletionType, IdQuery<E> query) {
         Document doc = null;
 
         try {
             doc = getDocumentById(silo, query.getId())
                     .orElseThrow(() -> DaoRecordException.asMissing(query.getId()));
 
-            deleteDocument(silo, doc, deletionType);
+            return deleteDocument(silo, doc, deletionType);
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
@@ -166,7 +166,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    protected boolean deleteDocument(DominoSilo silo, Document doc, DeletionType deletion)
+    protected boolean deleteDocument(DominoSilo silo, Document doc, DeletionType deletionType)
             throws NotesException {
         if (silo.isDocumentLockingEnabled()) {
             if (!doc.lock()) {
@@ -174,7 +174,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
         }
 
-        return doc.removePermanently(deletion.isHard());
+        return doc.removePermanently(deletionType.asBoolean());
     }
 
     private Optional<Document> getDocumentById(Database database, String id)
@@ -201,7 +201,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
-        Document doc = view.getDocumentByKey(key, match.isExact());
+        Document doc = view.getDocumentByKey(key, match.asBoolean());
 
         if (doc == null) {
             return Optional.empty();
@@ -218,7 +218,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throw new IllegalArgumentException("Key(s) cannot be empty");
         }
 
-        Document doc = view.getDocumentByKey(CollectionUtil.asVector(keys), match.isExact());
+        Document doc = view.getDocumentByKey(CollectionUtil.asVector(keys), match.asBoolean());
 
         if (doc == null) {
             return Optional.empty();
@@ -235,7 +235,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             View view, Object key, ViewMatch match) throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
-        return view.getAllEntriesByKey(key, match.isExact());
+        return view.getAllEntriesByKey(key, match.asBoolean());
     }
 
     protected ViewEntryCollection getViewEntriesByKeys(
@@ -246,14 +246,14 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throw new IllegalArgumentException("Key(s) cannot be empty");
         }
 
-        return view.getAllEntriesByKey(CollectionUtil.asVector(keys), match.isExact());
+        return view.getAllEntriesByKey(CollectionUtil.asVector(keys), match.asBoolean());
     }
 
     protected Optional<ViewEntry> getViewEntryByKey(
             View view, Object key, ViewMatch match) throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
-        ViewEntry entry = view.getEntryByKey(key, match.isExact());
+        ViewEntry entry = view.getEntryByKey(key, match.asBoolean());
 
         if (entry == null) {
             return Optional.empty();
@@ -270,7 +270,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throw new IllegalArgumentException("Key(s) cannot be empty");
         }
 
-        ViewEntry entry = view.getEntryByKey(CollectionUtil.asVector(keys), match.isExact());
+        ViewEntry entry = view.getEntryByKey(CollectionUtil.asVector(keys), match.asBoolean());
 
         if (entry == null) {
             return Optional.empty();

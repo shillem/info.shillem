@@ -9,7 +9,7 @@ public enum ViewMatch {
         this.flag = flag;
     }
     
-    public boolean isExact() {
+    public boolean asBoolean() {
         return flag;
     }
     
