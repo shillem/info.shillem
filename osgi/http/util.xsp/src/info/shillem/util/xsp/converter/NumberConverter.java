@@ -1,5 +1,6 @@
 package info.shillem.util.xsp.converter;
 
+import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -14,7 +15,9 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
 
-public class NumberConverter implements Converter, StateHolder {
+public class NumberConverter implements Converter, Serializable, StateHolder {
+
+    private static final long serialVersionUID = 1L;
 
     public static final String CONVERTER_ID = "info.shillem.xsp.NumberConverter";
 

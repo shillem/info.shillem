@@ -1,5 +1,7 @@
 package info.shillem.util.xsp.converter;
 
+import java.io.Serializable;
+
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -7,8 +9,11 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.ConverterException;
 
 import info.shillem.util.StringUtil;
+import info.shillem.util.xsp.component.ComponentUtil;
 
-public class EnumConverter implements Converter {
+public class EnumConverter implements Converter, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public static final String CONVERTER_ID = "info.shillem.xsp.EnumConverter";
 
@@ -50,6 +55,12 @@ public class EnumConverter implements Converter {
             if (className instanceof String) {
                 return Class.forName((String) className);
             }
+        }
+
+        String attr = ComponentUtil.getFacesAttr(component, "data-converter");
+
+        if (attr != null) {
+            return Class.forName(attr);
         }
 
         return component.getValueBinding("value").getType(context);
