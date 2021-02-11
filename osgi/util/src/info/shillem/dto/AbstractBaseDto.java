@@ -123,9 +123,9 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
 
     @Override
     public Object getValue(E key) {
-        ValueHolder valueHolder = getValueHolder(key);
+        ValueHolder holder = getValueHolder(key);
 
-        return valueHolder != null ? valueHolder.getValue() : null;
+        return holder != null ? holder.getValue() : null;
     }
 
     @Override
@@ -169,16 +169,16 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
 
     @Override
     public boolean isValueUpdated(E key) {
-        ValueHolder valueHolder = getValueHolder(key);
+        ValueHolder holder = getValueHolder(key);
 
-        return valueHolder != null && valueHolder.isUpdated();
+        return holder != null && holder.isUpdated();
     }
 
     @Override
     public void presetValue(E key, Object value) {
-        ValueHolder valueHolder = getValueHolder(key);
+        ValueHolder holder = getValueHolder(key);
 
-        if (valueHolder != null) {
+        if (holder != null) {
             throw new IllegalStateException(key + " value is already set");
         }
 
@@ -207,11 +207,11 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
 
     @Override
     public void setValue(E key, Object value) {
-        ValueHolder valueHolder = getValueHolder(key);
+        ValueHolder holder = getValueHolder(key);
         Class<?> type = key.getProperties().getFullType();
 
-        if (valueHolder != null) {
-            valueHolder.updateValue(value, type);
+        if (holder != null) {
+            holder.updateValue(value, type);
         } else {
             values.put(key, ValueHolder.newValue(value, type));
         }
@@ -219,20 +219,20 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
 
     @Override
     public void setValueAsUpdated(E key) {
-        ValueHolder valueHolder = getValueHolder(key);
+        ValueHolder holder = getValueHolder(key);
 
-        if (valueHolder != null) {
-            valueHolder.setAsUpdated();
+        if (holder != null) {
+            holder.setAsUpdated();
         }
     }
 
     @Override
     public void transactValue(E key, Object value) {
-        ValueHolder valueHolder = getValueHolder(key);
+        ValueHolder holder = getValueHolder(key);
         Class<?> type = key.getProperties().getFullType();
 
-        if (valueHolder != null) {
-            valueHolder.transactValue(value, type);
+        if (holder != null) {
+            holder.transactValue(value, type);
         } else {
             values.put(key, ValueHolder.newTransactionValue(value, type));
         }

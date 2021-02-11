@@ -3,6 +3,7 @@ package info.shillem.dto;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 public interface BaseDto<E extends Enum<E> & BaseField> {
 
@@ -15,6 +16,22 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
     void commit();
 
     void commit(Date commitDate);
+
+    default Object computeValueIfAbsent(E key, Function<E, Object> fn) {
+        Object value = getValue(key);
+
+        if (value == null) {
+            Object newValue = fn.apply(key);
+
+            if (newValue != null) {
+                setValue(key, newValue);
+
+                return newValue;
+            }
+        }
+
+        return value;
+    }
 
     boolean containsField(E key);
 
