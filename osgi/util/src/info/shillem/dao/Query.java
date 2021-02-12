@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.function.BiConsumer;
 
 import info.shillem.dto.BaseField;
 import info.shillem.util.ComparisonOperator;
@@ -304,18 +305,30 @@ public class Query<E extends Enum<E> & BaseField> {
     protected Map<String, Object> toMap() {
         Map<String, Object> properties = new TreeMap<>();
 
-        properties.put("collection", getCollection());
-        properties.put("clauses", getClauses());
-        properties.put("filters", getFilters());
-        properties.put("id", getId());
-        properties.put("limit", getLimit());
-        properties.put("locale", getLocale());
-        properties.put("offset", getOffset());
-        properties.put("options", getOptions());
-        properties.put("schema", getSchema());
-        properties.put("sorters", getSorters());
-        properties.put("summary", getSummary());
-        properties.put("type", getType());
+        BiConsumer<String, Object> consumer = (key, value) -> {
+            if (value == null) {
+                return;
+            }
+
+            if (value instanceof Collection && ((Collection<?>) value).isEmpty()) {
+                return;
+            }
+
+            properties.put(key, value);
+        };
+
+        consumer.accept("collection", getCollection());
+        consumer.accept("clauses", getClauses());
+        consumer.accept("filters", getFilters());
+        consumer.accept("id", getId());
+        consumer.accept("limit", getLimit());
+        consumer.accept("locale", getLocale());
+        consumer.accept("offset", getOffset());
+        consumer.accept("options", getOptions());
+        consumer.accept("schema", getSchema());
+        consumer.accept("sorters", getSorters());
+        consumer.accept("summary", getSummary());
+        consumer.accept("type", getType());
 
         return properties;
     }
