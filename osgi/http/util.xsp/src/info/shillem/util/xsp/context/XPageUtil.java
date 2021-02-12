@@ -15,7 +15,6 @@ import javax.faces.application.FacesMessage.Severity;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.PhaseEvent;
-import javax.faces.event.PhaseId;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -199,12 +198,12 @@ public class XPageUtil {
         return resolveVariable(FacesContext.getCurrentInstance(), name);
     }
 
-    public static void setResponseErrorHeader(FacesContext facesContext, PhaseId phaseId) {
+    public static void setResponseStatusCode(FacesContext facesContext, int statusCode) {
         HttpServletResponse response = (HttpServletResponse) facesContext
                 .getExternalContext()
                 .getResponse();
 
-        response.setHeader("X-XspError", phaseId.toString());
+        response.setStatus(statusCode);
     }
 
 }

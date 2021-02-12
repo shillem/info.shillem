@@ -285,15 +285,7 @@ function XPages() {
                             : eval(options.onComplete));
                 })
                 .catch((error) => {
-                    _self.allowSubmit();
-
-                    if (options.onError) {
-                        typeof options.onError === "function"
-                            ? options.onError(options, error)
-                            : eval(options.onError);
-
-                        return;
-                    }
+                    let errorDisplayed = false;
 
                     if (error.response && error.response.text) {
                         const start = error.response.text.search(/<(!doctype )*html|/i);
@@ -306,11 +298,33 @@ function XPages() {
 
                             return;
                         }
+
+                        if (
+                            refreshId !== "@none" &&
+                            error.response.text.search(new RegExp('<.+id="' + refreshId, "i")) > -1
+                        ) {
+                            _replaceNode(refreshId, error.response.text);
+
+                            errorDisplayed = true;
+                        }
+                    }
+
+                    _self.allowSubmit();
+
+                    if (options.onError) {
+                        typeof options.onError === "function"
+                            ? options.onError(options, error)
+                            : eval(options.onError);
+
+                        errorDisplayed = true;
+                    }
+
+                    if (errorDisplayed) {
+                        return;
                     }
 
                     let message = "An error occurred while updating the page.";
                     if (error.message) message += "\n" + error.message;
-
                     console.error(message);
                 })
         );

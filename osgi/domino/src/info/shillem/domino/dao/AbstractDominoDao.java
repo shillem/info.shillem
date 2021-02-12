@@ -856,8 +856,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                     entry.getNoteID()),
                     e);
         } catch (NotesException ne) {
-            return new RuntimeException(
-                    String.format("Unable to pull column value %s", field.name()), e);
+            return new RuntimeException(String.format(
+                    "Unable to pull column value %s",
+                    field.name()),
+                    e);
         }
     }
 
