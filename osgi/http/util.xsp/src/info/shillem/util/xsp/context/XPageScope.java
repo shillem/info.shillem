@@ -29,6 +29,12 @@ public enum XPageScope {
                     .computeIfAbsent(key, (k) -> new HashMap<String, Object>()));
         }
     },
+    PARAMETER {
+        @Override
+        public Map<String, Object> getValues(FacesContext facesContext) {
+            return CastUtil.toAnyMap(facesContext.getExternalContext().getRequestParameterMap());
+        }
+    },
     REQUEST {
         @Override
         public Map<String, Object> getValues(FacesContext facesContext) {
