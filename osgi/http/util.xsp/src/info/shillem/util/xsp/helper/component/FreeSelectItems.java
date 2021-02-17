@@ -16,7 +16,7 @@ public class FreeSelectItems extends StaticSelectItems {
     @Override
     public void validate(FacesContext facesContext, UIComponent component, Object value)
             throws ValidatorException {
-        List<SelectItem> selectItems = getValues();
+        List<SelectItem> selectItems = getItems();
 
         if (value == null) {
             selectItems.clear();

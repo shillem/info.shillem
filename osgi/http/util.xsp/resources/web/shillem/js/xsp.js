@@ -292,6 +292,9 @@ function XPages() {
                         const end = start < 0 ? -1 : error.response.text.search(/<\/html>/i);
 
                         if (start === 0 && end > 0) {
+                            _postFetchListeners.forEach((l) => l());
+                            _postFetchListeners = [];
+
                             const page = document.open("text/html", "replace");
                             page.write(error.response.text);
                             page.close();

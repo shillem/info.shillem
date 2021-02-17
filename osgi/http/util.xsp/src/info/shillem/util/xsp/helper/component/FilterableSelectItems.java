@@ -12,20 +12,17 @@ public class FilterableSelectItems extends StaticSelectItems {
 
     private List<SelectItem> filtered;
 
-    public FilterableSelectItems(Object value) {
-        setDefaultValue(value);
-    }
-
     public void filter(Collection<? extends Object> values) {
         Object defaultValue = getDefaultValue();
 
-        filtered = super.getValues().stream()
+        filtered = super.getItems().stream()
                 .filter(s -> s.getValue().equals(defaultValue) || values.contains(s.getValue()))
                 .collect(Collectors.toList());
     }
 
-    public List<SelectItem> getValues() {
-        return filtered != null ? filtered : super.getValues();
+    @Override
+    public List<SelectItem> getItems() {
+        return filtered != null ? filtered : super.getItems();
     }
 
 }

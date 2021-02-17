@@ -1,6 +1,7 @@
 package info.shillem.util.xsp.helper.component;
 
-import java.util.Collection;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -8,26 +9,35 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
-public interface SelectItems {
+public abstract class SelectItems implements Serializable {
 
-    void addItem(SelectItem item);
-    
-    void addValue(Object value);
-    
-    void addValue(Object value, String label);
-    
-    void addValues(Collection<? extends Object> values);
-    
-    Object getDefaultValue();
-        
-    List<SelectItem> getValues();
+    private static final long serialVersionUID = 1L;
 
-    void setDefaultValue(Object value);
-    
-    void setItems(List<SelectItem> selectItems);
-    
-    void sortItems(Comparator<SelectItem> comparator);
-    
-    void validate(FacesContext facesContext, UIComponent component, Object value);
-    
+    private List<SelectItem> items;
+    private Object defaultValue;
+
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+
+    public List<SelectItem> getItems() {
+        if (items == null) {
+            items = new ArrayList<>();
+        }
+
+        return items;
+    }
+
+    protected void setItems(List<SelectItem> items) {
+        this.items = items;
+    }
+
+    public void sort(Comparator<SelectItem> comparator) {
+        getItems().sort(comparator);
+    }
+
+    public void validate(FacesContext facesContext, UIComponent component, Object value) {
+
+    }
+
 }
