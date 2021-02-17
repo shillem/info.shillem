@@ -7,6 +7,12 @@ public class StringUtil {
     private StringUtil() {
         throw new UnsupportedOperationException();
     }
+    
+    public static String after(String value, String part) {
+        int index = value.indexOf(part);
+        
+        return index < 0 ? value : value.substring(index + part.length());
+    }
 
     public static String concat(String s1, String... s2) {
         return StringUtil.concat(' ', s1, s2);
