@@ -38,6 +38,14 @@ public class DaoRecordException extends DaoException {
         return exception;
     }
 
+    public static DaoRecordException asIllegalState(String reason) {
+        DaoRecordException exception = new DaoRecordException(DaoErrorCode.ILLEGAL_STATE_RECORD);
+        
+        exception.setProperty("reason", reason);
+        
+        return exception;
+    }
+    
     public static DaoRecordException asInvalidField(BaseField field, Object value) {
         DaoRecordException exception = new DaoRecordException(DaoErrorCode.INVALID_FIELD);
 
