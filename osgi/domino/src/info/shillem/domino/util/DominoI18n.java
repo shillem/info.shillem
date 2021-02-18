@@ -45,7 +45,11 @@ public class DominoI18n {
             String labelItemName,
             String prefixItemName)
             throws NotesException {
-        if (!doc.hasItem(valueItemName) || !doc.hasItem(labelItemName)) {
+        if (!doc.hasItem(valueItemName)) {
+            throw new IllegalStateException(valueItemName.concat(" value item does not exist"));
+        }
+        
+        if (!doc.hasItem(labelItemName)) {
             return Collections.emptyMap();
         }
 
