@@ -171,6 +171,10 @@ public class XPageUtil {
         return ((FacesContextEx) facesContext).getProperty(property);
     }
 
+    public static Locale getViewLocale(FacesContext facesContext) {
+        return facesContext.getViewRoot().getLocale();
+    }
+
     public static UIViewRootEx2 getViewRootEx2(FacesContext facesContext) {
         return (UIViewRootEx2) facesContext.getViewRoot();
     }
