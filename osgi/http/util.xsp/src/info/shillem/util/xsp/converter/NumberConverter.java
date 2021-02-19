@@ -264,7 +264,7 @@ public class NumberConverter implements Converter, Serializable, StateHolder {
             return NumberFormat.getPercentInstance(locale);
         }
 
-        if (type.matches("integer|double|number")) {
+        if (type.matches("bigDecimal|integer|double|number")) {
             return NumberFormat.getNumberInstance(locale);
         }
 
