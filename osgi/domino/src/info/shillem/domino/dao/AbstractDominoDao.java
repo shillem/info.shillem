@@ -433,11 +433,11 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             if (props.isList()) {
                 type = JSON
                         .getTypeFactory()
-                        .constructType(props.getType());
+                        .constructCollectionType(ArrayList.class, props.getType());
             } else {
                 type = JSON
                         .getTypeFactory()
-                        .constructCollectionType(ArrayList.class, props.getType());
+                        .constructType(props.getType());
             }
 
             return JSON.deserialize(mimeEntity.getContentAsText(), type);
