@@ -6,31 +6,6 @@
 	</faces-config-extension>
 
 	<component>
-		<display-name>Li</display-name>
-		<description>
-			A control that may contain other controls or text and acts as list item
-		</description>
-		<component-type>info.shillem.xsp.Li</component-type>
-		<component-class>info.shillem.util.xsp.component.UIListItem</component-class>
-
-		<group-type-ref>com.ibm.xsp.group.core</group-type-ref>
-		<group-type-ref>com.ibm.xsp.group.events</group-type-ref>
-		<group-type-ref>com.ibm.xsp.group.aria.role</group-type-ref>
-
-		<component-extension>
-			<base-component-type>com.ibm.xsp.Tag</base-component-type>
-
-			<component-family>com.ibm.xsp.Tag</component-family>
-			<renderer-type>info.shillem.xsp.Li</renderer-type>
-			<tag-name>li</tag-name>
-			<designer-extension>
-				<generate-id>false</generate-id>
-				<category>Shillem Controls</category>
-			</designer-extension>
-		</component-extension>
-	</component>
-
-	<component>
 		<display-name>New Line</display-name>
 		<description>A control to print a new line in the final HTML source code</description>
 		<component-type>info.shillem.xsp.NewLine</component-type>
@@ -39,6 +14,41 @@
 		<component-extension>
 			<tag-name>nl</tag-name>
 			<component-family>info.shillem.xsp.NewLine</component-family>
+			<designer-extension>
+				<generate-id>false</generate-id>
+				<category>Shillem Controls</category>
+			</designer-extension>
+		</component-extension>
+	</component>
+
+	<component>
+		<display-name>Tag</display-name>
+		<description>A control that will output any tag after the name property</description>
+		<component-type>info.shillem.xsp.Tag</component-type>
+		<component-class>info.shillem.util.xsp.component.UITag</component-class>
+
+		<group-type-ref>com.ibm.xsp.group.core</group-type-ref>
+		<group-type-ref>com.ibm.xsp.group.events</group-type-ref>
+		<group-type-ref>com.ibm.xsp.group.aria.role</group-type-ref>
+
+		<property>
+			<description>Disables the tag output</description>
+			<display-name>Disable Output Tag</display-name>
+			<property-name>disableOutputTag</property-name>
+			<property-class>java.lang.Boolean</property-class>
+        </property>
+		
+		<property>
+			<description>Indicates the name of the tag that will be output</description>
+			<display-name>Tag Name</display-name>
+			<property-name>name</property-name>
+			<property-class>java.lang.String</property-class>
+        </property>
+
+		<component-extension>
+			<component-family>info.shillem.xsp.Tag</component-family>
+			<renderer-type>info.shillem.xsp.Tag</renderer-type>
+			<tag-name>tag</tag-name>
 			<designer-extension>
 				<generate-id>false</generate-id>
 				<category>Shillem Controls</category>

@@ -8,17 +8,25 @@ import javax.faces.context.ResponseWriter;
 
 import com.ibm.xsp.renderkit.html_extended.HtmlTagRenderer;
 
-public class UIListItemRenderer extends HtmlTagRenderer {
+import info.shillem.util.xsp.component.UITag;
+
+public class UITagRenderer extends HtmlTagRenderer {
 
     @Override
     public void encodeBegin(FacesContext context, UIComponent component) throws IOException {
         if (!component.isRendered()) {
             return;
         }
+        
+        UITag tag = (UITag) component;
 
+        if (tag.isDisableOutputTag()) {
+            return;
+        }
+        
         ResponseWriter writer = context.getResponseWriter();
 
-        RenderUtil.startElement(writer, "li", component);
+        RenderUtil.startElement(writer, tag.getName(), component);
         writeId(writer, context, component);
         encodeHtmlAttributes(writer, component);
         RenderUtil.writeAttribute(writer, "role", component);
@@ -30,10 +38,16 @@ public class UIListItemRenderer extends HtmlTagRenderer {
         if (!component.isRendered()) {
             return;
         }
+        
+        UITag tag = (UITag) component;
+
+        if (tag.isDisableOutputTag()) {
+            return;
+        }
 
         ResponseWriter writer = context.getResponseWriter();
 
-        RenderUtil.endElement(writer, "li");
+        RenderUtil.endElement(writer, tag.getName());
         RenderUtil.writeNewLine(writer);
     }
 

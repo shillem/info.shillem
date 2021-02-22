@@ -1,23 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <faces-config>
 	<converter>
-		<converter-id>info.shillem.xsp.EnumConverter
-		</converter-id>
-		<converter-class>info.shillem.util.xsp.converter.EnumConverter
-		</converter-class>
+		<converter-id>info.shillem.xsp.EnumConverter</converter-id>
+		<converter-class>info.shillem.util.xsp.converter.EnumConverter</converter-class>
 	</converter>
 	<converter>
-		<converter-id>info.shillem.xsp.NumberConverter
-		</converter-id>
-		<converter-class>info.shillem.util.xsp.converter.NumberConverter
-		</converter-class>
+		<converter-id>info.shillem.xsp.NumberConverter</converter-id>
+		<converter-class>info.shillem.util.xsp.converter.NumberConverter</converter-class>
 	</converter>
 	<render-kit>
 		<renderer>
-			<component-family>com.ibm.xsp.Tag</component-family>
-			<renderer-type>info.shillem.xsp.Li</renderer-type>
-			<renderer-class>info.shillem.util.xsp.renderer.UIListItemRenderer
-			</renderer-class>
+			<component-family>info.shillem.xsp.Tag</component-family>
+			<renderer-type>info.shillem.xsp.Tag</renderer-type>
+			<renderer-class>info.shillem.util.xsp.renderer.UITagRenderer</renderer-class>
 		</renderer>
 	</render-kit>
 	<validator>
