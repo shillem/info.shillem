@@ -1,6 +1,5 @@
 package info.shillem.util.xsp.helper.component;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.faces.component.UIComponent;
@@ -12,7 +11,10 @@ public class DynamicSelectItems extends SelectItems {
     private static final long serialVersionUID = 1L;
 
     public void setItem(SelectItem value) {
-        super.setItems(Arrays.asList(value));
+        List<SelectItem> items = getItems();
+        
+        items.clear();
+        items.add(value);
     }
 
     public void setItemLabel(String value) {
@@ -47,8 +49,6 @@ public class DynamicSelectItems extends SelectItems {
         if (item != null) {
             return;
         }
-
-        getItems().clear();
 
         setItem(new SelectItem(value));
     }
