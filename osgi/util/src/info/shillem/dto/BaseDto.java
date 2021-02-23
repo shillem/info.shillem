@@ -35,7 +35,17 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
 
     boolean containsField(E key);
 
-    E fieldOf(String name);
+    default E fieldOf(String name) {
+        Class<E> cls = getFieldClass();
+        
+        for (E field : cls.getEnumConstants()) {
+            if (field.name().equals(name)) {
+                return field;
+            }
+        }
+        
+        return null;
+    }
 
     Boolean getBoolean(E key);
 
@@ -44,6 +54,8 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
     Date getDate(E key);
 
     Double getDouble(E key);
+
+    Class<E> getFieldClass();
 
     String getId();
 
