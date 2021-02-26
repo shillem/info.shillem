@@ -1,5 +1,7 @@
 package info.shillem.util;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 public class StringUtil {
@@ -7,15 +9,11 @@ public class StringUtil {
     private StringUtil() {
         throw new UnsupportedOperationException();
     }
-    
+
     public static String after(String value, String part) {
         int index = value.indexOf(part);
-        
-        return index < 0 ? value : value.substring(index + part.length());
-    }
 
-    public static String concat(String s1, String... s2) {
-        return StringUtil.concat(' ', s1, s2);
+        return index < 0 ? value : value.substring(index + part.length());
     }
 
     public static String concat(char separator, String s1, String... s2) {
@@ -39,6 +37,10 @@ public class StringUtil {
         }
 
         return null;
+    }
+
+    public static String concat(String s1, String... s2) {
+        return StringUtil.concat(' ', s1, s2);
     }
 
     public static Enum<?> enumFromString(Class<?> cls, String s) throws IllegalArgumentException {
@@ -70,6 +72,24 @@ public class StringUtil {
 
     public static String firstCharToUpperCase(String s) {
         return firstCharToCase(s, Character.toUpperCase(s.charAt(0)));
+    }
+
+    public static String getDigest(String value) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+
+            digest.update(value.getBytes());
+
+            StringBuilder builder = new StringBuilder();
+
+            for (byte b : digest.digest()) {
+                builder.append(String.format("%02x", b & 0xff));
+            }
+
+            return builder.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static String getExtension(String s) {
