@@ -1,12 +1,12 @@
 package info.shillem.util.xsp.converter;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.util.Currency;
 import java.util.Locale;
 
 import javax.faces.component.StateHolder;
@@ -20,18 +20,6 @@ public class NumberConverter implements Converter, Serializable, StateHolder {
     private static final long serialVersionUID = 1L;
 
     public static final String CONVERTER_ID = "info.shillem.xsp.NumberConverter";
-
-    private static final Class<?>[] GET_INSTANCE_PARAM_TYPES = { String.class };
-
-    private static Class<?> currencyClass;
-
-    static {
-        try {
-            currencyClass = Class.forName("java.util.Currency");
-        } catch (Exception e) {
-            // Do nothing
-        }
-    }
 
     private String currencyCode;
     private String currencySymbol;
@@ -52,40 +40,13 @@ public class NumberConverter implements Converter, Serializable, StateHolder {
         type = "number";
     }
 
-    private void configureCurrency(NumberFormat formatter) throws Exception {
-        if (currencyCode == null && currencySymbol == null) {
-            return;
-        }
-
-        String code = null;
-        String symbol = null;
-
-        if (currencyCode != null && currencySymbol != null) {
-            if (currencyClass != null) {
-                code = currencyCode;
-            } else {
-                symbol = currencySymbol;
-            }
-        } else if (currencyCode == null) {
-            symbol = currencySymbol;
-        } else if (currencyClass != null) {
-            code = currencyCode;
-        } else {
-            symbol = currencyCode;
-        }
-
-        if (code != null) {
-            Method method = currencyClass.getMethod("getInstance", GET_INSTANCE_PARAM_TYPES);
-            Object currency = method.invoke(null, new Object[] { code });
-
-            Class<?>[] paramTypes = new Class[] { currencyClass };
-            Class<?> numberFormatClass = Class.forName("java.text.NumberFormat");
-            method = numberFormatClass.getMethod("setCurrency", paramTypes);
-            method.invoke(formatter, new Object[] { currency });
-        } else {
+    private void configureCurrency(NumberFormat formatter) throws UnsupportedOperationException {
+        if (currencyCode != null) {
+            formatter.setCurrency(Currency.getInstance(currencyCode));
+        } else if (currencySymbol != null) {
             DecimalFormat df = (DecimalFormat) formatter;
             DecimalFormatSymbols dfs = df.getDecimalFormatSymbols();
-            dfs.setCurrencySymbol(symbol);
+            dfs.setCurrencySymbol(currencySymbol);
             df.setDecimalFormatSymbols(dfs);
         }
     }
@@ -130,7 +91,7 @@ public class NumberConverter implements Converter, Serializable, StateHolder {
             Locale locale = getLocale(context);
             NumberFormat parser = getNumberFormat(locale);
 
-            if ((pattern != null && !pattern.equals("")) || "currency".equals(type)) {
+            if ((pattern != null && !pattern.isEmpty()) || "currency".equals(type)) {
                 configureCurrency(parser);
             }
 
@@ -186,7 +147,7 @@ public class NumberConverter implements Converter, Serializable, StateHolder {
             NumberFormat formatter = getNumberFormat(locale);
             Number num = (Number) value;
 
-            if ((pattern != null && !pattern.equals("")) || ("currency".equals(type))) {
+            if ((pattern != null && !pattern.isEmpty()) || ("currency".equals(type))) {
                 configureCurrency(formatter);
             }
 
