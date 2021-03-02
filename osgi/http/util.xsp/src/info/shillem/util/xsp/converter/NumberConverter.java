@@ -6,6 +6,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Currency;
 import java.util.Locale;
 
@@ -123,8 +124,8 @@ public class NumberConverter implements Converter, Serializable, StateHolder {
             }
 
             return num;
-        } catch (Exception e) {
-            throw new ConverterException(e);
+        } catch (ParseException | RuntimeException e) {
+            throw new ConverterException(e.getMessage());
         }
     }
 
@@ -159,8 +160,8 @@ public class NumberConverter implements Converter, Serializable, StateHolder {
             }
 
             return formatter.format(num);
-        } catch (Exception e) {
-            throw new ConverterException(e);
+        } catch (RuntimeException e) {
+            throw new ConverterException(e.getMessage());
         }
     }
 
