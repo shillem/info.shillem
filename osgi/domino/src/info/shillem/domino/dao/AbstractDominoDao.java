@@ -22,7 +22,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -77,7 +80,12 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             Pattern.CASE_INSENSITIVE);
 
     protected static final JsonHandler JSON = new JsonHandler(new ObjectMapper()
-            .setSerializationInclusion(Include.NON_NULL));
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .setSerializationInclusion(Include.NON_NULL)
+            .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+            .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
+            .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)
+            .setVisibility(PropertyAccessor.SETTER, JsonAutoDetect.Visibility.NONE));
 
     protected final DominoFactory factory;
 
@@ -744,7 +752,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             DominoUtil.recycle(stm, mimeEntity);
         }
     }
-    
+
     protected Optional<Document> resolveDocumentByUrl(String url) throws NotesException {
         Matcher matcher = DOC_NOTES_URL_PATTERN.matcher(url);
 
