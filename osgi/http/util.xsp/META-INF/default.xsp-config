@@ -30,6 +30,7 @@
 		<group-type-ref>com.ibm.xsp.group.core</group-type-ref>
 		<group-type-ref>com.ibm.xsp.group.events</group-type-ref>
 		<group-type-ref>com.ibm.xsp.group.aria.role</group-type-ref>
+		<group-type-ref>com.ibm.xsp.group.FacesAttrsObject.complex</group-type-ref>
 
 		<property>
 			<description>Disables the tag output</description>
