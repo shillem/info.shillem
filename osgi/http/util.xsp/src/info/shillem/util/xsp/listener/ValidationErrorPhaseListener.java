@@ -13,8 +13,8 @@ public class ValidationErrorPhaseListener implements PhaseListener {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public void afterPhase(PhaseEvent phaseEvent) {
-        FacesContext facesContext = phaseEvent.getFacesContext();
+    public void afterPhase(PhaseEvent event) {
+        FacesContext facesContext = event.getFacesContext();
 
         if (facesContext.getMessages().hasNext()) {
             XPageUtil.setResponseStatusCode(facesContext, HttpServletResponse.SC_BAD_REQUEST);
@@ -22,8 +22,8 @@ public class ValidationErrorPhaseListener implements PhaseListener {
     }
 
     @Override
-    public void beforePhase(PhaseEvent phaseEvent) {
-        //
+    public void beforePhase(PhaseEvent event) {
+
     }
 
     @Override

@@ -10,15 +10,15 @@ import com.ibm.xsp.model.DataObject;
 
 import info.shillem.util.xsp.context.SerializableBiFunction;
 
-public class TypedDataObject<T> implements DataObject, Serializable {
+public abstract class TypedDataObject<T> implements DataObject, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final Class<T> cls;
-    private final BiFunction<Class<T>, String, T> fn;
-    private final Map<String, T> values;
+    protected final Class<T> cls;
+    protected final BiFunction<Class<T>, String, T> fn;
+    protected final Map<String, T> values;
 
-    public TypedDataObject(Class<T> cls, SerializableBiFunction<Class<T>, String, T> fn) {
+    protected TypedDataObject(Class<T> cls, SerializableBiFunction<Class<T>, String, T> fn) {
         this.cls = Objects.requireNonNull(cls, "Class cannot be null");
         this.fn = Objects.requireNonNull(fn, "Function cannot be null");
         this.values = new HashMap<>();
@@ -45,20 +45,6 @@ public class TypedDataObject<T> implements DataObject, Serializable {
         values.put(k, value);
 
         return value;
-    }
-
-    @Override
-    public boolean isReadOnly(Object key) {
-        return false;
-    }
-
-    public void removeValue(Object key) {
-        values.remove(key.toString());
-    }
-
-    @Override
-    public void setValue(Object key, Object value) {
-        values.put(key.toString(), cls.cast(value));
     }
 
 }

@@ -7,18 +7,18 @@ import javax.faces.event.PhaseEvent;
 
 import info.shillem.util.xsp.helper.component.Controller;
 import info.shillem.util.xsp.helper.component.SelectItems;
-import info.shillem.util.xsp.model.TypedDataObject;
+import info.shillem.util.xsp.model.ReadableDataObject;
 
 public abstract class PageBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private TypedDataObject<Controller> controllers;
-    private TypedDataObject<SelectItems> selectItems;
+    private ReadableDataObject<Controller> controllers;
+    private ReadableDataObject<SelectItems> selectItems;
 
     protected PageBean() {
-        controllers = new TypedDataObject<>(Controller.class, this::createTypedObject);
-        selectItems = new TypedDataObject<>(SelectItems.class, this::createTypedObject);
+        controllers = new ReadableDataObject<>(Controller.class, this::createTypedObject);
+        selectItems = new ReadableDataObject<>(SelectItems.class, this::createTypedObject);
     }
 
     public void afterRenderResponse(PhaseEvent event) {
@@ -33,11 +33,11 @@ public abstract class PageBean implements Serializable {
         throw new UnsupportedOperationException(cls.getName().concat(":").concat(id));
     }
 
-    public TypedDataObject<Controller> getControllers() {
+    public ReadableDataObject<Controller> getControllers() {
         return controllers;
     }
 
-    public TypedDataObject<SelectItems> getSelectItems() {
+    public ReadableDataObject<SelectItems> getSelectItems() {
         return selectItems;
     }
 
