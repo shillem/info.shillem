@@ -8,7 +8,9 @@ Require-Bundle: com.ibm.commons,
  com.ibm.xsp.extlib.core,
  info.shillem.util;visibility:=reexport
 Bundle-Vendor: Shillem Volpato
-Export-Package: info.shillem.util.xsp.component,
+Export-Package: info.shillem.util.xsp.annotation,
+ info.shillem.util.xsp.bean,
+ info.shillem.util.xsp.component,
  info.shillem.util.xsp.context,
  info.shillem.util.xsp.converter,
  info.shillem.util.xsp.dispatcher,

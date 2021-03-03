@@ -1,5 +1,6 @@
 package info.shillem.dto;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -37,15 +38,17 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
 
     default E fieldOf(String name) {
         Class<E> cls = getFieldClass();
-        
+
         for (E field : cls.getEnumConstants()) {
             if (field.name().equals(name)) {
                 return field;
             }
         }
-        
+
         return null;
     }
+
+    BigDecimal getBigDecimal(E key);
 
     Boolean getBoolean(E key);
 

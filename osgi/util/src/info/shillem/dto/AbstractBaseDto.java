@@ -1,6 +1,7 @@
 package info.shillem.dto;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -50,6 +51,11 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
         return values.containsKey(key);
     }
 
+    @Override
+    public BigDecimal getBigDecimal(E key) {
+        return getValue(key, BigDecimal.class);
+    }
+    
     @Override
     public Boolean getBoolean(E key) {
         return getValue(key, Boolean.class);
