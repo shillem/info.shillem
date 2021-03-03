@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiFunction;
 
 import com.ibm.xsp.model.DataObject;
 
@@ -15,7 +14,7 @@ public abstract class TypedDataObject<T> implements DataObject, Serializable {
     private static final long serialVersionUID = 1L;
 
     protected final Class<T> cls;
-    protected final BiFunction<Class<T>, String, T> fn;
+    protected final SerializableBiFunction<Class<T>, String, T> fn;
     protected final Map<String, T> values;
 
     protected TypedDataObject(Class<T> cls, SerializableBiFunction<Class<T>, String, T> fn) {
