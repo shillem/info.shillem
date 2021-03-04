@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface ManagedProperty {
 
+    boolean post() default false;
+    
     String value();
 
 }

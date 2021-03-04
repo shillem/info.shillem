@@ -1,6 +1,7 @@
 package info.shillem.util.xsp.context;
 
 import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,6 +40,8 @@ public abstract class ViewHandler extends ViewHandlerExImpl {
             throw new FacesException(e);
         }
 
+        Map<Field, String> deferred = new LinkedHashMap<>();
+
         for (Field field : bean.getClass().getDeclaredFields()) {
             ManagedProperty annotation = field.getAnnotation(ManagedProperty.class);
 
@@ -46,14 +49,15 @@ public abstract class ViewHandler extends ViewHandlerExImpl {
                 continue;
             }
 
-            try {
-                field.setAccessible(true);
-                field.set(bean, facesContext.getApplication()
-                        .createValueBinding(annotation.value())
-                        .getValue(facesContext));
-            } catch (Exception e) {
-                throw new FacesException(e);
+            String expression = annotation.value();
+
+            if (annotation.post()) {
+                deferred.put(field, expression);
+
+                continue;
             }
+
+            setManagedProperty(facesContext, bean, field, expression);
         }
 
         bean.init(facesContext);
@@ -65,6 +69,9 @@ public abstract class ViewHandler extends ViewHandlerExImpl {
         UIViewRootEx view = (UIViewRootEx) super.createView(facesContext, page);
         CastUtil.toAnyMap(view.getViewMap()).put(beanName, bean);
         requestScope.remove(beanName);
+
+        deferred.forEach(
+                (field, expression) -> setManagedProperty(facesContext, bean, field, expression));
 
         if (view.getBeforeRenderResponse() == null) {
             view.setBeforeRenderResponse(facesContext.getApplication().createMethodBinding(
@@ -104,5 +111,20 @@ public abstract class ViewHandler extends ViewHandlerExImpl {
     }
 
     protected abstract Set<Class<? extends PageBean>> getPageBeanClasses();
+
+    private void setManagedProperty(
+            FacesContext facesContext,
+            PageBean bean,
+            Field field,
+            String expression) {
+        try {
+            field.setAccessible(true);
+            field.set(bean, facesContext.getApplication()
+                    .createValueBinding(expression)
+                    .getValue(facesContext));
+        } catch (Exception e) {
+            throw new FacesException(e);
+        }
+    }
 
 }
