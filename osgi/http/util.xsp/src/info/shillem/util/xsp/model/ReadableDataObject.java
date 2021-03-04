@@ -2,11 +2,11 @@ package info.shillem.util.xsp.model;
 
 import info.shillem.util.xsp.context.SerializableBiFunction;
 
-public class ReadableDataObject<T> extends TypedDataObject<T> {
+public class ReadableDataObject<K, V> extends TypedDataObject<K, V> {
 
     private static final long serialVersionUID = 1L;
 
-    public ReadableDataObject(Class<T> cls, SerializableBiFunction<Class<T>, String, T> fn) {
+    public ReadableDataObject(Class<V> cls, SerializableBiFunction<K, Class<V>, V> fn) {
         super(cls, fn);
     }
 

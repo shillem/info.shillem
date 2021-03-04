@@ -2,11 +2,11 @@ package info.shillem.util.xsp.model;
 
 import info.shillem.util.xsp.context.SerializableBiFunction;
 
-public class WriteableDataObject<T> extends TypedDataObject<T> {
+public class WriteableDataObject<K, V> extends TypedDataObject<K, V> {
 
     private static final long serialVersionUID = 1L;
 
-    public WriteableDataObject(Class<T> cls, SerializableBiFunction<Class<T>, String, T> fn) {
+    public WriteableDataObject(Class<V> cls, SerializableBiFunction<K, Class<V>, V> fn) {
         super(cls, fn);
     }
 
@@ -16,12 +16,15 @@ public class WriteableDataObject<T> extends TypedDataObject<T> {
     }
 
     public void removeValue(Object key) {
-        values.remove(key.toString());
+        values.remove(key);
     }
 
     @Override
     public void setValue(Object key, Object value) {
-        values.put(key.toString(), cls.cast(value));
+        @SuppressWarnings("unchecked")
+        K k = (K) key;
+        
+        values.put(k, cls.cast(value));
     }
 
 }

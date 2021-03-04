@@ -9,37 +9,40 @@ import com.ibm.xsp.model.DataObject;
 
 import info.shillem.util.xsp.context.SerializableBiFunction;
 
-public abstract class TypedDataObject<T> implements DataObject, Serializable {
+public abstract class TypedDataObject<K, V> implements DataObject, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    protected final Class<T> cls;
-    protected final SerializableBiFunction<Class<T>, String, T> fn;
-    protected final Map<String, T> values;
+    protected final Class<V> cls;
+    protected final SerializableBiFunction<K, Class<V>, V> fn;
+    protected final Map<K, V> values;
 
-    protected TypedDataObject(Class<T> cls, SerializableBiFunction<Class<T>, String, T> fn) {
+    protected TypedDataObject(Class<V> cls, SerializableBiFunction<K, Class<V>, V> fn) {
         this.cls = Objects.requireNonNull(cls, "Class cannot be null");
         this.fn = Objects.requireNonNull(fn, "Function cannot be null");
         this.values = new HashMap<>();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Class<T> getType(Object key) {
-        Object value = getValue(key);
+    public Class<V> getType(Object key) {
+        V value = getValue(key);
 
-        return value != null ? (Class<T>) value.getClass() : null;
+        @SuppressWarnings("unchecked")
+        Class<V> valueClass = (Class<V>) (value != null ? value.getClass() : null);
+        
+        return valueClass;
     }
 
     @Override
-    public T getValue(Object key) {
-        String k = key.toString();
-
-        if (values.containsKey(k)) {
-            return values.get(k);
+    public V getValue(Object key) {
+        @SuppressWarnings("unchecked")
+        K k = (K) key;
+        
+        if (values.containsKey(key)) {
+            return values.get(key);
         }
 
-        T value = fn.apply(cls, k);
+        V value = fn.apply(k, cls);
 
         values.put(k, value);
 
