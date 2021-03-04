@@ -21,6 +21,10 @@ public class EnumConverter implements Converter, Serializable {
 
     @Override
     public Object getAsObject(FacesContext context, UIComponent component, String value) {
+        if (context == null || component == null) {
+            throw new NullPointerException();
+        }
+        
         if (value == null || value.isEmpty()) {
             return null;
         }
@@ -36,7 +40,11 @@ public class EnumConverter implements Converter, Serializable {
 
     @Override
     public String getAsString(FacesContext context, UIComponent component, Object value) {
-        return value.toString();
+        if (context == null || component == null) {
+            throw new NullPointerException();
+        }
+        
+        return value != null ? value.toString() : "";
     }
 
     public Object getClassName() {
