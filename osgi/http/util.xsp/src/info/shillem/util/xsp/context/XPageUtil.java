@@ -51,76 +51,76 @@ public class XPageUtil {
     }
 
     public static void addFacesMessage(
-            FacesContext facesContext,
+            FacesContext context,
             Severity severity,
             String messageId,
             Object... params) {
-        addFacesMessage(facesContext, null, severity, messageId, params);
+        addFacesMessage(context, null, severity, messageId, params);
     }
 
     public static void addFacesMessage(
-            FacesContext facesContext,
+            FacesContext context,
             String componentId,
             Severity severity,
             String messageId,
             Object... params) {
-        FacesMessage msg = MessageFactory.getMessage(facesContext, messageId, params);
+        FacesMessage msg = MessageFactory.getMessage(context, messageId, params);
 
         msg.setSeverity(severity);
 
-        addMessage(facesContext, componentId, msg);
+        addMessage(context, componentId, msg);
     }
 
-    public static void addFlashMessage(FacesContext facesContext, FacesMessage message) {
+    public static void addFlashMessage(FacesContext context, FacesMessage message) {
         CastUtil.toAnyList((List<?>) XPageScope.FLASH
-                .getValues(facesContext)
+                .getValues(context)
                 .computeIfAbsent(FLASH_MESSAGES_KEY, (k) -> new ArrayList<FacesMessage>()))
                 .add(message);
     }
 
-    public static void addMessage(FacesContext facesContext, FacesMessage message) {
-        addMessage(facesContext, null, message);
+    public static void addMessage(FacesContext context, FacesMessage message) {
+        addMessage(context, null, message);
     }
 
     public static void addMessage(
-            FacesContext facesContext,
+            FacesContext context,
             String componentId,
             FacesMessage message) {
-        facesContext.addMessage(componentId, message);
+        context.addMessage(componentId, message);
     }
 
     public static void addRequestListener(
-            FacesContext facesContext,
+            FacesContext context,
             FacesContextListener listener) {
-        ((FacesContextEx) facesContext).addRequestListener(listener);
+        ((FacesContextEx) context).addRequestListener(listener);
     }
 
-    public static void applySuccessRefreshId(FacesContext facesContext) {
-        applySuccessRefreshId(facesContext,
+    public static void applySuccessRefreshId(FacesContext context) {
+        applySuccessRefreshId(context,
                 (String) XPageScope.REQUEST.getValue(
-                        facesContext,
+                        context,
                         RequestParameter.SUCCESS_REFRESH_ID.getName()));
     }
 
-    public static void applySuccessRefreshId(FacesContext facesContext, ActionEvent event) {
-        applySuccessRefreshId(facesContext,
+    public static void applySuccessRefreshId(FacesContext context, ActionEvent event) {
+        applySuccessRefreshId(context,
                 ComponentUtil.getHandlerParam(
                         event.getComponent(),
                         RequestParameter.SUCCESS_REFRESH_ID.getName()));
     }
 
-    public static void applySuccessRefreshId(FacesContext facesContext, String refreshId) {
-        ((FacesContextEx) facesContext).setPartialRefreshId(refreshId);
+    public static void applySuccessRefreshId(FacesContext context, String refreshId) {
+        ((FacesContextEx) context).setPartialRefreshId(refreshId);
     }
 
-    public static void bindBeforeRenderResponseMethod(FacesContext facesContext, String el) {
-        getViewRootEx2(facesContext).setBeforeRenderResponse(
-                facesContext.getApplication().createMethodBinding(
+    public static void bindBeforeRenderResponseMethod(FacesContext context, String el) {
+        getViewRootEx2(context).setBeforeRenderResponse(
+                context.getApplication().createMethodBinding(
                         el, new Class<?>[] { PhaseEvent.class }));
     }
 
-    public static List<Locale> getApplicationLocales(FacesContext facesContext) {
-        Iterator<?> iterator = facesContext.getApplication().getSupportedLocales();
+    public static List<Locale> getApplicationLocales(FacesContext context) {
+        Iterator<?> iterator = context.getApplication().getSupportedLocales();
 
         return StreamUtil
                 .stream(iterator)
@@ -128,8 +128,8 @@ public class XPageUtil {
                 .collect(Collectors.toList());
     }
 
-    public static String getBaseUrl(FacesContext facesContext) {
-        return getBaseUrl(getHttpServletRequest(facesContext));
+    public static String getBaseUrl(FacesContext context) {
+        return getBaseUrl(getHttpServletRequest(context));
     }
 
     public static String getBaseUrl(HttpServletRequest request) {
@@ -149,61 +149,61 @@ public class XPageUtil {
         }
     }
 
-    public static List<FacesMessage> getFlashMessages(FacesContext facesContext) {
+    public static List<FacesMessage> getFlashMessages(FacesContext context) {
         return Collections.unmodifiableList(CastUtil.toAnyList((List<?>) XPageScope.FLASH
-                .getValues(facesContext)
+                .getValues(context)
                 .getOrDefault(FLASH_MESSAGES_KEY, Collections.emptyList())));
     }
 
-    public static HttpServletRequest getHttpServletRequest(FacesContext facesContext) {
-        return (HttpServletRequest) facesContext.getExternalContext().getRequest();
+    public static HttpServletRequest getHttpServletRequest(FacesContext context) {
+        return (HttpServletRequest) context.getExternalContext().getRequest();
     }
 
-    public static HttpServletResponse getHttpServletResponse(FacesContext facesContext) {
-        return (HttpServletResponse) facesContext.getExternalContext().getResponse();
+    public static HttpServletResponse getHttpServletResponse(FacesContext context) {
+        return (HttpServletResponse) context.getExternalContext().getResponse();
     }
 
-    public static String getPageName(FacesContext facesContext) {
-        return ((UIViewRootEx) facesContext.getViewRoot()).getPageName();
+    public static String getPageName(FacesContext context) {
+        return ((UIViewRootEx) context.getViewRoot()).getPageName();
     }
 
-    public static String getProperty(FacesContext facesContext, String property) {
-        return ((FacesContextEx) facesContext).getProperty(property);
+    public static String getProperty(FacesContext context, String property) {
+        return ((FacesContextEx) context).getProperty(property);
     }
 
-    public static Locale getViewLocale(FacesContext facesContext) {
-        return facesContext.getViewRoot().getLocale();
+    public static Locale getViewLocale(FacesContext context) {
+        return context.getViewRoot().getLocale();
     }
 
-    public static UIViewRootEx2 getViewRootEx2(FacesContext facesContext) {
-        return (UIViewRootEx2) facesContext.getViewRoot();
+    public static UIViewRootEx2 getViewRootEx2(FacesContext context) {
+        return (UIViewRootEx2) context.getViewRoot();
     }
 
-    public static boolean isPropertyEnabled(FacesContext facesContext, String property) {
-        return Boolean.valueOf(getProperty(facesContext, property));
+    public static boolean isPropertyEnabled(FacesContext context, String property) {
+        return Boolean.valueOf(getProperty(context, property));
     }
 
-    public static boolean isRenderingPhase(FacesContext facesContext) {
-        return getViewRootEx2(facesContext).isRenderingPhase();
+    public static boolean isRenderingPhase(FacesContext context) {
+        return getViewRootEx2(context).isRenderingPhase();
     }
 
-    public static void postScript(FacesContext facesContext, String script) {
-        getViewRootEx2(facesContext).postScript(script);
+    public static void postScript(FacesContext context, String script) {
+        getViewRootEx2(context).postScript(script);
     }
 
-    public static Object resolveVariable(FacesContext facesContext, String name) {
-        return facesContext
+    public static Object resolveVariable(FacesContext context, String name) {
+        return context
                 .getApplication()
                 .getVariableResolver()
-                .resolveVariable(facesContext, name);
+                .resolveVariable(context, name);
     }
 
     public static Object resolveVariable(String name) {
         return resolveVariable(FacesContext.getCurrentInstance(), name);
     }
 
-    public static void setResponseStatusCode(FacesContext facesContext, int statusCode) {
-        HttpServletResponse response = (HttpServletResponse) facesContext
+    public static void setResponseStatusCode(FacesContext context, int statusCode) {
+        HttpServletResponse response = (HttpServletResponse) context
                 .getExternalContext()
                 .getResponse();
 

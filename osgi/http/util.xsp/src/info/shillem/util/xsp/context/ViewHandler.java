@@ -1,7 +1,8 @@
 package info.shillem.util.xsp.context;
 
 import java.lang.reflect.Field;
-import java.util.LinkedHashMap;
+import java.lang.reflect.Method;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,9 +15,9 @@ import com.ibm.xsp.application.ViewHandlerExImpl;
 import com.ibm.xsp.component.UIViewRootEx;
 
 import info.shillem.util.CastUtil;
-import info.shillem.util.xsp.annotation.ManagedBean;
+import info.shillem.util.xsp.annotation.ManagedExecution;
+import info.shillem.util.xsp.annotation.ManagedPage;
 import info.shillem.util.xsp.annotation.ManagedProperty;
-import info.shillem.util.xsp.bean.PageBean;
 
 public abstract class ViewHandler extends ViewHandlerExImpl {
 
@@ -24,24 +25,7 @@ public abstract class ViewHandler extends ViewHandlerExImpl {
         super(delegate);
     }
 
-    @Override
-    public UIViewRoot createView(FacesContext facesContext, String page) {
-        Class<? extends PageBean> beanClass = getPageBeanClass(page.substring(1));
-
-        if (beanClass == null) {
-            return super.createView(facesContext, page);
-        }
-
-        PageBean bean;
-
-        try {
-            bean = beanClass.getConstructor().newInstance();
-        } catch (Exception e) {
-            throw new FacesException(e);
-        }
-
-        Map<Field, String> deferred = new LinkedHashMap<>();
-
+    private void bindFields(FacesContext context, Object bean) {
         for (Field field : bean.getClass().getDeclaredFields()) {
             ManagedProperty annotation = field.getAnnotation(ManagedProperty.class);
 
@@ -51,58 +35,105 @@ public abstract class ViewHandler extends ViewHandlerExImpl {
 
             String expression = annotation.value();
 
-            if (annotation.post()) {
-                deferred.put(field, expression);
+            try {
+                field.setAccessible(true);
+                field.set(bean, context.getApplication()
+                        .createValueBinding(expression)
+                        .getValue(context));
+            } catch (Exception e) {
+                throw new FacesException(e);
+            }
+        }
+    }
 
+    private void bindMethods(
+            FacesContext context,
+            UIViewRootEx root,
+            Object bean,
+            String beanName) {
+        for (Method method : bean.getClass().getMethods()) {
+            ManagedExecution execution = method.getAnnotation(ManagedExecution.class);
+
+            if (execution == null) {
                 continue;
             }
 
-            setManagedProperty(facesContext, bean, field, expression);
+            switch (execution.value()) {
+            case POST_CONSTRUCT: {
+                try {
+                    if (method.getParameterCount() == 0) {
+                        method.invoke(bean);
+                    } else {
+                        method.invoke(bean, new Object[] { context });
+                    }
+                } catch (Exception e) {
+                    throw new FacesException(e);
+                }
+
+                break;
+            }
+            case BEFORE_RENDER_RESPONSE:
+                if (root.getBeforeRenderResponse() == null) {
+                    root.setBeforeRenderResponse(context.getApplication().createMethodBinding(
+                            String.format("#{%s.%s}", beanName, method.getName()),
+                            new Class[] { PhaseEvent.class }));
+                }
+                break;
+            case AFTER_RENDER_RESPONSE:
+                if (root.getAfterRenderResponse() == null) {
+                    root.setAfterRenderResponse(context.getApplication().createMethodBinding(
+                            String.format("#{%s.%s}", beanName, method.getName()),
+                            new Class[] { PhaseEvent.class }));
+                }
+
+                break;
+            }
         }
-
-        bean.init(facesContext);
-
-        String beanName = beanClass.getAnnotation(ManagedBean.class).name();
-
-        Map<String, Object> requestScope = XPageScope.REQUEST.getValues(facesContext);
-        requestScope.put(beanName, bean);
-        UIViewRootEx view = (UIViewRootEx) super.createView(facesContext, page);
-        CastUtil.toAnyMap(view.getViewMap()).put(beanName, bean);
-        requestScope.remove(beanName);
-
-        deferred.forEach(
-                (field, expression) -> setManagedProperty(facesContext, bean, field, expression));
-
-        if (view.getBeforeRenderResponse() == null) {
-            view.setBeforeRenderResponse(facesContext.getApplication().createMethodBinding(
-                    "#{".concat(beanName).concat(".beforeRenderResponse}"),
-                    new Class[] { PhaseEvent.class }));
-        }
-
-        if (view.getAfterRenderResponse() == null) {
-            view.setAfterRenderResponse(facesContext.getApplication().createMethodBinding(
-                    "#{".concat(beanName).concat(".afterRenderResponse}"),
-                    new Class[] { PhaseEvent.class }));
-        }
-
-        return view;
     }
 
-    private Class<? extends PageBean> getPageBeanClass(String page) {
-        for (Class<? extends PageBean> cls : getPageBeanClasses()) {
-            ManagedBean annotation = cls.getAnnotation(ManagedBean.class);
+    @Override
+    protected UIViewRoot doCreateView(
+            FacesContext context,
+            String viewId,
+            Locale locale,
+            String renderKit) {
+        Class<?> beanClass = getViewBeanClass(viewId);
+
+        if (beanClass == null) {
+            return super.doCreateView(context, viewId, locale, renderKit);
+        }
+
+        Object bean;
+
+        try {
+            bean = beanClass.getConstructor().newInstance();
+        } catch (Exception e) {
+            throw new FacesException(e);
+        }
+
+        String beanName = beanClass.getAnnotation(ManagedPage.class).beanName();
+
+        Map<String, Object> requestScope = XPageScope.REQUEST.getValues(context);
+        requestScope.put(beanName, bean);
+        UIViewRoot root = super.doCreateView(context, viewId, locale, renderKit);
+        CastUtil.toAnyMap(root.getViewMap()).put(beanName, bean);
+        requestScope.remove(beanName);
+
+        bindFields(context, bean);
+        bindMethods(context, (UIViewRootEx) root, bean, beanName);
+
+        return root;
+    }
+
+    private Class<?> getViewBeanClass(String viewId) {
+        for (Class<?> cls : getViewBeanClasses()) {
+            ManagedPage annotation = cls.getAnnotation(ManagedPage.class);
 
             if (annotation == null) {
                 continue;
             }
 
-            String identifier = annotation.page();
-
-            if (identifier.isEmpty()) {
-                identifier = annotation.name();
-            }
-
-            if (identifier.equals(page)) {
+            if (annotation.viewId().equals(viewId)) {
                 return cls;
             }
         }
@@ -110,21 +141,6 @@ public abstract class ViewHandler extends ViewHandlerExImpl {
         return null;
     }
 
-    protected abstract Set<Class<? extends PageBean>> getPageBeanClasses();
-
-    private void setManagedProperty(
-            FacesContext facesContext,
-            PageBean bean,
-            Field field,
-            String expression) {
-        try {
-            field.setAccessible(true);
-            field.set(bean, facesContext.getApplication()
-                    .createValueBinding(expression)
-                    .getValue(facesContext));
-        } catch (Exception e) {
-            throw new FacesException(e);
-        }
-    }
+    protected abstract Set<Class<?>> getViewBeanClasses();
 
 }

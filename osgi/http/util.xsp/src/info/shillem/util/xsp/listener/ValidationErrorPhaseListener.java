@@ -14,10 +14,10 @@ public class ValidationErrorPhaseListener implements PhaseListener {
 
     @Override
     public void afterPhase(PhaseEvent event) {
-        FacesContext facesContext = event.getFacesContext();
+        FacesContext context = event.getFacesContext();
 
-        if (facesContext.getMessages().hasNext()) {
-            XPageUtil.setResponseStatusCode(facesContext, HttpServletResponse.SC_BAD_REQUEST);
+        if (context.getMessages().hasNext()) {
+            XPageUtil.setResponseStatusCode(context, HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 

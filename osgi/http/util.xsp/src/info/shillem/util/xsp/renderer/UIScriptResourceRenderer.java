@@ -43,20 +43,20 @@ public class UIScriptResourceRenderer extends ScriptResourceRenderer {
     }
 
     @Override
-    public void encodeResource(FacesContext facesContext, UIComponent component, Resource resource)
+    public void encodeResource(FacesContext context, UIComponent component, Resource resource)
             throws IOException {
         ScriptResource scriptResource = (ScriptResource) resource;
         Type resType = Type.parse(scriptResource.getType());
 
         if (resType == Type.JAVASCRIPT) {
-            super.encodeResource(facesContext, component, resource);
+            super.encodeResource(context, component, resource);
         } else {
-            encodeTypedResource(facesContext, component, resource);
+            encodeTypedResource(context, component, resource);
         }
     }
 
     public void encodeTypedResource(
-            FacesContext facesContext, UIComponent component, Resource resource)
+            FacesContext context, UIComponent component, Resource resource)
             throws IOException {
         ScriptResource scriptResource = (ScriptResource) resource;
 
@@ -86,7 +86,7 @@ public class UIScriptResourceRenderer extends ScriptResourceRenderer {
                     .concat(Optional.ofNullable(scriptResource.getCharset()).orElse(""))
                     .concat(tail);
 
-            UIViewRootEx root = (UIViewRootEx) facesContext.getViewRoot();
+            UIViewRootEx root = (UIViewRootEx) context.getViewRoot();
 
             if (root.hasEncodeProperty(identifier)) {
                 return;
@@ -95,19 +95,19 @@ public class UIScriptResourceRenderer extends ScriptResourceRenderer {
             root.putEncodeProperty(identifier, Boolean.TRUE);
         }
 
-        ResponseWriter writer = facesContext.getResponseWriter();
+        ResponseWriter writer = context.getResponseWriter();
 
         RenderUtil.startElement(writer, "script", component);
         RenderUtil.writeAttribute(writer, "type", Type.JAVASCRIPT.getType(), "type");
         RenderUtil.writeAttribute(writer, "charset", scriptResource.getCharset(), "charset");
         RenderUtil.writeURIAttribute(writer,
-                "src", HtmlRendererUtil.getImageURL(facesContext, scriptResource.getSrc()), "src");
+                "src", HtmlRendererUtil.getImageURL(context, scriptResource.getSrc()), "src");
 
         for (Map.Entry<String, String> attr : resAttrs.entrySet()) {
             RenderUtil.writeAttribute(writer, attr.getKey(), attr.getValue(), attr.getKey());
         }
 
-        AttrsUtil.encodeAttrs(facesContext, writer, (FacesAttrsObject) scriptResource);
+        AttrsUtil.encodeAttrs(context, writer, (FacesAttrsObject) scriptResource);
         RenderUtil.writeUnescapedText(writer, scriptResource.getContents());
         RenderUtil.endElement(writer, "script");
         RenderUtil.writeNewLine(writer);

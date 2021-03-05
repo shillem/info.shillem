@@ -70,14 +70,14 @@ public class UIDojoModuleResourceRenderer extends DojoModuleResourceRenderer {
             Pattern.compile("async:\\s*true", Pattern.CASE_INSENSITIVE);
 
     @Override
-    public void encodeResource(FacesContext facesContext, UIComponent component, Resource resource)
+    public void encodeResource(FacesContext context, UIComponent component, Resource resource)
             throws IOException {
         DojoModuleResource dojoResource = (DojoModuleResource) resource;
 
         String name = dojoResource.getName();
         String condition = dojoResource.getCondition();
 
-        UIViewRootEx root = (UIViewRootEx) facesContext.getViewRoot();
+        UIViewRootEx root = (UIViewRootEx) context.getViewRoot();
         String property = "resource_" + DojoModuleResource.class.getName() + name + condition;
 
         if (root.hasEncodeProperty(property)) {
@@ -89,16 +89,16 @@ public class UIDojoModuleResourceRenderer extends DojoModuleResourceRenderer {
         DojoModulePathResource dojoModulePathResource = DojoModulePathLoader
                 .lookupExtensionModulePath(name);
         if ((dojoModulePathResource != null) && (dojoModulePathResource.isRendered())) {
-            dojoModulePathResource.encodeObject(facesContext, component);
+            dojoModulePathResource.encodeObject(context, component);
         }
 
-        ResponseWriter writer = facesContext.getResponseWriter();
+        ResponseWriter writer = context.getResponseWriter();
 
         RenderUtil.startElement(writer, "script", component);
         RenderUtil.writeAttribute(writer, "type", "text/javascript");
 
         StringBuilder builder = new StringBuilder();
-        DojoLoader dojoLoader = getDojoLoader((ApplicationEx) facesContext.getApplication());
+        DojoLoader dojoLoader = getDojoLoader((ApplicationEx) context.getApplication());
 
         if (StringUtil.isEmpty(condition)) {
             dojoLoader.print(builder, name);

@@ -6,9 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface ManagedProperty {
+@Target(ElementType.TYPE)
+public @interface ManagedPage {
+
+    String beanName();
     
-    String value();
+    String viewId();
 
 }

@@ -73,21 +73,21 @@ public class UITag extends UIComponentBase implements FacesAttrsObject, ThemeCon
         return value != null ? (Boolean) value : false;
     }
 
-    public void restoreState(FacesContext facesContext, Object value) {
+    public void restoreState(FacesContext context, Object value) {
         Object[] values = (Object[]) value;
 
-        super.restoreState(facesContext, values[0]);
+        super.restoreState(context, values[0]);
         name = (String) values[1];
         disableOutputTag = ((Boolean) values[2]).booleanValue();
-        attrs = StateHolderUtil.restoreList(facesContext, this, values[3]);
+        attrs = StateHolderUtil.restoreList(context, this, values[3]);
     }
 
-    public Object saveState(FacesContext facesContext) {
+    public Object saveState(FacesContext context) {
         Object[] values = new Object[] {
-                super.saveState(facesContext),
+                super.saveState(context),
                 name,
                 Boolean.valueOf(disableOutputTag),
-                StateHolderUtil.saveList(facesContext, attrs) };
+                StateHolderUtil.saveList(context, attrs) };
 
         return values;
     }

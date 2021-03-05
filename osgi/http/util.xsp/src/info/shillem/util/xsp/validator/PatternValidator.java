@@ -32,7 +32,7 @@ public class PatternValidator implements StateHolder, Validator {
     }
 
     @Override
-    public void restoreState(FacesContext facesContext, Object state) {
+    public void restoreState(FacesContext context, Object state) {
         Object[] values = (Object[]) state;
 
         this.message = (String) values[0];
@@ -40,7 +40,7 @@ public class PatternValidator implements StateHolder, Validator {
     }
 
     @Override
-    public Object saveState(FacesContext facesContext) {
+    public Object saveState(FacesContext context) {
         return new Object[] { this.message, this.pattern };
     }
 
@@ -62,7 +62,7 @@ public class PatternValidator implements StateHolder, Validator {
     }
 
     @Override
-    public void validate(FacesContext facesContext, UIComponent component, Object value)
+    public void validate(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
         if (!(value instanceof String)) {
             return;

@@ -42,28 +42,28 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
 
     @Override
     protected void addCommonResources(
-            FacesContext facesContext,
+            FacesContext context,
             UIViewRootEx root,
             List<Resource> resources)
             throws IOException {
-        super.addCommonResources(facesContext, root, resources);
+        super.addCommonResources(context, root, resources);
 
         if ("none".equalsIgnoreCase(
                 XPageUtil.getProperty(
-                        facesContext, "xsp.client.script.libraries"))
-                && XPageUtil.isPropertyEnabled(facesContext,
+                        context, "xsp.client.script.libraries"))
+                && XPageUtil.isPropertyEnabled(context,
                         "xsp.client.script.".concat(XspLoader.NAMESPACE))) {
             resources.add(SCRIPT_XSP);
         }
 
-        if (XPageUtil.isPropertyEnabled(facesContext, "xsp.client.script.jQuery.defineAmd")) {
+        if (XPageUtil.isPropertyEnabled(context, "xsp.client.script.jQuery.defineAmd")) {
             resources.add(SCRIPT_JQUERY_DEFINE_AMD);
         }
     }
 
     @Override
     protected void addPageResources(
-            FacesContext facesContext,
+            FacesContext context,
             UIViewRootEx root,
             List<Resource> resources)
             throws IOException {
@@ -74,8 +74,8 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
         }
 
         pageResources.sort((res1, res2) -> {
-            boolean res1Low = isScriptResourceLowPriority(facesContext, res1);
-            boolean res2Low = isScriptResourceLowPriority(facesContext, res2);
+            boolean res1Low = isScriptResourceLowPriority(context, res1);
+            boolean res2Low = isScriptResourceLowPriority(context, res2);
 
             if (res1Low && !res2Low) return -1;
             if (!res1Low && res2Low) return 1;
@@ -87,7 +87,7 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
 
     @Override
     protected List<Resource> buildResourceList(
-            FacesContext facesContext,
+            FacesContext context,
             UIViewRootEx root,
             boolean commonResources,
             boolean customizerResources,
@@ -97,19 +97,19 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
         List<Resource> resources = new ArrayList<>();
 
         if (pageResources) {
-            addPageResources(facesContext, root, resources);
+            addPageResources(context, root, resources);
         }
 
         if (commonResources) {
-            addCommonResources(facesContext, root, resources);
+            addCommonResources(context, root, resources);
         }
 
         if (customizerResources) {
-            addCustomizerResources(facesContext, root, resources);
+            addCustomizerResources(context, root, resources);
         }
 
         if (encodeResources) {
-            addEncodeResources(facesContext, root, resources);
+            addEncodeResources(context, root, resources);
         }
 
         return resources;
@@ -117,34 +117,34 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
 
     @Override
     protected void encodeEndPage(
-            FacesContext facesContext,
+            FacesContext context,
             ResponseWriter writer,
             UIViewRootEx root)
             throws IOException {
         XspHttpServletResponse response = null;
 
-        if (facesContext instanceof FacesContextEx) {
-            response = ((FacesContextExImpl) facesContext).getXspResponse();
+        if (context instanceof FacesContextEx) {
+            response = ((FacesContextExImpl) context).getXspResponse();
         }
 
         if (response == null) {
             List<Resource> resources =
-                    buildResourceList(facesContext, root, false, false, false, true);
-            encodeResourcesList(facesContext, root, writer, resources);
+                    buildResourceList(context, root, false, false, false, true);
+            encodeResourcesList(context, root, writer, resources);
         }
 
-        encodeHtmlEnd(facesContext, root, writer);
+        encodeHtmlEnd(context, root, writer);
 
         if (response != null) {
             response.switchToHeader(writer);
-            encodeHtmlHead(facesContext, root, writer);
+            encodeHtmlHead(context, root, writer);
             response.switchToBody(writer);
         }
     }
 
     @Override
     protected void encodeHtmlAttributes(
-            FacesContext facesContext,
+            FacesContext context,
             UIViewRootEx root,
             ResponseWriter writer,
             boolean xhtml) throws IOException {
@@ -166,7 +166,7 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
 
     @Override
     protected void encodeHtmlBodyStart(
-            FacesContext facesContext,
+            FacesContext context,
             UIViewRootEx root,
             ResponseWriter writer) throws IOException {
         RenderUtil.startElement(writer, "body", (UIComponent) root);
@@ -185,7 +185,7 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
         RenderUtil.writeNewLine(writer);
     }
 
-    private void encodeHtmlEnd(FacesContext facesContext, UIViewRootEx root, ResponseWriter writer)
+    private void encodeHtmlEnd(FacesContext context, UIViewRootEx root, ResponseWriter writer)
             throws IOException {
         List<Resource> pageResources = root.getResources();
 
@@ -202,7 +202,7 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
                 .filter((res) -> res instanceof ScriptResource)
                 .map(ScriptResource.class::cast)
                 .forEach((res) -> Unthrow.on(() -> {
-                    ResourceRenderer renderer = getScriptResourceRenderer(facesContext, res);
+                    ResourceRenderer renderer = getScriptResourceRenderer(context, res);
 
                     if (!(renderer instanceof UIScriptResourceRenderer)) {
                         return;
@@ -212,7 +212,7 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
 
                     switch (UIScriptResourceRenderer.Type.parse(res.getType())) {
                     case JAVASCRIPT_ASYNC:
-                        uisr.encodeTypedResource(facesContext, root, res);
+                        uisr.encodeTypedResource(context, root, res);
                         break;
                     case JAVASCRIPT_ASYNC_NOAMD:
                         resNoAmd.put(res, uisr);
@@ -237,7 +237,7 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
         RenderUtil.writeNewLine(writer);
 
         resNoAmd.forEach((script, renderer) -> Unthrow.on(
-                () -> renderer.encodeTypedResource(facesContext, root, script)));
+                () -> renderer.encodeTypedResource(context, root, script)));
 
         RenderUtil.startElement(writer, "script", root);
         RenderUtil.writeUnescapedText(writer, "'function' == typeof define"
@@ -250,21 +250,21 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
     }
 
     private ResourceRenderer getScriptResourceRenderer(
-            FacesContext facesContext,
+            FacesContext context,
             ScriptResource scriptResource) {
         Renderer renderer = FacesUtil.getRenderer(
-                facesContext, scriptResource.getFamily(), scriptResource.getRendererType());
+                context, scriptResource.getFamily(), scriptResource.getRendererType());
 
         return (ResourceRenderer) FacesUtil.getRendererAs(renderer, ResourceRenderer.class);
     }
 
-    private boolean isScriptResourceLowPriority(FacesContext facesContext, Resource resource) {
+    private boolean isScriptResourceLowPriority(FacesContext context, Resource resource) {
         if (!(resource instanceof ScriptResource)) {
             return false;
         }
 
         ScriptResource scriptResource = (ScriptResource) resource;
-        Renderer scriptResourceRenderer = getScriptResourceRenderer(facesContext, scriptResource);
+        Renderer scriptResourceRenderer = getScriptResourceRenderer(context, scriptResource);
 
         if (!(scriptResourceRenderer instanceof UIScriptResourceRenderer)) {
             return false;

@@ -40,7 +40,7 @@ public class DynamicSelectItems extends SelectItems {
     }
 
     @Override
-    public void validate(FacesContext facesContext, UIComponent component, Object value) {
+    public void validate(FacesContext context, UIComponent component, Object value) {
         SelectItem item = getItems().stream()
                 .filter((i) -> i.getValue().equals(value))
                 .findFirst()

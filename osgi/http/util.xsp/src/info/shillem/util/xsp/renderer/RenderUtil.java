@@ -52,10 +52,10 @@ public class RenderUtil {
     }
 
     public static void writeFacesAttrs(
-            FacesContext facesContext, ResponseWriter writer, UIComponent component)
+            FacesContext context, ResponseWriter writer, UIComponent component)
             throws IOException {
         if (component instanceof FacesAttrsObject) {
-            AttrsUtil.encodeAttrs(facesContext, writer, (FacesAttrsObject) component);
+            AttrsUtil.encodeAttrs(context, writer, (FacesAttrsObject) component);
         }
     }
 

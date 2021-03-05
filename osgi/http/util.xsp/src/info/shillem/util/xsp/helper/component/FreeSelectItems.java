@@ -14,7 +14,7 @@ public class FreeSelectItems extends StaticSelectItems {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public void validate(FacesContext facesContext, UIComponent component, Object value)
+    public void validate(FacesContext context, UIComponent component, Object value)
             throws ValidatorException {
         List<SelectItem> selectItems = getItems();
 

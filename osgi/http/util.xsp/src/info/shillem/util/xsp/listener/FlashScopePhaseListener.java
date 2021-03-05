@@ -14,10 +14,10 @@ public class FlashScopePhaseListener implements PhaseListener {
 
     @Override
     public void afterPhase(PhaseEvent phaseEvent) {
-        FacesContext facesContext = phaseEvent.getFacesContext();
+        FacesContext context = phaseEvent.getFacesContext();
 
-        if (!"POST".equals(XPageUtil.getHttpServletRequest(facesContext).getMethod())) {
-            XPageScope.FLASH.getValues(facesContext).clear();
+        if (!"POST".equals(XPageUtil.getHttpServletRequest(context).getMethod())) {
+            XPageScope.FLASH.getValues(context).clear();
         }
     }
 

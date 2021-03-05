@@ -14,43 +14,41 @@ import info.shillem.util.CastUtil;
 public enum XPageScope {
     APPLICATION {
         @Override
-        public Map<String, Object> getValues(FacesContext facesContext) {
-            return CastUtil.toAnyMap(facesContext.getExternalContext().getApplicationMap());
+        public Map<String, Object> getValues(FacesContext context) {
+            return CastUtil.toAnyMap(context.getExternalContext().getApplicationMap());
         }
     },
     FLASH {
         @Override
-        public Map<String, Object> getValues(FacesContext facesContext) {
-            Map<String, Object> sessionMap = SESSION.getValues(facesContext);
-
-            String key = "flashScope";
+        public Map<String, Object> getValues(FacesContext context) {
+            Map<String, Object> sessionMap = SESSION.getValues(context);
 
             return CastUtil.toAnyMap((Map<?, ?>) sessionMap
-                    .computeIfAbsent(key, (k) -> new HashMap<String, Object>()));
+                    .computeIfAbsent(FLASH_SCOPE_NAME, (k) -> new HashMap<String, Object>()));
         }
     },
     PARAMETER {
         @Override
-        public Map<String, Object> getValues(FacesContext facesContext) {
-            return CastUtil.toAnyMap(facesContext.getExternalContext().getRequestParameterMap());
+        public Map<String, Object> getValues(FacesContext context) {
+            return CastUtil.toAnyMap(context.getExternalContext().getRequestParameterMap());
         }
     },
     REQUEST {
         @Override
-        public Map<String, Object> getValues(FacesContext facesContext) {
-            return CastUtil.toAnyMap(facesContext.getExternalContext().getRequestMap());
+        public Map<String, Object> getValues(FacesContext context) {
+            return CastUtil.toAnyMap(context.getExternalContext().getRequestMap());
         }
     },
     SESSION {
         @Override
-        public Map<String, Object> getValues(FacesContext facesContext) {
-            return CastUtil.toAnyMap(facesContext.getExternalContext().getSessionMap());
+        public Map<String, Object> getValues(FacesContext context) {
+            return CastUtil.toAnyMap(context.getExternalContext().getSessionMap());
         }
     },
     VIEW {
         @Override
-        public Map<String, Object> getValues(FacesContext facesContext) {
-            UIViewRoot root = facesContext.getViewRoot();
+        public Map<String, Object> getValues(FacesContext context) {
+            UIViewRoot root = context.getViewRoot();
 
             if (root instanceof UIViewRootEx) {
                 return CastUtil.toAnyMap(((UIViewRootEx) root).getViewMap());
@@ -59,15 +57,17 @@ public enum XPageScope {
             return Collections.emptyMap();
         };
     };
+    
+    public final static String FLASH_SCOPE_NAME = "flashScope";
 
-    public Object getValue(FacesContext facesContext, String key) {
-        return getValues(facesContext).get(key);
+    public Object getValue(FacesContext context, String key) {
+        return getValues(context).get(key);
     }
 
-    public abstract Map<String, Object> getValues(FacesContext facesContext);
+    public abstract Map<String, Object> getValues(FacesContext context);
 
-    public void setValue(FacesContext facesContext, String key, Object value) {
-        getValues(facesContext).put(key, value);
+    public void setValue(FacesContext context, String key, Object value) {
+        getValues(context).put(key, value);
     }
 
 }
