@@ -29,7 +29,7 @@ public abstract class TypedDataObject<K, V> implements DataObject, Serializable 
 
         @SuppressWarnings("unchecked")
         Class<V> valueClass = (Class<V>) (value != null ? value.getClass() : null);
-        
+
         return valueClass;
     }
 
@@ -37,7 +37,7 @@ public abstract class TypedDataObject<K, V> implements DataObject, Serializable 
     public V getValue(Object key) {
         @SuppressWarnings("unchecked")
         K k = (K) key;
-        
+
         if (values.containsKey(key)) {
             return values.get(key);
         }
