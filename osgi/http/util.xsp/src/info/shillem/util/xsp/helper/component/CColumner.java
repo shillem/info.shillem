@@ -7,15 +7,16 @@ import info.shillem.util.OrderOperator;
 import info.shillem.util.xsp.dispatcher.Event;
 import info.shillem.util.xsp.model.ReadableDataObject;
 
-public class Columner extends EventProviderController {
+public class CColumner extends CEventProvider {
 
     public static class Column implements Serializable {
+
         private static final long serialVersionUID = 1L;
 
         private final String name;
-        private final Columner columner;
+        private final CColumner columner;
 
-        private Column(String name, Columner columner) {
+        private Column(String name, CColumner columner) {
             this.name = name;
             this.columner = columner;
         }
@@ -25,11 +26,15 @@ public class Columner extends EventProviderController {
         }
 
         public OrderOperator getOrder() {
-            return this != columner.column ? OrderOperator.ASCENDING : columner.order;
+            return isSelected() ? columner.order : OrderOperator.ASCENDING;
         }
 
         public String getRefreshId() {
             return columner.getRefreshId();
+        }
+
+        public boolean isSelected() {
+            return this == columner.column;
         }
 
         public void toggle() {
@@ -50,7 +55,7 @@ public class Columner extends EventProviderController {
     private Column column;
     private OrderOperator order;
 
-    public Columner(String id, String refreshId) {
+    public CColumner(String id, String refreshId) {
         this.id = Objects.requireNonNull(id, "Id cannot be null");
         this.refreshId = Objects.requireNonNull(refreshId, "Refresh Id cannot be null");
         this.columns = new ReadableDataObject<>(Column.class, (n, cls) -> new Column(n, this));
@@ -77,9 +82,9 @@ public class Columner extends EventProviderController {
         this.order = Objects.requireNonNull(order, "Order cannot be null");
     }
 
-    private void toggleColumn(Column column) {
-        if (column != this.column) {
-            this.column = column;
+    private void toggleColumn(Column value) {
+        if (value != column) {
+            column = value;
         } else {
             order = order == OrderOperator.ASCENDING
                     ? OrderOperator.DESCENDING
@@ -87,7 +92,7 @@ public class Columner extends EventProviderController {
         }
 
         fireEvent(new Event(EventId.TOGGLE_COLUMN)
-                .setProperty("column", column)
+                .setProperty("column", value)
                 .setProperty("id", id)
                 .setProperty("order", order));
     }

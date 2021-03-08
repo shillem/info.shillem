@@ -8,7 +8,7 @@ import info.shillem.util.xsp.dispatcher.Event.Id;
 import info.shillem.util.xsp.dispatcher.EventConsumer;
 import info.shillem.util.xsp.dispatcher.EventProvider;
 
-public abstract class EventProviderController implements Controller, EventProvider {
+public abstract class CEventProvider implements Controller, EventProvider {
 
     private static final long serialVersionUID = 1L;
 

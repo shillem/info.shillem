@@ -6,7 +6,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
-public class DynamicSelectItems extends SelectItems {
+public class SiDynamic extends SelectItems {
 
     private static final long serialVersionUID = 1L;
 

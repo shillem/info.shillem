@@ -9,7 +9,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 import javax.faces.validator.ValidatorException;
 
-public class FreeSelectItems extends StaticSelectItems {
+public class SiFree extends SiStatic {
 
     private static final long serialVersionUID = 1L;
 

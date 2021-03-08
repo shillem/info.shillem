@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import javax.faces.model.SelectItem;
 
-public class FilterableSelectItems extends StaticSelectItems {
+public class SiFilterable extends SiStatic {
 
     private static final long serialVersionUID = 1L;
 

@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.faces.model.SelectItem;
 
-public class StaticSelectItems extends SelectItems {
+public class SiStatic extends SelectItems {
 
     private static final long serialVersionUID = 1L;
 
