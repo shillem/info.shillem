@@ -121,6 +121,8 @@ public class DataSourceService {
             GenericObjectPool<PoolableConnection> pool =
                     createGenericObjectPool(poolable, properties);
 
+            poolable.setPool(pool);
+            
             return new PoolingDataSource<PoolableConnection>(pool);
         });
     }
