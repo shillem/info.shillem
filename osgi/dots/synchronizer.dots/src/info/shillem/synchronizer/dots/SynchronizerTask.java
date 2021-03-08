@@ -225,7 +225,7 @@ public class SynchronizerTask extends AbstractServerTask {
     }
 
     private SqlFactory newSqlFactory(Program program) throws ClassNotFoundException {
-        DataSource ds = SqlActivator.getDataSource(program.getConnectionProperties());
+        DataSource ds = SqlActivator.getDataSource(program.getJdbcProperties());
 
         return new SqlFactory.Builder(ds).build();
     }
@@ -358,11 +358,6 @@ public class SynchronizerTask extends AbstractServerTask {
                 case FAILED:
                     logMessage(String.format(
                             "Program %s can't run because it previously failed", program));
-
-                    return;
-                case LOCKED:
-                    logMessage(String.format(
-                            "Program %s can't run because its document is locked", program));
 
                     return;
                 case STARTED:

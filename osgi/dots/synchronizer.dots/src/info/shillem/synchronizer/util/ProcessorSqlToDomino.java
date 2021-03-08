@@ -144,8 +144,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                             String fields = changes
                                     .entrySet()
                                     .stream()
-                                    .map((e) -> String.format("\t%s %s", e.getKey(),
-                                            e.getValue()))
+                                    .map((e) -> String.format("\t%s %s", e.getKey(), e.getValue()))
                                     .collect(Collectors.joining("\n"));
 
                             return header + "\n" + fields;
@@ -334,8 +333,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                 return null;
             }
 
-            if (documentValue == null
-                    || !recordValue.equals(documentValue)) {
+            if (documentValue == null || !recordValue.equals(documentValue)) {
                 if (recordValue instanceof Boolean) {
                     doc.replaceItemValue(to.getName(), ((Boolean) recordValue).toString());
                 } else if (recordValue instanceof Date) {
@@ -343,8 +341,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                             helper.getDominoFactory().getSession(),
                             doc, to.getName(), (Date) recordValue);
                 } else if (recordValue instanceof BigDecimal) {
-                    doc.replaceItemValue(to.getName(),
-                            ((BigDecimal) recordValue).doubleValue());
+                    doc.replaceItemValue(to.getName(), ((BigDecimal) recordValue).doubleValue());
                 } else {
                     doc.replaceItemValue(to.getName(), recordValue);
                 }

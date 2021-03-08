@@ -24,9 +24,7 @@ import info.shillem.domino.util.DominoUtil;
 import info.shillem.synchronizer.util.Field;
 import info.shillem.synchronizer.util.FieldPair;
 import info.shillem.synchronizer.util.RecordPolicy;
-import info.shillem.util.CastUtil;
 import info.shillem.util.StringUtil;
-import lotus.domino.Database;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
 import lotus.domino.RichTextItem;
@@ -41,10 +39,10 @@ public class Program {
                 Pattern.compile("(\\w*)\\:(\\w*)\\|(\\w*)\\:(\\w*)");
 
         private String id;
-        private Properties connectionProperties;
+        private Properties jdbcProperties;
         private DatabasePath databasePath;
-        private LocalDateTime lastSuccessfullyStarted;
-        private LocalDateTime lastSuccessfullyStopped;
+        private LocalDateTime lastStarted;
+        private LocalDateTime lastStopped;
         private RunMode runMode;
         private Integer intervalInMinutes;
         private FieldPair fieldDeletion;
@@ -75,7 +73,7 @@ public class Program {
 
                 setGeneralPreferences(programDoc);
                 setMappingPreferences(programDoc);
-                setConnectionPreferences(programDoc, connectionDoc);
+                setJdbcPreferences(programDoc, connectionDoc);
             } catch (NotesException e) {
                 throw new RuntimeException(e);
             }
@@ -83,29 +81,6 @@ public class Program {
 
         public Program build() {
             return new Program(this);
-        }
-
-        private void setConnectionPreferences(Document programDoc, Document connectionDoc)
-                throws NotesException {
-            connectionProperties = new Properties();
-
-            connectionProperties.setProperty("name",
-                    DominoUtil.getItemString(connectionDoc, "title"));
-            connectionProperties.setProperty("driverClassName",
-                    DominoUtil.getItemString(connectionDoc, "driver"));
-            connectionProperties.setProperty("url",
-                    DominoUtil.getItemString(connectionDoc, "url"));
-            connectionProperties.setProperty("username",
-                    DominoUtil.getItemString(connectionDoc, "username"));
-            connectionProperties.setProperty("password",
-                    DominoUtil.getItemString(connectionDoc, "password"));
-            connectionProperties.setProperty("connectionProperties",
-                    DominoUtil.getItemStrings(connectionDoc, "additionalProperties")
-                            .stream()
-                            .collect(Collectors.joining(";")));
-            queryReferenceTable = DominoUtil.getItemString(programDoc, "query_reference_table");
-            queryStatement = DominoUtil.getItemString(programDoc, "query_stmt");
-            queryTimeout = DominoUtil.getItemInteger(programDoc, "query_timeout");
         }
 
         private void setGeneralPreferences(Document doc) throws NotesException {
@@ -119,8 +94,10 @@ public class Program {
             intervalInMinutes = DominoUtil.getItemValue(
                     doc, "interval", (val) -> Integer.valueOf((String) val));
 
-            lastSuccessfullyStarted = getLastSuccessfullyStartedDate(doc);
-            lastSuccessfullyStopped = getLastSuccessfullyStoppedDate(doc);
+            lastStarted = DominoUtil.getItemValue(
+                    doc, "started", (val) -> toLocalDateTime((Date) val));
+            lastStopped = DominoUtil.getItemValue(
+                    doc, "stopped", (val) -> toLocalDateTime((Date) val));
 
             nature = DominoUtil.getItemValue(doc, "nature", (val) -> Nature.valueOf((String) val));
 
@@ -161,6 +138,33 @@ public class Program {
 
             viewName = Objects.requireNonNull(
                     DominoUtil.getItemString(doc, "viewName"), "View name cannot be null");
+        }
+
+        private void setJdbcPreferences(Document programDoc, Document connectionDoc)
+                throws NotesException {
+            jdbcProperties = new Properties();
+            jdbcProperties.setProperty("name",
+                    DominoUtil.getItemString(connectionDoc, "title"));
+            jdbcProperties.setProperty("driverClassName",
+                    DominoUtil.getItemString(connectionDoc, "driver"));
+            jdbcProperties.setProperty("url",
+                    DominoUtil.getItemString(connectionDoc, "url"));
+            jdbcProperties.setProperty("connection.username",
+                    DominoUtil.getItemString(connectionDoc, "username"));
+            jdbcProperties.setProperty("connection.password",
+                    DominoUtil.getItemString(connectionDoc, "password"));
+            DominoUtil.getItemStrings(connectionDoc, "additionalProperties")
+                    .forEach(line -> {
+                        String[] split = line.split("=");
+
+                        if (split.length == 2) {
+                            jdbcProperties.setProperty(split[0].trim(), split[1].trim());
+                        }
+                    });
+
+            queryReferenceTable = DominoUtil.getItemString(programDoc, "query_reference_table");
+            queryStatement = DominoUtil.getItemString(programDoc, "query_stmt");
+            queryTimeout = DominoUtil.getItemInteger(programDoc, "query_timeout");
         }
 
         private void setMappingPreferences(Document doc) throws NotesException {
@@ -233,11 +237,11 @@ public class Program {
     }
 
     public enum Status {
-        ARCHIVED, FAILED, LOCKED, STARTED, STOPPED
+        ARCHIVED, FAILED, STARTED, STOPPED
     }
 
     private final String id;
-    private final Properties connectionProperties;
+    private final Properties jdbcProperties;
     private final DatabasePath databasePath;
     private final FieldPair fieldDeletion;
     private final FieldPair fieldKey;
@@ -259,21 +263,23 @@ public class Program {
     private final String title;
     private final String viewName;
 
+    private LocalDateTime lastStarted;
+    private LocalDateTime lastStopped;
+    private int numOfFailedExecutions;
+    private LocalDateTime started;
     private Status status;
-    private LocalDateTime lastSuccessfullyStarted;
-    private LocalDateTime lastSuccessfullyStopped;
 
     public Program(Builder builder) {
         id = builder.id;
-        connectionProperties = (Properties) builder.connectionProperties.clone();
+        jdbcProperties = (Properties) builder.jdbcProperties.clone();
         databasePath = builder.databasePath;
         fieldDeletion = builder.fieldDeletion;
         fieldKey = builder.fieldKey;
         fieldList = Collections.unmodifiableList(builder.fieldPairs);
         fieldTemporary = Collections.unmodifiableMap(builder.fieldTemporary);
         intervalInMinutes = builder.intervalInMinutes;
-        lastSuccessfullyStarted = builder.lastSuccessfullyStarted;
-        lastSuccessfullyStopped = builder.lastSuccessfullyStopped;
+        lastStarted = builder.lastStarted;
+        lastStopped = builder.lastStopped;
         nature = builder.nature;
         notesUrl = builder.notesUrl;
         printSummary = builder.printSummary;
@@ -291,12 +297,8 @@ public class Program {
         viewName = builder.viewName;
     }
 
-    private boolean canStart() {
-        return status == Status.LOCKED || status == Status.STOPPED;
-    }
-
-    public Properties getConnectionProperties() {
-        return connectionProperties;
+    public Properties getJdbcProperties() {
+        return jdbcProperties;
     }
 
     public DatabasePath getDatabasePath() {
@@ -380,7 +382,7 @@ public class Program {
     }
 
     public boolean isDue() {
-        if (!canStart() || runMode != RunMode.ENABLED) {
+        if (runMode != RunMode.ENABLED) {
             return false;
         }
 
@@ -391,11 +393,13 @@ public class Program {
             return false;
         }
 
-        if (lastSuccessfullyStarted == null) {
+        if (lastStarted == null) {
             return true;
         }
 
-        return lastSuccessfullyStarted.plusMinutes(intervalInMinutes).isBefore(now);
+        return lastStarted
+                .plusMinutes(intervalInMinutes * (numOfFailedExecutions + 1))
+                .isBefore(now);
     }
 
     public boolean isPrintSummary() {
@@ -407,164 +411,116 @@ public class Program {
     }
 
     public synchronized boolean setAsFailed(Session session, String log) {
-        return setAsStopped(session, log, Status.FAILED);
+        return setAsFailedOrStopped(session, log, Status.FAILED);
     }
 
-    public synchronized boolean setAsStarted(Session session) {
-        if (!canStart()) {
+    private boolean setAsFailedOrStopped(Session session, String log, Status newStatus) {
+        if (status != Status.STARTED) {
             return false;
         }
 
-        Database db = null;
         Document doc = null;
 
         try {
             doc = (Document) session.resolve(notesUrl);
-            db = doc.getParentDatabase();
-
-            if (Boolean.valueOf(doc.getItemValueString("archived"))) {
-                setStatus(Status.ARCHIVED);
-
-                return false;
-            }
-
-            if (db.isDocumentLockingEnabled()) {
-                Vector<String> holders = CastUtil.toAnyVector(doc.getLockHolders());
-                
-                if (!holders.isEmpty() && !"".equals(holders.get(0))) {
-                    setStatus(Status.LOCKED);
-
-                    return false;
-                }
-
-                doc.lock();
-            }
-
             doc.setPreferJavaDates(true);
-            doc.replaceItemValue("status", Status.STARTED.name());
-            DominoUtil.setDate(session, doc, "started", new Date());
-            doc.replaceItemValue("stopped", null);
 
-            if (!doc.save(true, false)) {
-                return false;
+            if (newStatus == Status.FAILED) {
+                numOfFailedExecutions++;
+
+                if (!doc.getParentDatabase().isDocumentLockingEnabled()
+                        || DominoUtil.getLockHolders(doc).isEmpty()) {
+                    DominoUtil.setDate(session, doc, "started", toDate(lastStarted));
+                    DominoUtil.setDate(session, doc, "stopped", toDate(lastStopped));
+                    doc.replaceItemValue("status", newStatus.name());
+                    writeLog(session, doc, log);
+                    doc.save(true, false);
+                }
+            } else {
+                lastStarted = started;
+                lastStopped = LocalDateTime.now();
+
+                if (!doc.getParentDatabase().isDocumentLockingEnabled()
+                        || DominoUtil.getLockHolders(doc).isEmpty()) {
+                    if (!processorVariablesAtRuntime.isEmpty() && !isRunMode(RunMode.DRY_RUN)) {
+                        Map<String, String> allVariables = new TreeMap<>(processorVariables);
+                        allVariables.putAll(processorVariablesAtRuntime);
+
+                        List<String> values = allVariables.entrySet().stream()
+                                .map((e) -> e.getKey() + "=" + e.getValue())
+                                .collect(Collectors.toCollection(Vector::new));
+
+                        DominoUtil.recycle(doc.replaceItemValue("processorVariables", values));
+
+                        processorVariables.putAll(processorVariablesAtRuntime);
+                    }
+
+                    processorVariablesAtRuntime.clear();
+
+                    DominoUtil.setDate(session, doc, "stopped", toDate(lastStopped));
+                    doc.replaceItemValue("status", newStatus.name());
+                    writeLog(session, doc, log);
+                    doc.save(true, false);
+                }
             }
 
-            setStatus(Status.STARTED);
+            started = null;
+            status = newStatus;
 
             return true;
         } catch (NotesException e) {
             throw new RuntimeException(e);
         } finally {
-            DominoUtil.recycle(doc, db);
+            DominoUtil.recycle(doc);
+        }
+    }
+
+    public synchronized boolean setAsStarted(Session session) {
+        if (status == Status.FAILED) {
+            if (numOfFailedExecutions > 3) {
+                return false;
+            }
+        } else if (status != Status.STOPPED) {
+            return false;
+        }
+
+        Document doc = null;
+
+        try {
+            doc = (Document) session.resolve(notesUrl);
+            doc.setPreferJavaDates(true);
+
+            if (Boolean.valueOf(doc.getItemValueString("archived"))) {
+                status = Status.ARCHIVED;
+
+                return false;
+            }
+
+            status = Status.STARTED;
+            started = LocalDateTime.now();
+
+            if (!doc.getParentDatabase().isDocumentLockingEnabled()
+                    || DominoUtil.getLockHolders(doc).isEmpty()) {
+                doc.replaceItemValue("status", status.name());
+                DominoUtil.setDate(session, doc, "started", toDate(started));
+                doc.replaceItemValue("stopped", null);
+                doc.save(true, false);
+            }
+
+            return true;
+        } catch (NotesException e) {
+            throw new RuntimeException(e);
+        } finally {
+            DominoUtil.recycle(doc);
         }
     }
 
     public synchronized boolean setAsStopped(Session session, String log) {
-        return setAsStopped(session, log, Status.STOPPED);
-    }
-
-    private boolean setAsStopped(Session session, String log, Status status) {
-        if (getStatus() != Status.STARTED) {
-            return false;
-        }
-
-        Database db = null;
-        Document doc = null;
-        RichTextItem rtItem = null;
-        RichTextStyle rtStyle = null;
-
-        try {
-            doc = (Document) session.resolve(notesUrl);
-            db = doc.getParentDatabase();
-
-            if (db.isDocumentLockingEnabled()) {
-                String username = session.getUserName();
-                Vector<String> holders = CastUtil.toAnyVector(doc.getLockHolders());
-
-                if (holders.isEmpty() || !holders.contains(username)) {
-                    return false;
-                }
-            }
-
-            doc.setPreferJavaDates(true);
-
-            rtItem = (RichTextItem) doc.getFirstItem("log");
-
-            if (rtItem != null) {
-                rtItem.remove();
-            }
-
-            rtStyle = session.createRichTextStyle();
-            rtStyle.setFont(RichTextStyle.FONT_ROMAN);
-            rtStyle.setFontSize(10);
-
-            rtItem = doc.createRichTextItem("log");
-            rtItem.appendStyle(rtStyle);
-            rtItem.appendText(log);
-
-            doc.replaceItemValue("status", status.name());
-
-            switch (status) {
-            case FAILED: {
-                DominoUtil.setDate(
-                        session, doc, "started", Program.toDate(lastSuccessfullyStarted));
-                DominoUtil.setDate(
-                        session, doc, "stopped", Program.toDate(lastSuccessfullyStopped));
-
-                break;
-            }
-            case STOPPED: {
-                lastSuccessfullyStarted = getLastSuccessfullyStartedDate(doc);
-                lastSuccessfullyStopped = LocalDateTime.now();
-
-                if (!processorVariablesAtRuntime.isEmpty() && !isRunMode(RunMode.DRY_RUN)) {
-                    Map<String, String> allVariables = new TreeMap<>(processorVariables);
-                    allVariables.putAll(processorVariablesAtRuntime);
-
-                    List<String> values = allVariables.entrySet().stream()
-                            .map((e) -> e.getKey() + "=" + e.getValue())
-                            .collect(Collectors.toCollection(Vector::new));
-
-                    DominoUtil.recycle(doc.replaceItemValue("processorVariables", values));
-
-                    processorVariables.putAll(processorVariablesAtRuntime);
-                }
-
-                processorVariablesAtRuntime.clear();
-
-                DominoUtil.setDate(
-                        session, doc, "stopped", Program.toDate(lastSuccessfullyStopped));
-
-                break;
-            }
-            default:
-                return false;
-            }
-
-            if (!doc.save(true, false)) {
-                return false;
-            }
-
-            if (db.isDocumentLockingEnabled()) {
-                doc.unlock();
-            }
-
-            setStatus(status);
-
-            return true;
-        } catch (NotesException e) {
-            throw new RuntimeException(e);
-        } finally {
-            DominoUtil.recycle(rtStyle, rtItem, doc);
-        }
+        return setAsFailedOrStopped(session, log, Status.STOPPED);
     }
 
     public void setProcessorVariable(String name, String value) {
         processorVariablesAtRuntime.put(name, value);
-    }
-
-    private void setStatus(Status status) {
-        this.status = status;
     }
 
     @Override
@@ -572,14 +528,20 @@ public class Program {
         return String.format("%s (%s)", title, id);
     }
 
-    private static LocalDateTime getLastSuccessfullyStartedDate(Document doc)
-            throws NotesException {
-        return DominoUtil.getItemValue(doc, "started", (val) -> toLocalDateTime((Date) val));
-    }
+    private void writeLog(Session session, Document doc, String log) throws NotesException {
+        RichTextItem rtItem = (RichTextItem) doc.getFirstItem("log");
 
-    private static LocalDateTime getLastSuccessfullyStoppedDate(Document doc)
-            throws NotesException {
-        return DominoUtil.getItemValue(doc, "stopped", (val) -> toLocalDateTime((Date) val));
+        if (rtItem != null) {
+            rtItem.remove();
+        }
+
+        RichTextStyle rtStyle = session.createRichTextStyle();
+        rtStyle.setFont(RichTextStyle.FONT_ROMAN);
+        rtStyle.setFontSize(10);
+
+        rtItem = doc.createRichTextItem("log");
+        rtItem.appendStyle(rtStyle);
+        rtItem.appendText(log);
     }
 
     private static Date toDate(LocalDateTime value) {
