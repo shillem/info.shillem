@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +15,7 @@ import java.util.stream.Collectors;
 
 import info.shillem.util.CastUtil;
 import info.shillem.util.MimeUtil;
+import info.shillem.util.StringUtil;
 import info.shillem.util.Unthrow;
 import lotus.domino.Base;
 import lotus.domino.DateTime;
@@ -165,7 +165,7 @@ public class DominoUtil {
             item = doc.getFirstItem(itemName);
 
             if (item == null) {
-                return Collections.emptyList();
+                return new ArrayList<>();
             }
 
             if (item.getType() == Item.RICHTEXT) {
@@ -179,7 +179,7 @@ public class DominoUtil {
             List<?> values = item.getValues();
 
             if (values == null) {
-                return Collections.emptyList();
+                return new ArrayList<>();
             }
 
             return values.stream()
@@ -202,6 +202,12 @@ public class DominoUtil {
         } finally {
             DominoUtil.recycle(d);
         }
+    }
+
+    public static List<String> getLockHolders(Document doc) throws NotesException {
+        Vector<String> values = CastUtil.toAnyVector(doc.getLockHolders());
+
+        return values.stream().filter(StringUtil::isNotEmpty).collect(Collectors.toList());
     }
 
     public static List<MIMEEntity> getMimeEntitiesByContentType(
