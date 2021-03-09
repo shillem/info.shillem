@@ -439,6 +439,7 @@ public class Program {
             } else {
                 lastStarted = started;
                 lastStopped = LocalDateTime.now();
+                numOfFailedExecutions = 0;
 
                 if (!doc.getParentDatabase().isDocumentLockingEnabled()
                         || DominoUtil.getLockHolders(doc).isEmpty()) {
@@ -447,7 +448,7 @@ public class Program {
                         allVariables.putAll(processorVariablesAtRuntime);
 
                         List<String> values = allVariables.entrySet().stream()
-                                .map((e) -> e.getKey() + "=" + e.getValue())
+                                .map((e) -> e.getKey().concat("=").concat(e.getValue()))
                                 .collect(Collectors.toCollection(Vector::new));
 
                         DominoUtil.recycle(doc.replaceItemValue("processorVariables", values));
