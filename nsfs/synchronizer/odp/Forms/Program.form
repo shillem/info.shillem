@@ -83,7 +83,7 @@ Yg4BAIQAAAAAAAAAAAA=
 <field type="text" allowmultivalues="true" kind="computedfordisplay" name="displayTypes" listinputseparators="comma semicolon" listdisplayseparator="semicolon">
 <code event="defaultvalue">
 <formula>"BOOLEAN":
-"DATE";
+"DATE":
 "DECIMAL":
 "DOUBLE":
 "INTEGER":
