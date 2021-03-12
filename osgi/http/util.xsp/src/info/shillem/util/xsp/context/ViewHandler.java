@@ -2,9 +2,11 @@ package info.shillem.util.xsp.context;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Locale;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.faces.FacesException;
 import javax.faces.component.UIViewRoot;
@@ -12,12 +14,14 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseEvent;
 
 import com.ibm.xsp.application.ViewHandlerExImpl;
-import com.ibm.xsp.component.UIViewRootEx;
+import com.ibm.xsp.component.UIViewRootEx2;
 
 import info.shillem.util.CastUtil;
-import info.shillem.util.xsp.annotation.ManagedExecution;
+import info.shillem.util.xsp.annotation.ManagedMethod;
 import info.shillem.util.xsp.annotation.ManagedPage;
 import info.shillem.util.xsp.annotation.ManagedProperty;
+import info.shillem.util.xsp.annotation.MethodPhase;
+import info.shillem.util.xsp.annotation.PropertyPhase;
 
 public abstract class ViewHandler extends ViewHandlerExImpl {
 
@@ -25,82 +29,12 @@ public abstract class ViewHandler extends ViewHandlerExImpl {
         super(delegate);
     }
 
-    private void bindFields(FacesContext context, Object bean) {
-        for (Field field : bean.getClass().getDeclaredFields()) {
-            ManagedProperty annotation = field.getAnnotation(ManagedProperty.class);
-
-            if (annotation == null) {
-                continue;
-            }
-
-            String expression = annotation.value();
-
-            try {
-                field.setAccessible(true);
-                field.set(bean, context.getApplication()
-                        .createValueBinding(expression)
-                        .getValue(context));
-            } catch (Exception e) {
-                throw new FacesException(e);
-            }
-        }
-    }
-
-    private void bindMethods(
-            FacesContext context,
-            UIViewRootEx root,
-            Object bean,
-            String beanName) {
-        for (Method method : bean.getClass().getMethods()) {
-            ManagedExecution execution = method.getAnnotation(ManagedExecution.class);
-
-            if (execution == null) {
-                continue;
-            }
-
-            switch (execution.value()) {
-            case POST_CONSTRUCT: {
-                try {
-                    if (method.getParameterCount() == 0) {
-                        method.invoke(bean);
-                    } else {
-                        method.invoke(bean, new Object[] { context });
-                    }
-                } catch (Exception e) {
-                    throw new FacesException(e);
-                }
-
-                break;
-            }
-            case BEFORE_RENDER_RESPONSE:
-                if (root.getBeforeRenderResponse() == null) {
-                    root.setBeforeRenderResponse(context.getApplication().createMethodBinding(
-                            String.format("#{%s.%s}", beanName, method.getName()),
-                            new Class[] { PhaseEvent.class }));
-                }
-                break;
-            case AFTER_RENDER_RESPONSE:
-                if (root.getAfterRenderResponse() == null) {
-                    root.setAfterRenderResponse(context.getApplication().createMethodBinding(
-                            String.format("#{%s.%s}", beanName, method.getName()),
-                            new Class[] { PhaseEvent.class }));
-                }
-
-                break;
-            }
-        }
-    }
-
     @Override
-    protected UIViewRoot doCreateView(
-            FacesContext context,
-            String viewId,
-            Locale locale,
-            String renderKit) {
+    public UIViewRoot createView(FacesContext context, String viewId) {
         Class<?> beanClass = getViewBeanClass(viewId);
 
         if (beanClass == null) {
-            return super.doCreateView(context, viewId, locale, renderKit);
+            return super.createView(context, viewId);
         }
 
         Object bean;
@@ -112,17 +46,56 @@ public abstract class ViewHandler extends ViewHandlerExImpl {
         }
 
         String beanName = beanClass.getAnnotation(ManagedPage.class).beanName();
-
         Map<String, Object> requestScope = XPageScope.REQUEST.getValues(context);
         requestScope.put(beanName, bean);
-        UIViewRoot root = super.doCreateView(context, viewId, locale, renderKit);
+
+        Map<PropertyPhase, List<Field>> fields = getAnnotatedFields(bean);
+        Map<MethodPhase, List<Method>> methods = getAnnotatedMethods(bean);
+
+        setAnnotatedFields(context, bean, fields.get(PropertyPhase.BEFORE_VIEW_CREATION));
+        invokeAnnotatedMethods(context, bean, methods.get(MethodPhase.BEFORE_VIEW_CREATION));
+
+        UIViewRootEx2 root = (UIViewRootEx2) super.createView(context, viewId);
+
+        setAnnotatedFields(context, bean, fields.get(PropertyPhase.AFTER_VIEW_CREATION));
+        invokeAnnotatedMethods(context, bean, methods.get(MethodPhase.AFTER_VIEW_CREATION));
+
         CastUtil.toAnyMap(root.getViewMap()).put(beanName, bean);
         requestScope.remove(beanName);
 
-        bindFields(context, bean);
-        bindMethods(context, (UIViewRootEx) root, bean, beanName);
+        List<Method> renderMethods;
+
+        renderMethods = methods.get(MethodPhase.BEFORE_RENDER_RESPONSE);
+
+        if (renderMethods != null && root.getBeforeRenderResponse() == null) {
+            root.setBeforeRenderResponse(context.getApplication().createMethodBinding(
+                    String.format("#{%s.%s}", beanName, renderMethods.get(0).getName()),
+                    new Class[] { PhaseEvent.class }));
+        }
+        
+        renderMethods = methods.get(MethodPhase.AFTER_RENDER_RESPONSE);
+        
+        if (renderMethods != null && root.getAfterRenderResponse() == null) {
+            root.setAfterRenderResponse(context.getApplication().createMethodBinding(
+                    String.format("#{%s.%s}", beanName, renderMethods.get(0).getName()),
+                    new Class[] { PhaseEvent.class }));
+        }
 
         return root;
+    }
+
+    private Map<PropertyPhase, List<Field>> getAnnotatedFields(Object bean) {
+        return Stream.of(bean.getClass().getDeclaredFields())
+                .filter((f) -> f.getAnnotation(ManagedProperty.class) != null)
+                .collect(Collectors.groupingBy(
+                        (f) -> f.getAnnotation(ManagedProperty.class).phase()));
+    }
+
+    private Map<MethodPhase, List<Method>> getAnnotatedMethods(Object bean) {
+        return Stream.of(bean.getClass().getMethods())
+                .filter((m) -> m.getAnnotation(ManagedMethod.class) != null)
+                .collect(Collectors.groupingBy(
+                        (m) -> m.getAnnotation(ManagedMethod.class).value()));
     }
 
     private Class<?> getViewBeanClass(String viewId) {
@@ -142,5 +115,49 @@ public abstract class ViewHandler extends ViewHandlerExImpl {
     }
 
     protected abstract Set<Class<?>> getViewBeanClasses();
+
+    private void invokeAnnotatedMethod(FacesContext context, Object bean, Method method) {
+        try {
+            if (method.getParameterCount() == 0) {
+                method.invoke(bean);
+            } else {
+                method.invoke(bean, new Object[] { context });
+            }
+        } catch (Exception e) {
+            throw new FacesException(e);
+        }
+    }
+    
+    private void invokeAnnotatedMethods(FacesContext context, Object bean, List<Method> methods) {
+        if (methods == null) {
+            return;
+        }
+        
+        for (Method method : methods) {
+            invokeAnnotatedMethod(context, bean, method);
+        }
+    }
+
+    private void setAnnotatedField(FacesContext context, Object bean, Field field) {
+        try {
+            field.setAccessible(true);
+            field.set(bean, context.getApplication()
+                    .createValueBinding(field.getAnnotation(ManagedProperty.class).value())
+                    .getValue(context));
+            field.setAccessible(false);
+        } catch (Exception e) {
+            throw new FacesException(e);
+        }
+    }
+    
+    private void setAnnotatedFields(FacesContext context, Object bean, List<Field> fields) {
+        if (fields == null) {
+            return;
+        }
+        
+        for (Field field : fields) {
+            setAnnotatedField(context, bean, field);
+        }
+    }
 
 }

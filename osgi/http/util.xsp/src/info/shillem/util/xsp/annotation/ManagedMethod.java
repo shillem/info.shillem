@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface ManagedExecution {
+public @interface ManagedMethod {
     
-    ManagedExecutionPhase value();
+    MethodPhase value();
 
 }

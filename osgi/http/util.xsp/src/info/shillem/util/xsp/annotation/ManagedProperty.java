@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface ManagedProperty {
     
+    PropertyPhase phase() default PropertyPhase.BEFORE_VIEW_CREATION;
+    
     String value();
 
 }
