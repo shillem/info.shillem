@@ -49,6 +49,10 @@ public class LocalDominoFactory extends AbstractDominoFactory {
         getSession().setTrackMillisecInJavaDates(
                 options.contains(Option.TRACK_MILLISEC_IN_JAVA_DATES));
     }
+    
+    public boolean containsOption(Option value) {
+        return options.contains(value);
+    }
 
     @Override
     public boolean isRemote() {

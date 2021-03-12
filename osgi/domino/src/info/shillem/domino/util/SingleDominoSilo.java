@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Vector;
 import java.util.function.Consumer;
 
 import info.shillem.util.CastUtil;
@@ -20,60 +19,40 @@ import lotus.domino.View;
 public class SingleDominoSilo implements DominoSilo {
 
     private final DbIdentifier identifier;
-    private final DatabasePath databasePath;
+    private final DbPath dbPath;
 
-    private Session session;
-    private DatabasePath templatePath;
-    private Consumer<Entry<DbIdentifier, Database>> databaseConsumer;
-
-    private Database databaseHandle;
+    private Consumer<Entry<DbIdentifier, Database>> dbConsumer;
+    private Database dbHandle;
     private boolean documentLockingEnabled;
+    private DbPath templatePath;
+    private Session session;
+    private Map<String, List<String>> vwColumnNames;
+    private Map<String, View> vwHandles;
 
-    private Map<String, View> viewHandles;
-    private Map<String, List<String>> viewColumnNames;
-
-    public SingleDominoSilo(DbIdentifier identifier, DatabasePath databasePath) {
+    public SingleDominoSilo(DbIdentifier identifier, DbPath dbPath) {
         this.identifier = Objects.requireNonNull(identifier, "Identifier cannot be null");
-        this.databasePath = Objects.requireNonNull(databasePath, "Database path cannot be null");
-    }
-
-    @Override
-    public Database getDatabase() throws NotesException {
-        if (databaseHandle == null) {
-            databaseHandle = session.getDatabase(
-                    databasePath.getServerName(), databasePath.getFilePath(), false);
-
-            if (databaseHandle == null && templatePath != null) {
-                databaseHandle = createTemplate();
-            }
-
-            if (databaseHandle == null) {
-                throw new NullPointerException("Unable to open database " + databasePath);
-            }
-
-            documentLockingEnabled = databaseHandle.isDocumentLockingEnabled();
-        }
-
-        return databaseHandle;
+        this.dbPath = Objects.requireNonNull(dbPath, "Database path cannot be null");
     }
 
     private synchronized Database createTemplate() throws NotesException {
         Database templateHandle = null;
 
         try {
-            templateHandle = session
-                    .getDatabase(templatePath.getServerName(), templatePath.getFilePath());
+            templateHandle = session.getDatabase(
+                    templatePath.getServerName(),
+                    templatePath.getFilePath());
 
             if (templateHandle == null) {
                 throw new NullPointerException("Unable to open template " + templatePath);
             }
 
             Database newDatabase = templateHandle.createFromTemplate(
-                    databasePath.getServerName(), databasePath.getFilePath(), true);
+                    dbPath.getServerName(),
+                    dbPath.getFilePath(),
+                    true);
 
-            if (databaseConsumer != null) {
-                databaseConsumer.accept(
-                        new SimpleEntry<DbIdentifier, Database>(identifier, newDatabase));
+            if (dbConsumer != null) {
+                dbConsumer.accept(new SimpleEntry<>(identifier, newDatabase));
             }
 
             return newDatabase;
@@ -83,40 +62,59 @@ public class SingleDominoSilo implements DominoSilo {
     }
 
     @Override
-    public DatabasePath getDatabasePath() {
-        return databasePath;
+    public Database getDatabase() throws NotesException {
+        if (dbHandle == null) {
+            dbHandle = session.getDatabase(dbPath.getServerName(), dbPath.getFilePath(), false);
+
+            if (dbHandle == null && templatePath != null) {
+                dbHandle = createTemplate();
+            }
+
+            if (dbHandle == null) {
+                throw new NullPointerException("Unable to open database " + dbPath);
+            }
+
+            documentLockingEnabled = dbHandle.isDocumentLockingEnabled();
+        }
+
+        return dbHandle;
     }
-    
+
+    @Override
+    public DbPath getDbPath() {
+        return dbPath;
+    }
+
     @Override
     public DbIdentifier getIdentifier() {
         return identifier;
     }
 
     @Override
-    public View getView(ViewPath viewPath, ViewAccessPolicy accessPolicy) throws NotesException {
-        Objects.requireNonNull(viewPath, "View path cannot be null");
+    public View getView(VwPath vwPath, VwAccessPolicy accessPolicy) throws NotesException {
+        Objects.requireNonNull(vwPath, "View path cannot be null");
         Objects.requireNonNull(accessPolicy, "View access policy cannot be null");
 
-        if (viewHandles == null) {
-            viewHandles = new HashMap<>();
+        if (vwHandles == null) {
+            vwHandles = new HashMap<>();
         }
 
-        View vw = viewHandles.get(viewPath.getName());
+        View vw = vwHandles.get(vwPath.getName());
 
         if (vw == null) {
-            vw = getDatabase().getView(viewPath.getName());
+            vw = getDatabase().getView(vwPath.getName());
 
             if (vw == null) {
                 throw new NullPointerException(
-                        String.format("Unable to access view %s on %s", viewPath, databasePath));
+                        String.format("Unable to access view %s on %s", vwPath, dbPath));
             }
 
             vw.setAutoUpdate(false);
 
-            viewHandles.put(viewPath.getName(), vw);
+            vwHandles.put(vwPath.getName(), vw);
         }
 
-        if (accessPolicy == ViewAccessPolicy.FRESH) {
+        if (accessPolicy == VwAccessPolicy.FRESH) {
             vw.refresh();
         }
 
@@ -124,20 +122,18 @@ public class SingleDominoSilo implements DominoSilo {
     }
 
     @Override
-    public List<String> getViewColumnNames(ViewPath viewPath) throws NotesException {
-        Objects.requireNonNull(viewPath, "View path cannot be null");
+    public List<String> getViewColumnNames(VwPath vwPath) throws NotesException {
+        Objects.requireNonNull(vwPath, "View path cannot be null");
 
-        if (viewColumnNames == null) {
-            viewColumnNames = new HashMap<>();
+        if (vwColumnNames == null) {
+            vwColumnNames = new HashMap<>();
         }
 
-        return viewColumnNames.computeIfAbsent(viewPath.getName(),
-                key -> Unthrow.on(() -> {
-                    Vector<String> columnNames = CastUtil.toAnyVector(
-                            getView(viewPath, ViewAccessPolicy.STALE).getColumnNames());
-                
-                    return new ArrayList<>(columnNames);
-                }));
+        return vwColumnNames.computeIfAbsent(
+                vwPath.getName(),
+                (key) -> Unthrow.on(
+                        () -> new ArrayList<>(CastUtil.toAnyVector(
+                                getView(vwPath, VwAccessPolicy.STALE).getColumnNames()))));
     }
 
     @Override
@@ -147,31 +143,33 @@ public class SingleDominoSilo implements DominoSilo {
 
     @Override
     public void recycle() {
-        if (viewColumnNames != null) {
-            viewColumnNames.clear();
+        if (vwColumnNames != null) {
+            vwColumnNames.clear();
         }
 
-        if (viewHandles != null) {
-            DominoUtil.recycle(viewHandles.values());
-            viewHandles.clear();
+        if (vwHandles != null) {
+            DominoUtil.recycle(vwHandles.values());
+
+            vwHandles.clear();
 
         }
 
-        DominoUtil.recycle(databaseHandle);
+        DominoUtil.recycle(dbHandle);
 
-        databaseHandle = null;
+        dbHandle = null;
+    }
+
+    @Override
+    public void setSession(Session value) {
+        session = value;
     }
 
     @Override
     public void setTemplateCreation(
-            DatabasePath templatePath, Consumer<Entry<DbIdentifier, Database>> databaseConsumer) {
+            DbPath templatePath,
+            Consumer<Entry<DbIdentifier, Database>> databaseConsumer) {
         this.templatePath = templatePath;
-        this.databaseConsumer = databaseConsumer;
-    }
-
-    @Override
-    public void setSession(Session session) {
-        this.session = session;
+        this.dbConsumer = databaseConsumer;
     }
 
 }

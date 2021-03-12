@@ -8,9 +8,9 @@ import info.shillem.dto.BaseField;
 import info.shillem.util.ComparisonOperator;
 import info.shillem.util.LogicalOperator;
 
-public class FullTextSearchQuery<E extends Enum<E> & BaseField> extends AbstractSearchQuery<E> {
+public class FtSearchQuery<E extends Enum<E> & BaseField> extends AbstractSearchQuery<E> {
 
-    public FullTextSearchQuery(Query<E> query) {
+    public FtSearchQuery(Query<E> query) {
         super(query);
     }
 
@@ -80,7 +80,7 @@ public class FullTextSearchQuery<E extends Enum<E> & BaseField> extends Abstract
         }
     }
 
-    public FullTextSearchQuery<E> withNamer(Function<E, String> namer) {
+    public FtSearchQuery<E> withNamer(Function<E, String> namer) {
         setNamer(namer);
 
         return this;

@@ -1,6 +1,6 @@
 package info.shillem.domino.util;
 
-public interface ViewPath {
+public interface VwPath {
 
     String getName();
 

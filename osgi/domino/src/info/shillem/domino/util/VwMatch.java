@@ -1,11 +1,11 @@
 package info.shillem.domino.util;
 
-public enum ViewMatch {
+public enum VwMatch {
     EXACT(true), PARTIAL(false);
     
     private final boolean flag;
     
-    ViewMatch(boolean flag) {
+    VwMatch(boolean flag) {
         this.flag = flag;
     }
     

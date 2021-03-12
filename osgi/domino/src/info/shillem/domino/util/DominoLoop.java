@@ -3,11 +3,11 @@ package info.shillem.domino.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
+import info.shillem.util.Unthrow.ThrowableConsumer;
 import info.shillem.util.Unthrow.ThrowableFunction;
 import info.shillem.util.Unthrow.ThrowableSupplier;
+import lotus.domino.Base;
 import lotus.domino.Document;
 import lotus.domino.DocumentCollection;
 import lotus.domino.NotesError;
@@ -19,55 +19,66 @@ import lotus.domino.ViewNavigator;
 
 public class DominoLoop {
 
-    public static class DocumentOptions<T> extends Options {
-
-        Consumer<Document> reader;
-        Function<Document, T> converter;
-
-        public DocumentOptions<T> setConverter(Function<Document, T> converter) {
-            this.converter = converter;
-
-            return this;
-        }
-
-        public DocumentOptions<T> setLimit(int value) {
-            limit = value;
-
-            return this;
-        }
-
-        public DocumentOptions<T> setOffset(int value) {
-            offset = value;
-
-            return this;
-        }
-
-        public DocumentOptions<T> setReader(Consumer<Document> reader) {
-            this.reader = reader;
-
-            return this;
-        }
-
-        public DocumentOptions<T> setTotal(OptionTotal value) {
-            total = value;
-
-            return this;
-        }
-
-    }
-
     public enum OptionEntry {
         ANY, CATEGORY, DOCUMENT;
     }
 
-    static class Options {
+    public static class Options<T extends Base, R> {
+
+        ThrowableFunction<T, R> converter;
         int limit;
         int offset;
+        ThrowableConsumer<T> reader;
         OptionTotal total;
 
-        boolean isWithinLimit(int count) {
-            return limit == 0 || count < limit;
+        boolean isWithinLimit(int value) {
+            return limit == 0 || value < limit;
         }
+
+        public void setConverter(ThrowableFunction<T, R> value) {
+            converter = value;
+        }
+
+        public void setLimit(int value) {
+            limit = value;
+        }
+
+        public void setOffset(int value) {
+            offset = value;
+        }
+
+        public void setReader(ThrowableConsumer<T> value) {
+            reader = value;
+        }
+
+        public void setTotal(OptionTotal value) {
+            total = value;
+        }
+    }
+
+    public static class OptionsDocument<R> extends Options<Document, R> {
+
+    }
+
+    public static class OptionsViewEntry<R> extends Options<ViewEntry, R> {
+
+        OptionEntry kind;
+        boolean disableColumnData;
+
+        public OptionsViewEntry() {
+            super();
+
+            setKind(OptionEntry.ANY);
+        }
+
+        public void setDisableColumnData(boolean value) {
+            disableColumnData = value;
+        }
+        
+        public void setKind(OptionEntry value) {
+            kind = value;
+        }
+
     }
 
     public enum OptionTotal {
@@ -98,59 +109,23 @@ public class DominoLoop {
 
     }
 
-    public static class ViewEntryOptions<T> extends Options {
-
-        Consumer<ViewEntry> reader;
-        Function<ViewEntry, T> converter;
-        OptionEntry kind;
-
-        public ViewEntryOptions() {
-            kind = OptionEntry.ANY;
-        }
-
-        public ViewEntryOptions<T> setConverter(Function<ViewEntry, T> converter) {
-            this.converter = converter;
-
-            return this;
-        }
-
-        public ViewEntryOptions<T> setKind(OptionEntry kind) {
-            this.kind = kind;
-
-            return this;
-        }
-
-        public ViewEntryOptions<T> setLimit(int value) {
-            limit = value;
-
-            return this;
-        }
-
-        public ViewEntryOptions<T> setOffset(int value) {
-            offset = value;
-
-            return this;
-        }
-
-        public ViewEntryOptions<T> setReader(Consumer<ViewEntry> reader) {
-            this.reader = reader;
-
-            return this;
-        }
-
-        public ViewEntryOptions<T> setTotal(OptionTotal value) {
-            total = value;
-
-            return this;
-        }
-
-    }
+    private static final int DEFAULT_CACHE_SIZE = 300;
 
     private DominoLoop() {
 
     }
 
-    public static <T> Result<T> read(DocumentCollection coll, DocumentOptions<T> options)
+    private static int getCacheSize(Options<?, ?> options) {
+        if (options.limit == 0) {
+            return DEFAULT_CACHE_SIZE;
+        }
+
+        return Math.min(options.limit, DEFAULT_CACHE_SIZE);
+    }
+
+    public static <R> Result<R> read(
+            DocumentCollection coll,
+            OptionsDocument<R> options)
             throws NotesException {
         Objects.requireNonNull(coll, "Document collection cannot be null");
         Objects.requireNonNull(options, "Document options cannot be null");
@@ -164,8 +139,7 @@ public class DominoLoop {
                 options);
     }
 
-    public static <T> Result<T> read(View view, DocumentOptions<T> options)
-            throws NotesException {
+    public static <R> Result<R> read(View view, OptionsDocument<R> options) throws NotesException {
         Objects.requireNonNull(view, "View cannot be null");
         Objects.requireNonNull(options, "Document options cannot be null");
 
@@ -178,7 +152,9 @@ public class DominoLoop {
                 options);
     }
 
-    public static <T> Result<T> read(ViewEntryCollection coll, ViewEntryOptions<T> options)
+    public static <R> Result<R> read(
+            ViewEntryCollection coll,
+            OptionsViewEntry<R> options)
             throws NotesException {
         Objects.requireNonNull(coll, "View entry collection cannot be null");
         Objects.requireNonNull(options, "View entry options cannot be null");
@@ -192,7 +168,9 @@ public class DominoLoop {
                 options);
     }
 
-    public static <T> Result<T> read(ViewNavigator nav, ViewEntryOptions<T> options)
+    public static <R> Result<R> read(
+            ViewNavigator nav,
+            OptionsViewEntry<R> options)
             throws NotesException {
         Objects.requireNonNull(nav, "View navigator cannot be null");
         Objects.requireNonNull(options, "View entry options cannot be null");
@@ -203,15 +181,34 @@ public class DominoLoop {
 
         switch (options.kind) {
         case ANY: {
-            starter = options.offset > 0
-                    ? () -> {
-                        nav.gotoFirst();
-                        nav.skip(options.offset);
-                        return nav.getCurrent();
-                    }
-                    : nav::getFirst;
+            starter = () -> {
+                ViewEntry entry;
+
+                if (options.offset > 0) {
+                    nav.gotoFirst();
+                    nav.skip(options.offset);
+
+                    entry = nav.getCurrent();
+                } else {
+                    entry = nav.getFirst();
+                }
+
+                if (options.disableColumnData) {
+                    setEntryOptions(nav, ViewNavigator.VN_ENTRYOPT_NOCOLUMNVALUES);
+                }
+                
+                setCacheGuidance(
+                        nav,
+                        getCacheSize(options),
+                        ViewNavigator.VN_CACHEGUIDANCE_READALL);
+
+                return entry;
+            };
             advancer = (current) -> nav.getNext();
             counter = () -> {
+                setEntryOptions(nav, ViewNavigator.VN_ENTRYOPT_NOCOLUMNVALUES);
+                setCacheGuidance(nav, 1, ViewNavigator.VN_CACHEGUIDANCE_READALL);
+
                 nav.gotoFirst();
                 int count = nav.skip(Integer.MAX_VALUE);
                 ViewEntry entry = nav.getCurrent();
@@ -234,7 +231,14 @@ public class DominoLoop {
 
                 ViewEntry entry = nav.getCurrent();
 
-                setCacheGuidance(nav);
+                if (options.disableColumnData) {
+                    setEntryOptions(nav, ViewNavigator.VN_ENTRYOPT_NOCOLUMNVALUES);
+                }
+
+                setCacheGuidance(
+                        nav,
+                        getCacheSize(options),
+                        ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
 
                 if (entry.isCategory()) {
                     return entry;
@@ -259,7 +263,14 @@ public class DominoLoop {
 
                 ViewEntry entry = nav.getCurrent();
 
-                setCacheGuidance(nav);
+                if (options.disableColumnData) {
+                    setEntryOptions(nav, ViewNavigator.VN_ENTRYOPT_NOCOLUMNVALUES);
+                }
+
+                setCacheGuidance(
+                        nav,
+                        getCacheSize(options),
+                        ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
 
                 if (entry.isDocument()) {
                     return entry;
@@ -279,12 +290,13 @@ public class DominoLoop {
         return readViewEntries(starter, advancer, counter, options);
     }
 
-    private static <T> Result<T> readDocuments(
+    private static <R> Result<R> readDocuments(
             ThrowableSupplier<Document> starter,
             ThrowableFunction<Document, Document> advancer,
             ThrowableSupplier<Integer> counter,
-            DocumentOptions<T> options) throws NotesException {
-        Result<T> result = new Result<>();
+            OptionsDocument<R> options)
+            throws NotesException {
+        Result<R> result = new Result<>();
 
         Document doc = null;
         Document temp = null;
@@ -293,27 +305,27 @@ public class DominoLoop {
             if (options.total != OptionTotal.READ_ONLY) {
                 int count = 0;
                 doc = starter.get();
-    
+
                 while (doc != null) {
                     temp = advancer.apply(doc);
-                    
+
                     if (options.reader != null) {
                         options.reader.accept(doc);
                     }
-    
+
                     if (options.converter != null) {
                         result.data.add(options.converter.apply(doc));
                     }
-    
+
                     if (!options.isWithinLimit(++count)) {
                         break;
                     }
-                    
+
                     doc.recycle();
                     doc = temp;
                 }
             }
-            
+
             result.limit = options.limit;
 
             if (options.total == OptionTotal.READ || options.total == OptionTotal.READ_ONLY) {
@@ -326,12 +338,13 @@ public class DominoLoop {
         }
     }
 
-    private static <T> Result<T> readViewEntries(
+    private static <R> Result<R> readViewEntries(
             ThrowableSupplier<ViewEntry> starter,
             ThrowableFunction<ViewEntry, ViewEntry> advancer,
             ThrowableSupplier<Integer> counter,
-            ViewEntryOptions<T> options) throws NotesException {
-        Result<T> result = new Result<>();
+            OptionsViewEntry<R> options)
+            throws NotesException {
+        Result<R> result = new Result<>();
 
         ViewEntry entry = null;
         ViewEntry temp = null;
@@ -340,27 +353,27 @@ public class DominoLoop {
             if (options.total != OptionTotal.READ_ONLY) {
                 int count = 0;
                 entry = starter.get();
-    
+
                 while (entry != null) {
                     temp = advancer.apply(entry);
-                    
+
                     if (options.reader != null) {
                         options.reader.accept(entry);
                     }
-    
+
                     if (options.converter != null) {
                         result.data.add(options.converter.apply(entry));
                     }
-    
+
                     if (!options.isWithinLimit(++count)) {
                         break;
                     }
-                    
+
                     entry.recycle();
                     entry = temp;
                 }
             }
-            
+
             result.limit = options.limit;
 
             if (options.total == OptionTotal.READ || options.total == OptionTotal.READ_ONLY) {
@@ -373,9 +386,23 @@ public class DominoLoop {
         }
     }
 
-    private static void setCacheGuidance(ViewNavigator nav) throws NotesException {
+    private static void setCacheGuidance(
+            ViewNavigator nav,
+            int size,
+            int options)
+            throws NotesException {
         try {
-            nav.setCacheGuidance(300, ViewNavigator.VN_CACHEGUIDANCE_READSELECTIVE);
+            nav.setCacheGuidance(size, options);
+        } catch (NotesException e) {
+            if (e.id != NotesError.NOTES_ERR_NOT_IMPLEMENTED) {
+                throw e;
+            }
+        }
+    }
+
+    private static void setEntryOptions(ViewNavigator nav, int options) throws NotesException {
+        try {
+            nav.setEntryOptions(options);
         } catch (NotesException e) {
             if (e.id != NotesError.NOTES_ERR_NOT_IMPLEMENTED) {
                 throw e;

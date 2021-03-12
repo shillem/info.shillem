@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,19 +30,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import info.shillem.dao.Query;
 import info.shillem.dao.lang.DaoException;
-import info.shillem.dao.lang.DaoQueryException;
 import info.shillem.dao.lang.DaoRecordException;
 import info.shillem.domino.factory.DominoFactory;
 import info.shillem.domino.util.DeletionType;
-import info.shillem.domino.util.DominoLoop;
-import info.shillem.domino.util.DominoLoop.OptionTotal;
-import info.shillem.domino.util.DominoLoop.Result;
 import info.shillem.domino.util.DominoSilo;
 import info.shillem.domino.util.DominoUtil;
-import info.shillem.domino.util.FullTextSearchQuery;
 import info.shillem.domino.util.MimeContentType;
-import info.shillem.domino.util.ViewManager;
-import info.shillem.domino.util.ViewMatch;
+import info.shillem.domino.util.VwMatch;
+import info.shillem.domino.util.VwWalker;
 import info.shillem.dto.AttachedFile;
 import info.shillem.dto.AttachedFiles;
 import info.shillem.dto.BaseDto;
@@ -61,10 +55,8 @@ import lotus.domino.Database;
 import lotus.domino.DateTime;
 import lotus.domino.DbDirectory;
 import lotus.domino.Document;
-import lotus.domino.Item;
 import lotus.domino.MIMEEntity;
 import lotus.domino.MIMEHeader;
-import lotus.domino.NotesError;
 import lotus.domino.NotesException;
 import lotus.domino.Session;
 import lotus.domino.View;
@@ -100,21 +92,12 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         Date wrapperDate = wrapper.getLastModified();
         Date docDate = DominoUtil.getLastModified(doc);
 
-        if (wrapperDate != null
-                && wrapperDate.getTime() / 1000 != docDate.getTime() / 1000) {
+        if (wrapperDate != null && wrapperDate.getTime() / 1000 != docDate.getTime() / 1000) {
             throw DaoRecordException.asDirty(wrapper.getId(), wrapperDate, docDate);
         }
     }
 
     protected void create(T wrapper, DominoSilo silo) throws DaoException, NotesException {
-        create(wrapper, silo, null);
-    }
-
-    protected void create(
-            T wrapper,
-            DominoSilo silo,
-            String formName)
-            throws DaoException, NotesException {
         if (!wrapper.isNew()) {
             throw new IllegalArgumentException(
                     "Creation cannot be performed on an existing record");
@@ -123,7 +106,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         Document doc = null;
 
         try {
-            doc = createDocument(silo, formName);
+            doc = createDocument(silo);
 
             pushWrapper(wrapper, doc);
 
@@ -137,27 +120,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected Document createDocument(DominoSilo silo) throws NotesException {
-        return createDocument(silo, null);
-    }
-
-    protected Document createDocument(DominoSilo silo, String formName) throws NotesException {
-        Document doc = factory.setDefaults(silo.getDatabase().createDocument());
-
-        if (formName != null) {
-            Item itm = doc.replaceItemValue("Form", formName);
-
-            DominoUtil.recycle(itm);
-        }
-
-        return doc;
-    }
-
-    protected Result<T> decorate(Result<T> result, Query<E> query) {
-        if (result.getTotal() != null) {
-            query.createSummary().setLimit(result.getLimit()).setTotal(result.getTotal());
-        }
-
-        return result;
+        return factory.setDefaults(silo.getDatabase().createDocument());
     }
 
     protected boolean delete(DominoSilo silo, DeletionType deletionType, Query<E> query) {
@@ -184,7 +147,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             throws NotesException {
         if (silo.isDocumentLockingEnabled()) {
             if (!doc.lock()) {
-                throw new RuntimeException("Unable to acquire lock on note " + doc.getNoteID());
+                throw new RuntimeException(
+                        "Unable to acquire lock on note ".concat(doc.getNoteID()));
             }
         }
 
@@ -218,7 +182,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     protected Optional<Document> getDocumentByKey(
             View view,
             Object key,
-            ViewMatch match)
+            VwMatch match)
             throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
@@ -234,7 +198,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     protected Optional<Document> getDocumentByKeys(
             View view,
             Collection<?> keys,
-            ViewMatch match)
+            VwMatch match)
             throws NotesException {
         Objects.requireNonNull(keys, "Key(s) cannot be null");
 
@@ -258,7 +222,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     protected ViewEntryCollection getViewEntriesByKey(
             View view,
             Object key,
-            ViewMatch match)
+            VwMatch match)
             throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
@@ -267,7 +231,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
     protected ViewEntryCollection getViewEntriesByKeys(
             View view, Collection<?> keys,
-            ViewMatch match)
+            VwMatch match)
             throws NotesException {
         Objects.requireNonNull(keys, "Key(s) cannot be null");
 
@@ -280,7 +244,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
     protected Optional<ViewEntry> getViewEntryByKey(
             View view, Object key,
-            ViewMatch match)
+            VwMatch match)
             throws NotesException {
         Objects.requireNonNull(key, "Key cannot be null");
 
@@ -296,7 +260,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     protected Optional<ViewEntry> getViewEntryByKeys(
             View view,
             Collection<?> keys,
-            ViewMatch match)
+            VwMatch match)
             throws NotesException {
         Objects.requireNonNull(keys, "Key(s) cannot be null");
 
@@ -311,36 +275,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
 
         return Optional.of(factory.setDefaults(entry));
-    }
-
-    protected DominoLoop.DocumentOptions<T> newLoopDocumentOption(Query<E> query) {
-        DominoLoop.DocumentOptions<T> options = new DominoLoop.DocumentOptions<>();
-
-        options.setLimit(query.getLimit());
-        options.setOffset(query.getOffset());
-
-        if (query.containsOption("FETCH_TOTAL_ONLY")) {
-            options.setTotal(OptionTotal.READ_ONLY);
-        } else if (query.containsOption("FETCH_TOTAL")) {
-            options.setTotal(OptionTotal.READ);
-        }
-
-        return options;
-    }
-
-    protected DominoLoop.ViewEntryOptions<T> newLoopViewEntryOption(Query<E> query) {
-        DominoLoop.ViewEntryOptions<T> options = new DominoLoop.ViewEntryOptions<>();
-
-        options.setLimit(query.getLimit());
-        options.setOffset(query.getOffset());
-
-        if (query.containsOption("FETCH_TOTAL_ONLY")) {
-            options.setTotal(OptionTotal.READ_ONLY);
-        } else if (query.containsOption("FETCH_TOTAL")) {
-            options.setTotal(OptionTotal.READ);
-        }
-
-        return options;
     }
 
     protected void pullDocument(Document doc, T wrapper, Query<E> query) throws NotesException {
@@ -382,9 +316,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    private AttachedFiles pullItemAttachedFiles(E field, Document doc)
-            throws IllegalAccessException, IllegalArgumentException, InstantiationException,
-            InvocationTargetException, NoSuchMethodException, NotesException, SecurityException {
+    private AttachedFiles pullItemAttachedFiles(E field, Document doc) throws NotesException {
         String itemName = getDocumentItemName(field);
 
         MIMEEntity mimeEntity = null;
@@ -403,12 +335,18 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 return null;
             }
 
+            AttachedFiles files;
+
             try {
-                AttachedFiles files = (AttachedFiles) field.getProperties()
+                files = (AttachedFiles) field.getProperties()
                         .getType()
                         .getDeclaredConstructor()
                         .newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
 
+            try {
                 for (MIMEEntity attachment : attachments) {
                     DominoUtil
                             .getMimeEntityAttachmentFilename(attachment)
@@ -493,13 +431,16 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected void pullViewEntry(
-            ViewEntry entry, T wrapper, Query<E> query, ViewManager manager)
+            ViewEntry entry,
+            T wrapper,
+            Query<E> query,
+            VwWalker<E> walker)
             throws NotesException {
         List<?> columnValues = entry.getColumnValues();
 
         for (E field : query.getSchema()) {
             String fieldName = getDocumentItemName(field);
-            int columnIndex = manager.indexOfColumn(fieldName);
+            int columnIndex = walker.indexOfColumn(fieldName);
 
             if (columnIndex < 0) {
                 throw new IllegalStateException(
@@ -511,8 +452,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
             try {
                 if (field.getProperties().isList()) {
-                    List<?> values =
-                            (value instanceof List) ? ((List<?>) value) : Arrays.asList(value);
+                    List<?> values = (value instanceof List)
+                            ? ((List<?>) value)
+                            : Arrays.asList(value);
 
                     wrapper.presetValue(field, values.stream()
                             .map((val) -> Unthrow.on(() -> pullValue(type, val)))
@@ -543,7 +485,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
         wrapper.setId(entry.getUniversalID());
 
-        int lastModifiedIndex = manager.indexOfColumn("$lastModified");
+        int lastModifiedIndex = walker.indexOfColumn("$lastModified");
 
         if (lastModifiedIndex > -1) {
             wrapper.setLastModified(pullValue(
@@ -552,7 +494,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
 
         if (query.containsOption("FETCH_DATABASE_URL")) {
-            wrapper.setDatabaseUrl(manager.getDatabaseUrl(entry));
+            wrapper.setDatabaseUrl(walker.getDatabaseUrl(entry));
         }
     }
 
@@ -690,7 +632,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                         child = mimeEntity.createChildEntity();
                         MIMEHeader header = child.createHeader("Content-Disposition");
                         header.setHeaderValAndParams(
-                                "attachment; filename=\"" + af.getName() + "\"");
+                                "attachment; filename=\"".concat(af.getName()).concat("\""));
                     }
 
                     child.setContentFromBytes(stm,
@@ -765,7 +707,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         String replicaId = matcher.group("replicaId");
         String documentId = matcher.group("documentId");
 
-        // TODO This handle should be better managed
+        // TODO This handle should be better managed maybe?
         // It cannot be recycled because it could be a silo database used elsewhere
         Session session = factory.getSession();
         Database database = null;
@@ -787,35 +729,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
 
         return getDocumentById(database, documentId);
-    }
-
-    protected List<T> searchFullText(
-            View vw,
-            Supplier<T> supplier,
-            Query<E> query)
-            throws DaoException {
-        String syntax = new FullTextSearchQuery<>(query)
-                .withNamer(this::getDocumentItemName)
-                .output();
-
-        try {
-            vw.FTSearchSorted(syntax, query.getLimit());
-
-            Result<T> result = DominoLoop.read(vw,
-                    newLoopDocumentOption(query)
-                            .setConverter(doc -> Unthrow.on(() -> wrapDocument(
-                                    factory.setDefaults(doc),
-                                    supplier,
-                                    query))));
-
-            return decorate(result, query).getData();
-        } catch (NotesException e) {
-            if (e.id == NotesError.NOTES_ERR_NOT_IMPLEMENTED || !e.text.contains("query")) {
-                throw new RuntimeException(e);
-            }
-
-            throw DaoQueryException.asInvalid(syntax);
-        }
     }
 
     protected void update(T wrapper, DominoSilo silo) throws DaoException, NotesException {
@@ -887,11 +800,11 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             ViewEntry entry,
             Supplier<T> supplier,
             Query<E> query,
-            ViewManager manager)
+            VwWalker<E> walker)
             throws NotesException {
         T wrapper = supplier.get();
 
-        pullViewEntry(entry, wrapper, query, manager);
+        pullViewEntry(entry, wrapper, query, walker);
 
         return wrapper;
     }

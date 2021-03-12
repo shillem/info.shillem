@@ -17,11 +17,10 @@ public class MultiDominoSilo implements DominoSilo {
     private final DbIdentifier identifier;
     private final ServerFolder serverFolder;
 
-    private Session session;
-    private DatabasePath templatePath;
     private Consumer<Entry<DbIdentifier, Database>> databaseConsumer;
-
+    private Session session;
     private Map<String, SingleDominoSilo> silos;
+    private DbPath templatePath;
 
     public MultiDominoSilo(DbIdentifier identifier, ServerFolder serverFolder) {
         this.identifier = Objects.requireNonNull(identifier, "Identifier cannot be null");
@@ -30,18 +29,17 @@ public class MultiDominoSilo implements DominoSilo {
     }
 
     public DominoSilo get(String key) {
-        SingleDominoSilo silo = silos.get(key);
-
-        if (silo == null) {
-            silo = new SingleDominoSilo(identifier, new DatabasePath(
-                    serverFolder.getServerName(), serverFolder.getFolderPath() + key));
+        return silos.computeIfAbsent(key, (k) -> {
+            SingleDominoSilo silo = new SingleDominoSilo(
+                    identifier,
+                    new DbPath(
+                            serverFolder.getServerName(),
+                            serverFolder.getFolderPath().concat(key)));
             silo.setSession(session);
             silo.setTemplateCreation(templatePath, databaseConsumer);
 
-            silos.put(key, silo);
-        }
-
-        return silo;
+            return silo;
+        });
     }
 
     @Override
@@ -50,8 +48,8 @@ public class MultiDominoSilo implements DominoSilo {
     }
 
     @Override
-    public DatabasePath getDatabasePath() {
-        throw new UnsupportedOperationException("Use get(...).getDatabasePath()");
+    public DbPath getDbPath() {
+        throw new UnsupportedOperationException("Use get(...).getDbPath()");
     }
 
     @Override
@@ -60,12 +58,12 @@ public class MultiDominoSilo implements DominoSilo {
     }
 
     @Override
-    public View getView(ViewPath viewPath, ViewAccessPolicy accessPolicy) throws NotesException {
+    public View getView(VwPath vwPath, VwAccessPolicy accessPolicy) throws NotesException {
         throw new UnsupportedOperationException("Use get(...).getView(...)");
     }
 
     @Override
-    public List<String> getViewColumnNames(ViewPath viewPath) throws NotesException {
+    public List<String> getViewColumnNames(VwPath vwPath) throws NotesException {
         throw new UnsupportedOperationException("Use get(...).getViewColumnNames(...)");
     }
 
@@ -81,13 +79,13 @@ public class MultiDominoSilo implements DominoSilo {
     }
 
     @Override
-    public void setSession(Session session) {
-        this.session = session;
+    public void setSession(Session value) {
+        session = value;
     }
 
     @Override
     public void setTemplateCreation(
-            DatabasePath templatePath,
+            DbPath templatePath,
             Consumer<Entry<DbIdentifier, Database>> databaseConsumer) {
         this.templatePath = templatePath;
         this.databaseConsumer = databaseConsumer;

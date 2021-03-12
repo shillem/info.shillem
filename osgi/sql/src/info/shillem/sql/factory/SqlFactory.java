@@ -33,7 +33,7 @@ public class SqlFactory {
     }
 
     public enum Option {
-        PREFER_INSENSITIVE_LIKE
+        PREFER_LIKE_INSENSITIVE
     }
 
     private final Set<Option> options;
@@ -45,6 +45,10 @@ public class SqlFactory {
 
         source = builder.source;
         options = builder.options;
+    }
+    
+    public boolean containsOption(Option value) {
+        return options.contains(value);
     }
 
     public Connection getConnection() throws SQLException {

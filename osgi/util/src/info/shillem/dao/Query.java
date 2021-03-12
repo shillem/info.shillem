@@ -85,7 +85,7 @@ public class Query<E extends Enum<E> & BaseField> {
     }
 
     public enum Type {
-        ANY, ID, FILTER, SEARCH, URL;
+        FILTER, FLAT, ID, SEARCH, URL;
     }
 
     public static class Value<E extends Enum<E> & BaseField> implements Clause {
@@ -201,7 +201,7 @@ public class Query<E extends Enum<E> & BaseField> {
         } else if (url != null) {
             type = Type.URL;
         } else {
-            type = Type.ANY;
+            type = Type.FLAT;
         }
     }
 
@@ -339,7 +339,11 @@ public class Query<E extends Enum<E> & BaseField> {
     }
 
     public UnsupportedOperationException unsupported() {
-        return new UnsupportedOperationException(this.toString());
+        return new UnsupportedOperationException(toString());
+    }
+
+    public UnsupportedOperationException unsupported(String message) {
+        return new UnsupportedOperationException(message.concat(": ").concat(toString()));
     }
 
 }

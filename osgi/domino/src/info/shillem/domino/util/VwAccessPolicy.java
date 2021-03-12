@@ -2,11 +2,11 @@ package info.shillem.domino.util;
 
 import java.util.Set;
 
-public enum ViewAccessPolicy {
+public enum VwAccessPolicy {
     FRESH,
     STALE;
 
-    public static ViewAccessPolicy valueOf(Set<String> values) {
+    public static VwAccessPolicy valueOf(Set<String> values) {
         return values.contains("FETCH_STALE") ? STALE : FRESH;
     }
 

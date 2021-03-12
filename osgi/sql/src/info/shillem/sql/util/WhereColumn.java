@@ -2,8 +2,10 @@ package info.shillem.sql.util;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -18,8 +20,8 @@ public class WhereColumn implements IWhere {
     private final ComparisonOperator operator;
     private final Object value;
 
-    private String nfun;
-    private String vfun;
+    private List<String> nfuns;
+    private List<String> vfuns;
 
     public WhereColumn(String name, ComparisonOperator operator, Object value) {
         this.name = Objects.requireNonNull(name, "Name cannot be null");
@@ -62,7 +64,15 @@ public class WhereColumn implements IWhere {
     private String outputColumn(Schema schema) {
         String n = SelectQuery.getColumner(schema).apply(name);
 
-        return nfun != null ? String.format(nfun, n) : n;
+        if (nfuns == null) {
+            return n;
+        }
+
+        for (String nfun : nfuns) {
+            n = String.format(nfun, n);
+        }
+
+        return n;
     }
 
     private String outputOperator() {
@@ -91,8 +101,14 @@ public class WhereColumn implements IWhere {
     }
 
     private String outputValue(Object value) {
-        Function<String, String> formatter = vfun != null
-                ? (v) -> String.format(vfun, v)
+        Function<String, String> formatter = vfuns != null
+                ? (v) -> {
+                    for (String vfun : vfuns) {
+                        v = String.format(vfun, v);
+                    }
+
+                    return v;
+                }
                 : Function.identity();
 
         if (value == null) {
@@ -106,11 +122,13 @@ public class WhereColumn implements IWhere {
                 return formatter.apply("'".concat(val).concat("'"));
             }
 
-            val.replace('*', '%');
+            val = val.replace('*', '%');
 
-            return formatter.apply("'"
-                    .concat(val.contains("%") ? val : "%".concat(val).concat("%"))
-                    .concat("'"));
+            if (!val.contains("%")) {
+                val = "%".concat(val).concat("%");
+            }
+
+            return formatter.apply("'".concat(val).concat("'"));
         }
 
         if (value instanceof Date) {
@@ -143,14 +161,22 @@ public class WhereColumn implements IWhere {
         return function;
     }
 
-    public WhereColumn withNameFunction(String function) {
-        this.nfun = validateFunction(function);
+    public WhereColumn addNameFunction(String value) {
+        if (nfuns == null) {
+            nfuns = new ArrayList<>();
+        }
+
+        nfuns.add(validateFunction(value));
 
         return this;
     }
 
-    public WhereColumn withValueFunction(String function) {
-        this.vfun = validateFunction(function);
+    public WhereColumn addValueFunction(String value) {
+        if (vfuns == null) {
+            vfuns = new ArrayList<>();
+        }
+
+        vfuns.add(validateFunction(value));
 
         return this;
     }

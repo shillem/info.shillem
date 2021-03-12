@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class DatabasePath implements Serializable {
+public final class DbPath implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -19,20 +19,20 @@ public final class DatabasePath implements Serializable {
     private final String serverName;
     private final String filePath;
 
-    public DatabasePath(String apiPath) {
+    public DbPath(String apiPath) {
         Objects.requireNonNull(apiPath, "Api path cannot be null");
 
         Matcher matcher = SYNTAX_PATTERN.matcher(apiPath);
 
         if (!matcher.find()) {
-            throw new IllegalArgumentException("Cannot match path: " + apiPath);
+            throw new IllegalArgumentException("Cannot match path: ".concat(apiPath));
         }
 
         this.serverName = matcher.group(1);
         this.filePath = formatFilePath(matcher.group(2));
     }
 
-    public DatabasePath(String serverName, String filePath) {
+    public DbPath(String serverName, String filePath) {
         Objects.requireNonNull(serverName, "Server name cannot be null");
         Objects.requireNonNull(filePath, "File path cannot be null");
 
@@ -40,7 +40,7 @@ public final class DatabasePath implements Serializable {
         this.filePath = formatFilePath(filePath);
     }
 
-    public DatabasePath(String[] apiPath) {
+    public DbPath(String[] apiPath) {
         Objects.requireNonNull(apiPath);
 
         if (apiPath.length != 2) {
@@ -57,11 +57,11 @@ public final class DatabasePath implements Serializable {
             return filePath;
         }
 
-        return filePath + ".nsf";
+        return filePath.concat(".nsf");
     }
 
     public String getApiPath() {
-        return serverName + "!!" + filePath;
+        return serverName.concat("!!").concat(filePath);
     }
 
     public String getFilePath() {

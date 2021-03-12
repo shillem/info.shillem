@@ -38,21 +38,28 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
             E field,
             ComparisonOperator operator,
             Object value) {
-        return new WhereColumn(field.name(), operator, value);
+        WhereColumn column = new WhereColumn(field.name(), operator, value);
+
+        if (factory.containsOption(SqlFactory.Option.PREFER_LIKE_INSENSITIVE)
+                && operator == ComparisonOperator.LIKE) {
+            column.addNameFunction("LOWER(%s)").addValueFunction("LOWER(%s)");
+        }
+
+        return column;
     }
 
     protected void populateSelectQuery(SelectQuery select, Query<E> query) {
         query.getSchema().forEach((f) -> select.column(f.name()));
 
         LWhere wheres = select.wheres();
-        
+
         switch (query.getType()) {
-        case FILTER: 
+        case FILTER:
             query.getFilters().forEach((f, value) -> wheres.and(
                     createSelectQueryWhereColumn(f, ComparisonOperator.EQUAL, value)));
             break;
-            
-        case SEARCH: 
+
+        case SEARCH:
             query.getClauses().forEach((clause) -> populateSelectQueryWhere(wheres, clause));
         default:
             // Do nothing

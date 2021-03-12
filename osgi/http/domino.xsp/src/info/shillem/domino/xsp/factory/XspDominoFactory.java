@@ -11,7 +11,7 @@ import com.ibm.domino.napi.c.xsp.XSPNative;
 
 import info.shillem.domino.factory.AbstractDominoFactory;
 import info.shillem.domino.factory.DominoFactory;
-import info.shillem.domino.util.DatabasePath;
+import info.shillem.domino.util.DbPath;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.util.Unthrow;
 import lotus.domino.Database;
@@ -27,7 +27,7 @@ public class XspDominoFactory extends AbstractDominoFactory {
         private final String username;
         private final Set<Option> options;
 
-        private DatabasePath databasePath;
+        private DbPath dbPath;
 
         public Builder(String username) {
             this.username = Objects.requireNonNull(username, "Username cannot be null");
@@ -45,10 +45,10 @@ public class XspDominoFactory extends AbstractDominoFactory {
                 long userHandle = NotesUtil.createUserNameList(username);
                 Session session = XSPNative.createXPageSession(username, userHandle, true, false);
 
-                if (databasePath != null) {
+                if (dbPath != null) {
                     Database database = session.getDatabase(
-                            databasePath.getServerName(),
-                            databasePath.getFilePath());
+                            dbPath.getServerName(),
+                            dbPath.getFilePath());
 
                     XSPNative.setContextDatabase(session, XSPNative.getDBHandle(database));
                 }
@@ -69,8 +69,8 @@ public class XspDominoFactory extends AbstractDominoFactory {
             }
         }
 
-        public Builder setCurrentDatabase(DatabasePath databasePath) {
-            this.databasePath = databasePath;
+        public Builder setCurrentDatabase(DbPath dbPath) {
+            this.dbPath = dbPath;
 
             return this;
         }

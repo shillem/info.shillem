@@ -13,13 +13,13 @@ public interface DominoSilo {
 
     Database getDatabase() throws NotesException;
 
-    DatabasePath getDatabasePath();
+    DbPath getDbPath();
 
     DbIdentifier getIdentifier();
 
-    View getView(ViewPath viewPath, ViewAccessPolicy accessPolicy) throws NotesException;
+    View getView(VwPath vwPath, VwAccessPolicy accessPolicy) throws NotesException;
 
-    List<String> getViewColumnNames(ViewPath viewPath) throws NotesException;
+    List<String> getViewColumnNames(VwPath vwPath) throws NotesException;
 
     boolean isDocumentLockingEnabled();
 
@@ -28,6 +28,6 @@ public interface DominoSilo {
     void setSession(Session session);
 
     void setTemplateCreation(
-            DatabasePath templatePath, Consumer<Entry<DbIdentifier, Database>> databaseConsumer);
+            DbPath templatePath, Consumer<Entry<DbIdentifier, Database>> databaseConsumer);
 
 }

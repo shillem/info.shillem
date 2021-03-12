@@ -47,6 +47,10 @@ public class DiiopDominoFactory extends AbstractDominoFactory {
         getSession().setConvertMime(
                 !options.contains(Option.DO_NOT_CONVERT_MIME));
     }
+    
+    public boolean containsOption(Option value) {
+        return options.contains(value);
+    }
 
     @Override
     public boolean isRemote() {

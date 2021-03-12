@@ -40,57 +40,58 @@ public class DominoUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static Boolean getItemBoolean(Document doc, String itemName)
-            throws NotesException {
+    public static Boolean getItemBoolean(Document doc, String itemName) throws NotesException {
         return getItemValue(doc, itemName, (val) -> Boolean.valueOf((String) val));
     }
 
-    public static List<Boolean> getItemBooleans(Document doc, String itemName)
+    public static List<Boolean> getItemBooleans(
+            Document doc,
+            String itemName)
             throws NotesException {
         return getItemValues(doc, itemName, (val) -> Boolean.valueOf((String) val));
     }
 
-    public static Date getItemDate(Document doc, String itemName)
-            throws NotesException {
+    public static Date getItemDate(Document doc, String itemName) throws NotesException {
         return getItemValue(doc, itemName, Date.class::cast);
     }
 
-    public static List<Date> getItemDates(Document doc, String itemName)
-            throws NotesException {
+    public static List<Date> getItemDates(Document doc, String itemName) throws NotesException {
         return getItemValues(doc, itemName, Date.class::cast);
     }
 
-    public static BigDecimal getItemDecimal(Document doc, String itemName)
-            throws NotesException {
+    public static BigDecimal getItemDecimal(Document doc, String itemName) throws NotesException {
         return getItemValue(doc, itemName, (val) -> new BigDecimal(((Number) val).toString()));
     }
 
-    public static List<BigDecimal> getItemDecimals(Document doc, String itemName)
+    public static List<BigDecimal> getItemDecimals(
+            Document doc,
+            String itemName)
             throws NotesException {
         return getItemValues(doc, itemName, (val) -> new BigDecimal(((Number) val).toString()));
     }
 
-    public static Double getItemDouble(Document doc, String itemName)
-            throws NotesException {
+    public static Double getItemDouble(Document doc, String itemName) throws NotesException {
         return getItemValue(doc, itemName, (val) -> ((Number) val).doubleValue());
     }
 
-    public static List<Double> getItemDoubles(Document doc, String itemName)
-            throws NotesException {
+    public static List<Double> getItemDoubles(Document doc, String itemName) throws NotesException {
         return getItemValues(doc, itemName, (val) -> ((Number) val).doubleValue());
     }
 
-    public static Integer getItemInteger(Document doc, String itemName)
-            throws NotesException {
+    public static Integer getItemInteger(Document doc, String itemName) throws NotesException {
         return getItemValue(doc, itemName, (val) -> ((Number) val).intValue());
     }
 
-    public static List<Integer> getItemIntegers(Document doc, String itemName)
+    public static List<Integer> getItemIntegers(
+            Document doc,
+            String itemName)
             throws NotesException {
         return getItemValues(doc, itemName, (val) -> ((Number) val).intValue());
     }
 
-    public static RichTextItem getItemRichText(Document doc, String itemName)
+    public static RichTextItem getItemRichText(
+            Document doc,
+            String itemName)
             throws NotesException {
         Item item = doc.getFirstItem(itemName);
 
@@ -101,22 +102,25 @@ public class DominoUtil {
         return (RichTextItem) item;
     }
 
-    public static String getItemString(Document doc, String itemName)
-            throws NotesException {
+    public static String getItemString(Document doc, String itemName) throws NotesException {
         return getItemValue(doc, itemName, String.class::cast);
     }
 
-    public static List<String> getItemStrings(Document doc, String itemName)
+    public static List<String> getItemStrings(
+            Document doc,
+            String itemName)
             throws NotesException {
         return getItemValues(doc, itemName, String.class::cast);
     }
 
-    public static Object getItemValue(Document doc, String itemName)
-            throws NotesException {
+    public static Object getItemValue(Document doc, String itemName) throws NotesException {
         return getItemValue(doc, itemName, Object.class::cast);
     }
 
-    public static <T> T getItemValue(Document doc, String itemName, Function<Object, T> converter)
+    public static <T> T getItemValue(
+            Document doc,
+            String itemName,
+            Function<Object, T> converter)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
         Objects.requireNonNull(itemName, "Item name cannot be null");
@@ -147,13 +151,17 @@ public class DominoUtil {
         }
     }
 
-    public static List<Object> getItemValues(Document doc, String itemName)
+    public static List<Object> getItemValues(
+            Document doc,
+            String itemName)
             throws NotesException {
         return getItemValues(doc, itemName, Object.class::cast);
     }
 
     public static <T> List<T> getItemValues(
-            Document doc, String itemName, Function<Object, T> converter)
+            Document doc,
+            String itemName,
+            Function<Object, T> converter)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
         Objects.requireNonNull(itemName, "Item name cannot be null");

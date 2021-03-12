@@ -1,11 +1,11 @@
 package info.shillem.domino.util;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 
+import info.shillem.domino.util.DominoLoop.OptionsDocument;
 import info.shillem.util.Unthrow;
 import lotus.domino.Document;
 import lotus.domino.NotesException;
@@ -49,14 +49,15 @@ public class DominoI18n {
             throw new IllegalStateException(valueItemName.concat(" value item does not exist"));
         }
         
+        Map<String, String> map = new LinkedHashMap<>();
+
         if (!doc.hasItem(labelItemName)) {
-            return Collections.emptyMap();
+            return map;
         }
 
         Vector<?> values = doc.getItemValue(valueItemName);
         Vector<?> labels = doc.getItemValue(labelItemName);
 
-        Map<String, String> map = new LinkedHashMap<>();
         String prefix = prefixItemName != null
                 ? doc.getItemValueString(prefixItemName) + "_"
                 : "";
@@ -74,14 +75,16 @@ public class DominoI18n {
     public static Map<String, String> getValues(
             View vw,
             String valueItemName,
-            Locale locale) throws NotesException {
+            Locale locale)
+            throws NotesException {
         return getValues(vw, valueItemName, getLocaleItemName(valueItemName, locale));
     }
 
     public static Map<String, String> getValues(
             View vw,
             String valueItemName,
-            String labelItemName) throws NotesException {
+            String labelItemName)
+            throws NotesException {
         return getValues(vw, valueItemName, labelItemName, null);
     }
 
@@ -89,13 +92,17 @@ public class DominoI18n {
             View vw,
             String valueItemName,
             String labelItemName,
-            String prefixItemName) throws NotesException {
+            String prefixItemName)
+            throws NotesException {
         Map<String, String> values = new LinkedHashMap<>();
+        
+        OptionsDocument<Object> options = new DominoLoop.OptionsDocument<>();
+        
+        options.setReader((doc) -> Unthrow.on(() -> {
+            values.putAll(getValues(doc, valueItemName, labelItemName, prefixItemName));
+        }));
 
-        DominoLoop.read(vw,
-                new DominoLoop.DocumentOptions<Object>().setReader((doc) -> Unthrow.on(() -> {
-                    values.putAll(getValues(doc, valueItemName, labelItemName, prefixItemName));
-                })));
+        DominoLoop.read(vw, options);
 
         return values;
     }
