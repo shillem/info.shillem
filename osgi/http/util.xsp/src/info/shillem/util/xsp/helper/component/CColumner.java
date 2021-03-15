@@ -58,7 +58,7 @@ public class CColumner extends CEventProvider {
     public CColumner(String id, String refreshId) {
         this.id = Objects.requireNonNull(id, "Id cannot be null");
         this.refreshId = Objects.requireNonNull(refreshId, "Refresh Id cannot be null");
-        this.columns = new ReadableDataObject<>(Column.class, (n, cls) -> new Column(n, this));
+        this.columns = new ReadableDataObject<>((n) -> new Column(n, this));
     }
 
     public ReadableDataObject<String, Column> getColumn() {

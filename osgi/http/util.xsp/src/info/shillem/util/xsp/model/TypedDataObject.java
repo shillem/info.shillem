@@ -7,18 +7,16 @@ import java.util.Objects;
 
 import com.ibm.xsp.model.DataObject;
 
-import info.shillem.util.xsp.context.SerializableBiFunction;
+import info.shillem.util.xsp.context.SerializableFunction;
 
 public abstract class TypedDataObject<K, V> implements DataObject, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    protected final Class<V> cls;
-    protected final SerializableBiFunction<K, Class<V>, V> fn;
+    protected final SerializableFunction<K, V> fn;
     protected final Map<K, V> values;
 
-    protected TypedDataObject(Class<V> cls, SerializableBiFunction<K, Class<V>, V> fn) {
-        this.cls = Objects.requireNonNull(cls, "Class cannot be null");
+    protected TypedDataObject(SerializableFunction<K, V> fn) {
         this.fn = Objects.requireNonNull(fn, "Function cannot be null");
         this.values = new HashMap<>();
     }
@@ -38,11 +36,11 @@ public abstract class TypedDataObject<K, V> implements DataObject, Serializable 
         @SuppressWarnings("unchecked")
         K k = (K) key;
 
-        if (values.containsKey(key)) {
-            return values.get(key);
+        if (values.containsKey(k)) {
+            return values.get(k);
         }
 
-        V value = fn.apply(k, cls);
+        V value = fn.apply(k);
 
         values.put(k, value);
 
