@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -444,7 +443,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
             if (columnIndex < 0) {
                 throw new IllegalStateException(
-                        "Column for schema field " + field + " does not exist");
+                        "Column for schema field ".concat(field.name()).concat(" does not exist"));
             }
 
             Object value = columnValues.get(columnIndex);
@@ -452,9 +451,13 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
             try {
                 if (field.getProperties().isList()) {
-                    List<?> values = (value instanceof List)
-                            ? ((List<?>) value)
-                            : Arrays.asList(value);
+                    List<Object> values = new ArrayList<>();
+
+                    if (value instanceof List) {
+                        values.addAll((List<?>) value);
+                    } else if (!(value instanceof String && ((String) value).isEmpty())) {
+                        values.add(value);
+                    }
 
                     wrapper.presetValue(field, values.stream()
                             .map((val) -> Unthrow.on(() -> pullValue(type, val)))

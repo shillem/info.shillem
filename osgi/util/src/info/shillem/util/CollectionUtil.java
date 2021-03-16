@@ -19,7 +19,7 @@ public class CollectionUtil {
             return new Vector<>((Collection<T>) value);
         }
 
-        Vector<T> values = new Vector<T>();
+        Vector<T> values = new Vector<>();
 
         values.add(value);
 
