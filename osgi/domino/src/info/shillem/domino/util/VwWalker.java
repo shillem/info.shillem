@@ -90,7 +90,8 @@ public class VwWalker<E extends Enum<E> & BaseField> {
 
                 return params.view.getAllEntries();
             } catch (NotesException e) {
-                if (e.id == NotesError.NOTES_ERR_NOT_IMPLEMENTED || !e.text.contains("query")) {
+                if (e.id == NotesError.NOTES_ERR_NOT_IMPLEMENTED
+                        || !e.text.toLowerCase().contains("query")) {
                     throw new RuntimeException(e);
                 }
 
