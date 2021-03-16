@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 import com.ibm.xsp.model.DataObject;
 
-import info.shillem.util.xsp.context.SerializableFunction;
+import info.shillem.util.xsp.context.SFunction;
 
 public class ProxyDataObject implements DataObject, Serializable {
 
@@ -14,7 +14,7 @@ public class ProxyDataObject implements DataObject, Serializable {
 
     private final Function<String, Object> fn;
 
-    public ProxyDataObject(SerializableFunction<String, Object> fn) {
+    public ProxyDataObject(SFunction<String, Object> fn) {
         this.fn = Objects.requireNonNull(fn, "Function cannot be null");
     }
 

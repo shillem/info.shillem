@@ -1,12 +1,12 @@
 package info.shillem.util.xsp.model;
 
-import info.shillem.util.xsp.context.SerializableFunction;
+import info.shillem.util.xsp.context.SFunction;
 
 public class ReadableDataObject<K, V> extends TypedDataObject<K, V> {
 
     private static final long serialVersionUID = 1L;
 
-    public ReadableDataObject(SerializableFunction<K, V> fn) {
+    public ReadableDataObject(SFunction<K, V> fn) {
         super(fn);
     }
 

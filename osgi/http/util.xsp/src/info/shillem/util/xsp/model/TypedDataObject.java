@@ -7,16 +7,16 @@ import java.util.Objects;
 
 import com.ibm.xsp.model.DataObject;
 
-import info.shillem.util.xsp.context.SerializableFunction;
+import info.shillem.util.xsp.context.SFunction;
 
 public abstract class TypedDataObject<K, V> implements DataObject, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    protected final SerializableFunction<K, V> fn;
+    protected final SFunction<K, V> fn;
     protected final Map<K, V> values;
 
-    protected TypedDataObject(SerializableFunction<K, V> fn) {
+    protected TypedDataObject(SFunction<K, V> fn) {
         this.fn = Objects.requireNonNull(fn, "Function cannot be null");
         this.values = new HashMap<>();
     }

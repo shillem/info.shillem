@@ -13,7 +13,7 @@ import javax.faces.model.DataModelListener;
 import com.ibm.xsp.component.FacesDataIterator;
 import com.ibm.xsp.model.TabularDataModel;
 
-import info.shillem.util.xsp.context.SerialConsumer;
+import info.shillem.util.xsp.context.SConsumer;
 
 public class PageDataModel<T> extends TabularDataModel implements Serializable {
 
@@ -65,7 +65,7 @@ public class PageDataModel<T> extends TabularDataModel implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private SerialConsumer<Page<T>> wrappedData;
+	private SConsumer<Page<T>> wrappedData;
 	private int pageSize;
 
 	private int index;
@@ -76,7 +76,7 @@ public class PageDataModel<T> extends TabularDataModel implements Serializable {
 		this(null);
 	}
 
-	public PageDataModel(SerialConsumer<Page<T>> wrappedData) {
+	public PageDataModel(SConsumer<Page<T>> wrappedData) {
 		super();
 
 		setWrappedData(wrappedData);
@@ -200,7 +200,7 @@ public class PageDataModel<T> extends TabularDataModel implements Serializable {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void setWrappedData(Object data) {
-		wrappedData = data instanceof Consumer ? (SerialConsumer<Page<T>>) data : null;
+		wrappedData = data instanceof Consumer ? (SConsumer<Page<T>>) data : null;
 
 		setRowIndex(-1);
 
