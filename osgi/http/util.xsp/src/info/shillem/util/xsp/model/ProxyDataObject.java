@@ -8,28 +8,30 @@ import com.ibm.xsp.model.DataObject;
 
 import info.shillem.util.xsp.context.SFunction;
 
-public class ProxyDataObject implements DataObject, Serializable {
+public class ProxyDataObject<K, V> implements DataObject, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private final Function<String, Object> fn;
+    private final Function<K, V> fn;
 
-    public ProxyDataObject(SFunction<String, Object> fn) {
+    public ProxyDataObject(SFunction<K, V> fn) {
         this.fn = Objects.requireNonNull(fn, "Function cannot be null");
     }
 
     @Override
-    public Class<?> getType(Object key) {
+    public Class<V> getType(Object key) {
         Object value = getValue(key);
 
-        return value != null ? value.getClass() : null;
+        @SuppressWarnings("unchecked")
+        Class<V> valueClass = (Class<V>) (value != null ? value.getClass() : null);
+
+        return valueClass;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object getValue(Object key) {
-        String k = key.toString();
-
-        return fn.apply(k);
+    public V getValue(Object key) {        
+        return fn.apply((K) key);
     }
 
     @Override
