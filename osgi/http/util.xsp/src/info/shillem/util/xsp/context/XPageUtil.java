@@ -110,7 +110,9 @@ public class XPageUtil {
     }
 
     public static void applySuccessRefreshId(FacesContext context, String refreshId) {
-        ((FacesContextEx) context).setPartialRefreshId(refreshId);
+        if (refreshId != null) {
+            ((FacesContextEx) context).setPartialRefreshId(refreshId);
+        }
     }
 
     public static void bindBeforeRenderResponseMethod(FacesContext context, String el) {
