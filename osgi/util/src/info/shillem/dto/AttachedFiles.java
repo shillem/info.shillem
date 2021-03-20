@@ -55,7 +55,7 @@ public class AttachedFiles implements Serializable {
     }
 
     public List<AttachedFile> getAll() {
-        return new ArrayList<>(values);
+        return values;
     }
 
     public AttachedFile getFirst() {
