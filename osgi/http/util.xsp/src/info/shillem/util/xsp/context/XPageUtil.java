@@ -173,6 +173,10 @@ public class XPageUtil {
         return ((FacesContextEx) context).getProperty(property);
     }
 
+    public static String getRefreshId(FacesContext context) {
+        return ((FacesContextEx) context).getPartialRefreshId();
+    }
+
     public static Locale getViewLocale(FacesContext context) {
         return context.getViewRoot().getLocale();
     }
