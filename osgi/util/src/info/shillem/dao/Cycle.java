@@ -1,16 +1,13 @@
 package info.shillem.dao;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import info.shillem.dao.lang.DaoException;
 import info.shillem.dao.lang.DaoRecordException;
@@ -72,14 +69,10 @@ public class Cycle<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
     }
 
     private final Map<Phase, List<Consumer<Cursor>>> phases = new HashMap<>();
-    private final Map<Object, List<BiConsumer<Cursor, E>>> changePhases = new HashMap<>();
+    private final Map<E, List<BiConsumer<Cursor, E>>> changePhases = new HashMap<>();
 
-    public void onChange(BaseField field, BiConsumer<Cursor, E> consumer) {
+    public void onChange(E field, BiConsumer<Cursor, E> consumer) {
         changePhases.computeIfAbsent(field, (k) -> new ArrayList<>()).add(consumer);
-    }
-
-    public void onChange(Class<? extends Serializable> cls, BiConsumer<Cursor, E> consumer) {
-        changePhases.computeIfAbsent(cls, (k) -> new ArrayList<>()).add(consumer);
     }
 
     public void onCreate(Consumer<Cursor> consumer) {
@@ -130,11 +123,8 @@ public class Cycle<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
                 .ifPresent(list -> list.forEach(consumer -> consumer.accept(cursor)));
 
         record.getSchema(SchemaFilter.UPDATED).forEach(field -> {
-            Stream.of(
-                    changePhases.get(field),
-                    changePhases.get(field.getProperties().getClass()))
-                    .filter(Objects::nonNull)
-                    .forEach(list -> list.forEach(consumer -> consumer.accept(cursor, field)));
+            Optional.ofNullable(changePhases.get(field))
+                    .ifPresent(list -> list.forEach(consumer -> consumer.accept(cursor, field)));
         });
 
         return cursor;
