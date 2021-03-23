@@ -187,6 +187,7 @@ public class Query<E extends Enum<E> & BaseField> {
         id = builder.id;
         limit = builder.limit;
         locale = builder.locale;
+        offset = builder.offset;
         options = Optional.ofNullable(builder.options).orElse(Collections.emptySet());
         schema = Optional.ofNullable(builder.schema).orElse(Collections.emptySet());
         sorters = Optional.ofNullable(builder.sorters).orElse(Collections.emptyMap());

@@ -194,7 +194,10 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         return wrapper;
     }
 
-    protected List<T> wrapStatement(String syntax, Supplier<T> supplier, Query<E> query)
+    protected List<T> wrapStatement(
+            String syntax,
+            Supplier<T> supplier,
+            Query<E> query)
             throws SQLException {
         try (
                 Statement statement = factory.getConnection().createStatement(
