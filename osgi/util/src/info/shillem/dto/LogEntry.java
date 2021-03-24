@@ -8,6 +8,10 @@ import java.util.Map;
 
 public class LogEntry implements Comparable<LogEntry>, JsonValue, Serializable {
 
+    public interface Property {
+        String name();
+    }
+
     private static final long serialVersionUID = 1L;
 
     private final long timestamp;
@@ -32,28 +36,28 @@ public class LogEntry implements Comparable<LogEntry>, JsonValue, Serializable {
         if (date == null) {
             date = new Date(timestamp);
         }
-        
+
         return date;
     }
 
     public Map<String, Object> getProperties() {
         return properties != null ? properties : Collections.emptyMap();
     }
-    
-    public Object getProperty(String property) {
-        return getProperties().get(property);
+
+    public Object getProperty(Property name) {
+        return getProperties().get(name.name());
     }
 
     public long getTimestamp() {
         return timestamp;
     }
 
-    public LogEntry setProperty(String name, Object value) {
+    public LogEntry setProperty(Property name, Object value) {
         if (properties == null) {
             properties = new LinkedHashMap<>();
         }
 
-        properties.put(name, value);
+        properties.put(name.name(), value);
 
         return this;
     }
