@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface ManagedPage {
 
-    String beanName();
+    String beanName() default "page";
     
     String viewId();
 

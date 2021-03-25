@@ -39,7 +39,10 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
             E field,
             ComparisonOperator operator,
             Object value) {
-        WhereColumn column = new WhereColumn(field.name(), operator, value);
+        WhereColumn column = new WhereColumn(
+                field.name(),
+                operator,
+                value instanceof Enum ? ((Enum<?>) value).name() : value);
 
         if (factory.containsOption(SqlFactory.Option.PREFER_LIKE_INSENSITIVE)
                 && operator == ComparisonOperator.LIKE) {
