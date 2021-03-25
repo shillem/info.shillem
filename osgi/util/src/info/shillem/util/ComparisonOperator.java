@@ -30,7 +30,7 @@ public enum ComparisonOperator {
         case GREATER:
             return LOWER;
         default:
-            throw new UnsupportedOperationException(this.name());
+            throw new UnsupportedOperationException(name());
         }
     }
 

@@ -171,14 +171,14 @@ public class Query<E extends Enum<E> & BaseField> {
     private final String id;
     private final int limit;
     private final Locale locale;
+    private final int offset;
     private final Set<String> options;
     private final Set<E> schema;
     private final Map<E, OrderOperator> sorters;
     private final Type type;
     private final String url;
 
-    private int offset;
-    private QuerySummary summary;
+    private Summary summary;
 
     Query(QueryBuilder<E> builder) {
         clause = builder.clause;
@@ -208,14 +208,6 @@ public class Query<E extends Enum<E> & BaseField> {
 
     public boolean containsOption(String name) {
         return options.contains(name);
-    }
-
-    public QuerySummary createSummary() {
-        if (summary == null) {
-            summary = new QuerySummary();
-        }
-
-        return summary;
     }
 
     public Collection<Clause> getClauses() {
@@ -258,16 +250,20 @@ public class Query<E extends Enum<E> & BaseField> {
         return options;
     }
 
+    public Summary getSummary() {
+        if (summary == null) {
+            summary = new Summary(limit, offset);
+        }
+
+        return summary;
+    }
+
     public Set<E> getSchema() {
         return schema;
     }
 
     public Map<E, OrderOperator> getSorters() {
         return sorters;
-    }
-
-    public QuerySummary getSummary() {
-        return summary;
     }
 
     public Type getType() {
@@ -278,21 +274,8 @@ public class Query<E extends Enum<E> & BaseField> {
         return url;
     }
 
-    public boolean isUnknownOffset() {
+    public boolean isMaxOffset() {
         return offset == Integer.MAX_VALUE;
-    }
-
-    public int recalculateOffset(int lastRow) {
-        if (!isUnknownOffset()) {
-            throw new IllegalStateException(
-                    "Offset cannot be recalculated unless offset at build time equals to Integer.MAX_VALUE");
-        }
-
-        int modulus = lastRow % limit;
-
-        offset = lastRow - (modulus > 0 ? modulus : limit);
-
-        return offset;
     }
 
     public Query<E> require(Type value) {
@@ -301,6 +284,10 @@ public class Query<E extends Enum<E> & BaseField> {
         }
 
         throw unsupported();
+    }
+
+    public void setSummary(Summary value) {
+        summary = value;
     }
 
     protected Map<String, Object> toMap() {
@@ -328,7 +315,6 @@ public class Query<E extends Enum<E> & BaseField> {
         consumer.accept("options", getOptions());
         consumer.accept("schema", getSchema());
         consumer.accept("sorters", getSorters());
-        consumer.accept("summary", getSummary());
         consumer.accept("type", getType());
 
         return properties;

@@ -17,196 +17,196 @@ import info.shillem.util.xsp.context.SConsumer;
 
 public class PageDataModel<T> extends TabularDataModel implements Serializable {
 
-	public static class Page<T> implements Serializable {
+    public static class Page<T> implements Serializable {
 
-		private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 1L;
 
-		private final int limit;
+        private final int limit;
+        private final int offset;
 
-		private int offset;
-		private List<T> data;
+        private int calculatedOffset;
+        private List<T> data;
 
-		private Page(int offset, int limit) {
-			this.limit = limit;
+        private Page(int limit, int offset) {
+            this.limit = limit;
+            this.offset = offset;
 
-			this.offset = offset;
-			this.data = Collections.emptyList();
-		}
+            this.calculatedOffset = offset;
+            this.data = Collections.emptyList();
+        }
 
-		private boolean contains(int index) {
-			return index - offset < data.size();
-		}
+        private boolean contains(int index) {
+            return index - calculatedOffset < data.size();
+        }
 
-		private T get(int index) {
-			return data.get(index - offset);
-		}
+        private T get(int index) {
+            return data.get(index - calculatedOffset);
+        }
 
-		public int getLimit() {
-			return limit;
-		}
+        public int getLimit() {
+            return limit;
+        }
 
-		public int getOffset() {
-			return offset;
-		}
+        public int getOffset() {
+            return offset;
+        }
 
-		private boolean mayContain(int index) {
-			return index >= offset && index < (offset + limit);
-		}
+        private boolean mayContain(int index) {
+            return index >= calculatedOffset && index < (calculatedOffset + limit);
+        }
 
-		public void setData(List<T> data) {
-			this.data = Objects.requireNonNull(data, "Data cannot be null");
-		}
+        public void setCalculatedOffset(int value) {
+            calculatedOffset = value;
+        }
 
-		public void setOffset(int offset) {
-			this.offset = offset;
-		}
+        public void setData(List<T> value) {
+            data = Objects.requireNonNull(value, "Data cannot be null");
+        }
 
-	}
+    }
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private SConsumer<Page<T>> wrappedData;
-	private int pageSize;
+    private int index;
+    private int last;
+    private Page<T> page;
+    private int size;
+    private SConsumer<Page<T>> wrappedData;
 
-	private int index;
-	private int limit;
-	private Page<T> page;
+    public PageDataModel() {
+        this(null);
+    }
 
-	public PageDataModel() {
-		this(null);
-	}
+    public PageDataModel(SConsumer<Page<T>> wrappedData) {
+        super();
 
-	public PageDataModel(SConsumer<Page<T>> wrappedData) {
-		super();
+        size = 30;
 
-		setWrappedData(wrappedData);
+        setWrappedData(wrappedData);
+    }
 
-		pageSize = 30;
-	}
+    @Override
+    public boolean canHaveMoreRows() {
+        return true;
+    }
 
-	@Override
-	public boolean canHaveMoreRows() {
-		return true;
-	}
+    @Override
+    public int getRowCount() {
+        FacesDataIterator iterator = getDataControl();
 
-	@Override
-	public int getRowCount() {
-		FacesDataIterator iterator = getDataControl();
+        return iterator.getFirst() + iterator.getRows() + 1;
+    }
 
-		return iterator.getFirst() + iterator.getRows() + 1;
-	}
+    @Override
+    public Object getRowData() {
+        if (wrappedData == null) {
+            return null;
+        }
 
-	@Override
-	public Object getRowData() {
-		if (wrappedData == null) {
-			return null;
-		}
+        if (!isRowAvailable()) {
+            throw new IllegalStateException();
+        }
 
-		if (!isRowAvailable()) {
-			throw new IllegalStateException();
-		}
+        return page.get(index);
+    }
 
-		return page.get(index);
-	}
+    @Override
+    public int getRowIndex() {
+        return index;
+    }
 
-	@Override
-	public int getRowIndex() {
-		return index;
-	}
+    @Override
+    public Object getWrappedData() {
+        return wrappedData;
+    }
 
-	@Override
-	public Object getWrappedData() {
-		return wrappedData;
-	}
+    @Override
+    public int hasMoreRows(int index) {
+        if (index == Integer.MAX_VALUE) {
+            load(index);
+        }
 
-	@Override
-	public int hasMoreRows(int index) {
-		if (index == Integer.MAX_VALUE) {
-			loadPage(index);
-		}
+        return last < 0 ? index : last;
+    }
 
-		return limit < 0 ? index : limit;
-	}
+    public void invalidate() {
+        setRowIndex(-1);
 
-	public void invalidate() {
-		setRowIndex(-1);
+        last = getRowIndex();
 
-		limit = getRowIndex();
+        page = null;
+    }
 
-		page = null;
-	}
+    @Override
+    public boolean isRowAvailable() {
+        if (wrappedData == null || index < 0 || page == null) {
+            return false;
+        }
 
-	@Override
-	public boolean isRowAvailable() {
-		if (wrappedData == null || index < 0 || page == null) {
-			return false;
-		}
+        return page.contains(index);
+    }
 
-		return page.contains(index);
-	}
+    private void load(int index) {
+        if (page != null && page.mayContain(index)) {
+            return;
+        }
 
-	private void loadPage(int index) {
-		if (page == null || !page.mayContain(index)) {
-			Page<T> page = new Page<>(index, pageSize);
+        Page<T> page = new Page<>(size, index);
 
-			wrappedData.accept(page);
+        wrappedData.accept(page);
 
-			if (page.data.size() < page.getLimit()) {
-				limit = page.getOffset() + page.data.size();
-			}
+        if (page.calculatedOffset < page.offset || page.data.size() < page.limit) {
+            last = page.calculatedOffset + page.data.size();
+        }
 
-			this.page = page;
-		}
-	}
+        this.page = page;
+    }
 
-	public void setPageSize(int size) {
-		if (size < 1) {
-			throw new IllegalArgumentException();
-		}
+    @Override
+    public void setRowIndex(int index) {
+        if (index < -1) {
+            throw new IllegalArgumentException();
+        }
 
-		page = null;
+        if (wrappedData == null || index == this.index) {
+            return;
+        }
 
-		pageSize = size;
-	}
+        this.index = index;
 
-	@Override
-	public void setRowIndex(int index) {
-		if (index < -1) {
-			throw new IllegalArgumentException();
-		}
+        if (index >= 0) {
+            load(index);
+        }
 
-		if (wrappedData == null || index == this.index) {
-			return;
-		}
+        DataModelListener[] listeners = getDataModelListeners();
 
-		this.index = index;
+        if (listeners == null) {
+            return;
+        }
 
-		if (index >= 0) {
-			loadPage(index);
-		}
+        DataModelEvent event = new DataModelEvent(
+                this,
+                index,
+                isRowAvailable() ? getRowData() : null);
 
-		DataModelListener[] listeners = getDataModelListeners();
+        Stream.of(listeners).forEach((listener) -> listener.rowSelected(event));
+    }
 
-		if (listeners == null) {
-			return;
-		}
+    public void setSize(int value) {
+        if (value < 1) {
+            throw new IllegalArgumentException();
+        }
 
-		DataModelEvent event = new DataModelEvent(
-		        this, index, isRowAvailable() ? getRowData() : null);
+        page = null;
+        size = value;
+    }
 
-		Stream.of(listeners).forEach((listener) -> listener.rowSelected(event));
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public void setWrappedData(Object data) {
+        wrappedData = data instanceof Consumer ? (SConsumer<Page<T>>) data : null;
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public void setWrappedData(Object data) {
-		wrappedData = data instanceof Consumer ? (SConsumer<Page<T>>) data : null;
-
-		setRowIndex(-1);
-
-		limit = getRowIndex();
-
-		page = null;
-	}
+        invalidate();
+    }
 
 }

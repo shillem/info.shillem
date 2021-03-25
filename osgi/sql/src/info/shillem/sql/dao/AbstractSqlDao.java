@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import info.shillem.dao.Query;
+import info.shillem.dao.Summary;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseField;
 import info.shillem.sql.factory.SqlFactory;
@@ -204,12 +205,13 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
                         ResultSet.TYPE_SCROLL_INSENSITIVE,
                         ResultSet.CONCUR_READ_ONLY);
                 ResultSet resultSet = statement.executeQuery(syntax)) {
-            if (query.isUnknownOffset()) {
+            Summary summary = query.getSummary();
+
+            if (query.isMaxOffset()) {
                 resultSet.absolute(-1);
+                resultSet.absolute(summary.recalculateOffset(resultSet.getRow()));
 
-                int lastPageOffset = query.recalculateOffset(resultSet.getRow());
-
-                resultSet.absolute(lastPageOffset);
+                summary.setTotal(summary.getOffset() + 1);
             } else {
                 resultSet.absolute(query.getOffset());
             }

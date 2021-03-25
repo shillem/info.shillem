@@ -164,7 +164,7 @@ public class VwWalker<E extends Enum<E> & BaseField> {
         Base base = influencer.apply(params);
 
         OptionsViewEntry<R> options = newOptionsViewEntry(query);
-        
+
         optioner.accept(options);
 
         Result<R> result;
@@ -179,7 +179,7 @@ public class VwWalker<E extends Enum<E> & BaseField> {
             DominoUtil.recycle(base);
         }
 
-        populateQuerySummary(query, result);
+        query.setSummary(result.getSummary());
 
         return result;
     }
@@ -206,14 +206,6 @@ public class VwWalker<E extends Enum<E> & BaseField> {
         setOptions(options, query);
 
         return options;
-    }
-
-    public static void populateQuerySummary(Query<?> query, Result<?> result) {
-        if (result.getTotal() == null) {
-            return;
-        }
-
-        query.createSummary().setLimit(result.getLimit()).setTotal(result.getTotal());
     }
 
     private static void setOptions(Options<?, ?> options, Query<?> query) {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import info.shillem.dao.Summary;
 import info.shillem.util.Unthrow.ThrowableConsumer;
 import info.shillem.util.Unthrow.ThrowableFunction;
 import info.shillem.util.Unthrow.ThrowableSupplier;
@@ -54,6 +55,7 @@ public class DominoLoop {
         public void setTotal(OptionTotal value) {
             total = value;
         }
+
     }
 
     public static class OptionsDocument<R> extends Options<Document, R> {
@@ -74,7 +76,7 @@ public class DominoLoop {
         public void setDisableColumnData(boolean value) {
             disableColumnData = value;
         }
-        
+
         public void setKind(OptionEntry value) {
             kind = value;
         }
@@ -87,24 +89,20 @@ public class DominoLoop {
 
     public static class Result<T> {
 
-        private List<T> data;
-        private Integer limit;
-        private Integer total;
+        private final List<T> data;
+        private final Summary summary;
 
-        private Result() {
+        private Result(Options<?, ?> options) {
             data = new ArrayList<>();
+            summary = new Summary(options.limit, options.offset);
         }
 
         public List<T> getData() {
             return data;
         }
 
-        public Integer getLimit() {
-            return limit;
-        }
-
-        public Integer getTotal() {
-            return total;
+        public Summary getSummary() {
+            return summary;
         }
 
     }
@@ -161,8 +159,8 @@ public class DominoLoop {
 
         return readViewEntries(
                 options.offset > 0
-                        ? () -> coll.getNthEntry(options.offset + 1)
-                        : coll::getFirstEntry,
+                        ? (result) -> coll.getNthEntry(options.offset + 1)
+                        : (result) -> coll.getFirstEntry(),
                 (current) -> coll.getNextEntry(),
                 coll::getCount,
                 options);
@@ -175,18 +173,25 @@ public class DominoLoop {
         Objects.requireNonNull(nav, "View navigator cannot be null");
         Objects.requireNonNull(options, "View entry options cannot be null");
 
-        ThrowableSupplier<ViewEntry> starter = null;
+        ThrowableFunction<Result<R>, ViewEntry> starter = null;
         ThrowableFunction<ViewEntry, ViewEntry> advancer = null;
         ThrowableSupplier<Integer> counter = null;
 
         switch (options.kind) {
         case ANY: {
-            starter = () -> {
+            starter = (result) -> {
                 ViewEntry entry;
+                Summary summary = result.summary;
 
                 if (options.offset > 0) {
                     nav.gotoFirst();
-                    nav.skip(options.offset);
+
+                    if (summary.isMaxOffset()) {
+                        summary.recalculateOffset(nav.skip(summary.getOffset()));
+                        summary.setTotal(summary.getOffset());
+                    }
+
+                    nav.skip(result.summary.getOffset());
 
                     entry = nav.getCurrent();
                 } else {
@@ -196,7 +201,7 @@ public class DominoLoop {
                 if (options.disableColumnData) {
                     setEntryOptions(nav, ViewNavigator.VN_ENTRYOPT_NOCOLUMNVALUES);
                 }
-                
+
                 setCacheGuidance(
                         nav,
                         getCacheSize(options),
@@ -205,26 +210,12 @@ public class DominoLoop {
                 return entry;
             };
             advancer = (current) -> nav.getNext();
-            counter = () -> {
-                setEntryOptions(nav, ViewNavigator.VN_ENTRYOPT_NOCOLUMNVALUES);
-                setCacheGuidance(nav, 1, ViewNavigator.VN_CACHEGUIDANCE_READALL);
-
-                nav.gotoFirst();
-                int count = nav.skip(Integer.MAX_VALUE);
-                ViewEntry entry = nav.getCurrent();
-
-                if (entry != null) {
-                    count++;
-                    DominoUtil.recycle(entry);
-                }
-
-                return count;
-            };
+            counter = () -> nav.skip(Integer.MAX_VALUE);
 
             break;
         }
         case CATEGORY: {
-            starter = () -> {
+            starter = (result) -> {
                 if (!nav.gotoFirst()) {
                     return null;
                 }
@@ -256,7 +247,7 @@ public class DominoLoop {
             break;
         }
         case DOCUMENT: {
-            starter = () -> {
+            starter = (result) -> {
                 if (!nav.gotoFirst()) {
                     return null;
                 }
@@ -296,7 +287,7 @@ public class DominoLoop {
             ThrowableSupplier<Integer> counter,
             OptionsDocument<R> options)
             throws NotesException {
-        Result<R> result = new Result<>();
+        Result<R> result = new Result<>(options);
 
         Document doc = null;
         Document temp = null;
@@ -326,10 +317,10 @@ public class DominoLoop {
                 }
             }
 
-            result.limit = options.limit;
-
             if (options.total == OptionTotal.READ || options.total == OptionTotal.READ_ONLY) {
-                result.total = counter.get();
+                if (result.summary.getTotal() == null) {
+                    result.summary.setTotal(counter.get());
+                }
             }
 
             return result;
@@ -339,12 +330,12 @@ public class DominoLoop {
     }
 
     private static <R> Result<R> readViewEntries(
-            ThrowableSupplier<ViewEntry> starter,
+            ThrowableFunction<Result<R>, ViewEntry> starter,
             ThrowableFunction<ViewEntry, ViewEntry> advancer,
             ThrowableSupplier<Integer> counter,
             OptionsViewEntry<R> options)
             throws NotesException {
-        Result<R> result = new Result<>();
+        Result<R> result = new Result<>(options);
 
         ViewEntry entry = null;
         ViewEntry temp = null;
@@ -352,7 +343,7 @@ public class DominoLoop {
         try {
             if (options.total != OptionTotal.READ_ONLY) {
                 int count = 0;
-                entry = starter.get();
+                entry = starter.apply(result);
 
                 while (entry != null) {
                     temp = advancer.apply(entry);
@@ -374,10 +365,10 @@ public class DominoLoop {
                 }
             }
 
-            result.limit = options.limit;
-
             if (options.total == OptionTotal.READ || options.total == OptionTotal.READ_ONLY) {
-                result.total = counter.get();
+                if (result.summary.getTotal() == null) {
+                    result.summary.setTotal(counter.get());
+                }
             }
 
             return result;

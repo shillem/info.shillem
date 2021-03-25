@@ -1,14 +1,22 @@
 package info.shillem.rest;
 
-import info.shillem.dao.QuerySummary;
+import info.shillem.dao.Query;
+import info.shillem.dao.Summary;
 
 public class ResponseSummary {
 
     public Integer limit;
+    public Integer offset;
     public Integer total;
 
     public ResponseSummary setLimit(Integer value) {
         limit = value;
+
+        return this;
+    }
+
+    public ResponseSummary setOffset(Integer value) {
+        offset = value;
 
         return this;
     }
@@ -19,12 +27,13 @@ public class ResponseSummary {
         return this;
     }
 
-    public static ResponseSummary wrap(QuerySummary summary) {
-        if (summary == null) {            
-            return null;
-        }
-        
-        return new ResponseSummary().setLimit(summary.getLimit()).setTotal(summary.getTotal());
+    public static ResponseSummary wrap(Query<?> query) {
+        Summary summary = query.getSummary();
+
+        return new ResponseSummary()
+                .setLimit(summary.getLimit())
+                .setOffset(summary.getOffset())
+                .setTotal(summary.getTotal());
     }
 
 }
