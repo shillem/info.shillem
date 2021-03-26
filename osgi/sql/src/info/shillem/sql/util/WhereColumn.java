@@ -132,7 +132,7 @@ public class WhereColumn implements IWhere {
         }
 
         if (value instanceof Date) {
-            return formatter.apply(SHORT_DATE_FORMAT.format((Date) value));
+            return formatter.apply("'".concat(SHORT_DATE_FORMAT.format((Date) value)).concat("'"));
         }
 
         return formatter.apply(value.toString());

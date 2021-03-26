@@ -193,6 +193,8 @@ public class SelectQuery {
     private Schema schema;
     private Integer top;
     private LWhere wheres;
+    private List<SelectQuery> unions;
+    private String wrapper;
 
     public SelectQuery(String from) {
         this.columns = new ArrayList<>();
@@ -225,7 +227,7 @@ public class SelectQuery {
 
     public SelectQuery join(IJoin.Type type, String table, String column) {
         Join join = new Join(type, table);
-        join.on(from, column);
+        join.on(column, from);
         joins.add(join);
 
         return this;
@@ -275,6 +277,16 @@ public class SelectQuery {
 
         if (orders != null && !orders.isEmpty()) {
             builder.append("\nORDER BY ").append(orders.output(schema));
+        }
+
+        if (unions != null && !unions.isEmpty()) {
+            for (SelectQuery q : unions) {
+                builder.append("\nUNION ALL\n").append(q.output());
+            }
+        }
+
+        if (wrapper != null) {
+            builder.insert(0, "WITH ".concat(wrapper).concat(" AS (\n")).append(")");
         }
 
         return builder.toString();
@@ -380,6 +392,16 @@ public class SelectQuery {
         return this;
     }
 
+    public SelectQuery union(SelectQuery query) {
+        if (unions == null) {
+            unions = new ArrayList<>();
+        }
+
+        unions.add(query);
+
+        return this;
+    }
+
     public LWhere wheres() {
         if (wheres == null) {
             wheres = new LWhere();
@@ -390,6 +412,12 @@ public class SelectQuery {
 
     public SelectQuery withSchema(Schema schema) {
         this.schema = schema;
+
+        return this;
+    }
+
+    public SelectQuery wrap(String value) {
+        wrapper = value;
 
         return this;
     }

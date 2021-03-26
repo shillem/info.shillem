@@ -101,12 +101,18 @@ public class Join implements IJoin {
         this.instructions = new ArrayList<>();
     }
 
-    public Column on(String table, String column) {
-        Column c = new Column(column, table);
-
+    private Column on(Column c) {
         instructions.add(c);
-
-        return c;
+        
+        return c;        
+    }
+    
+    public Column on(String acol, String btab) {
+        return on(new Column(acol, btab));
+    }
+    
+    public Column on(String acol, String btab, String bcol) {
+        return on(new Column(acol, btab, bcol));
     }
 
     @Override
