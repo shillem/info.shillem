@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import info.shillem.domino.util.DominoUtil;
-import info.shillem.domino.util.ViewAccessPolicy;
+import info.shillem.domino.util.VwAccessPolicy;
 import info.shillem.synchronizer.dots.Program.Nature;
 import info.shillem.synchronizer.dto.Record;
 import info.shillem.synchronizer.dto.ValueChange;
@@ -30,12 +30,12 @@ import lotus.domino.View;
 
 public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
-    private ViewAccessPolicy vap;
+    private VwAccessPolicy vap;
 
     public ProcessorSqlToDomino(ProcessorHelper helper, Supplier<T> recordSupplier) {
         super(helper, recordSupplier);
 
-        vap = ViewAccessPolicy.FRESH;
+        vap = VwAccessPolicy.FRESH;
     }
 
     protected void afterExecution() throws ProcessorException {
@@ -100,7 +100,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
 
                                 helper.logVerboseMessage("Deleted record " + getKeyValue(record));
 
-                                setViewAccessPolicy(ViewAccessPolicy.FRESH);
+                                setViewAccessPolicy(VwAccessPolicy.FRESH);
                             }
 
                             tracker.addDeleted();
@@ -153,7 +153,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                         if (!helper.isMode(Mode.TEST)) {
                             doc.save();
 
-                            setViewAccessPolicy(ViewAccessPolicy.FRESH);
+                            setViewAccessPolicy(VwAccessPolicy.FRESH);
                         }
 
                         tracker.addModified(record.isNew());
@@ -185,7 +185,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         View view = getView(getViewAccessPolicy());
 
         if (!isStaleView()) {
-            setViewAccessPolicy(ViewAccessPolicy.STALE);
+            setViewAccessPolicy(VwAccessPolicy.STALE);
         }
 
         return findDocument(view, getKeyValue(record));
@@ -207,7 +207,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         return Optional.of(helper.getDominoFactory().setDefaults(doc));
     }
 
-    protected final ViewAccessPolicy getViewAccessPolicy() {
+    protected final VwAccessPolicy getViewAccessPolicy() {
         return vap;
     }
 
@@ -230,7 +230,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
     }
 
     protected final boolean isStaleView() {
-        return vap == ViewAccessPolicy.STALE;
+        return vap == VwAccessPolicy.STALE;
     }
 
     protected void pullResultSet(ResultSet resultSet, T record) {
@@ -365,7 +365,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         }
     }
 
-    protected final void setViewAccessPolicy(ViewAccessPolicy value) {
+    protected final void setViewAccessPolicy(VwAccessPolicy value) {
         vap = Objects.requireNonNull(value, "View access policy cannot be null");
     }
 

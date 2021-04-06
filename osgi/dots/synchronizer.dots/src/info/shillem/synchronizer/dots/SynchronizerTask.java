@@ -24,8 +24,9 @@ import com.ibm.dots.task.RunWhen;
 
 import info.shillem.domino.factory.DominoFactory;
 import info.shillem.domino.factory.LocalDominoFactory;
-import info.shillem.domino.util.DatabasePath;
+import info.shillem.domino.util.DbPath;
 import info.shillem.domino.util.DominoLoop;
+import info.shillem.domino.util.DominoLoop.OptionsViewEntry;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.domino.util.SingleDominoSilo;
 import info.shillem.domino.util.StringDbIdentifier;
@@ -124,7 +125,7 @@ public class SynchronizerTask extends AbstractServerTask {
                 return PROGRAMS;
             }
 
-            DatabasePath path = new DatabasePath(getTaskPreferences()
+            DbPath path = new DbPath(getTaskPreferences()
                     .getProperty(PreferenceProperty.SYNCHRONIZER.name())
                     .getValue(String.class));
 
@@ -142,28 +143,29 @@ public class SynchronizerTask extends AbstractServerTask {
                 vwNav = vwPrograms.createViewNavFromCategory(getSession().getServerName());
                 View vwIdsFinal = vwIds;
 
-                PROGRAMS = DominoLoop.read(vwNav, new DominoLoop.ViewEntryOptions<Program>()
-                        .setConverter((e) -> Unthrow.on(() -> {
-                            Document prog = e.getDocument();
+                OptionsViewEntry<Program> options = new DominoLoop.OptionsViewEntry<>();
+                options.setConverter((e) -> Unthrow.on(() -> {
+                    Document prog = e.getDocument();
 
-                            String connName = Program.Builder.getConnectionName(prog);
+                    String connName = Program.Builder.getConnectionName(prog);
 
-                            Document conn = connectionDocs.computeIfAbsent(
-                                    "SqlConnection:" + connName,
-                                    (key) -> Unthrow
-                                            .on(() -> vwIdsFinal.getDocumentByKey(key, true)));
+                    Document conn = connectionDocs.computeIfAbsent(
+                            "SqlConnection:" + connName,
+                            (key) -> Unthrow.on(() -> vwIdsFinal.getDocumentByKey(key, true)));
 
-                            if (conn == null) {
-                                logMessage(String.format(
-                                        "Cannot load connection document %s for program %s",
-                                        connName,
-                                        Program.Builder.getTitle(prog)));
+                    if (conn == null) {
+                        logMessage(String.format(
+                                "Cannot load connection document %s for program %s",
+                                connName,
+                                Program.Builder.getTitle(prog)));
 
-                                return null;
-                            }
+                        return null;
+                    }
 
-                            return new Program.Builder(prog, conn).build();
-                        })))
+                    return new Program.Builder(prog, conn).build();
+                }));
+
+                PROGRAMS = DominoLoop.read(vwNav, options)
                         .getData()
                         .stream()
                         .filter(Objects::nonNull)

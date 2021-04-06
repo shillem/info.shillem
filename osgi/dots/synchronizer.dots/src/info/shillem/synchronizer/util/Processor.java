@@ -10,8 +10,8 @@ import java.util.function.Supplier;
 import info.shillem.domino.util.DbIdentifier;
 import info.shillem.domino.util.DominoSilo;
 import info.shillem.domino.util.StringDbIdentifier;
-import info.shillem.domino.util.ViewAccessPolicy;
-import info.shillem.domino.util.ViewPath;
+import info.shillem.domino.util.VwAccessPolicy;
+import info.shillem.domino.util.VwPath;
 import info.shillem.synchronizer.dots.Program.Nature;
 import info.shillem.synchronizer.dto.Record;
 import info.shillem.synchronizer.lang.ProcessorException;
@@ -23,7 +23,7 @@ public abstract class Processor<T extends Record> {
     protected ProcessorHelper helper;
     private Supplier<T> recordSupplier;
     private DbIdentifier dbIdentifier;
-    private ViewPath viewPath;
+    private VwPath viewPath;
 
     public Processor(ProcessorHelper helper, Supplier<T> recordSupplier) {
         this.helper = Objects.requireNonNull(
@@ -33,12 +33,7 @@ public abstract class Processor<T extends Record> {
                 recordSupplier, "Record supplier helper cannot be null");
 
         this.dbIdentifier = new StringDbIdentifier(helper.getId());
-        this.viewPath = new ViewPath() {
-            @Override
-            public String getName() {
-                return helper.getViewName();
-            }
-        };
+        this.viewPath = new VwPath.Builder(helper.getViewName(), helper.getViewName()).build();
     }
 
     public abstract boolean execute() throws ProcessorException;
@@ -55,7 +50,7 @@ public abstract class Processor<T extends Record> {
         return record.getValue(getKeyField().getName());
     }
 
-    protected final View getView(ViewAccessPolicy policy) {
+    protected final View getView(VwAccessPolicy policy) {
         try {
             return getDominoSilo().getView(viewPath, policy);
         } catch (NotesException e) {

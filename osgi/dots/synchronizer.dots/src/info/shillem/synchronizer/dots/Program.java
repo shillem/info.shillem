@@ -1,5 +1,6 @@
 package info.shillem.synchronizer.dots;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import info.shillem.domino.util.DatabasePath;
+import info.shillem.domino.util.DbPath;
 import info.shillem.domino.util.DominoUtil;
 import info.shillem.synchronizer.util.Field;
 import info.shillem.synchronizer.util.FieldPair;
@@ -40,7 +41,7 @@ public class Program {
 
         private String id;
         private Properties jdbcProperties;
-        private DatabasePath databasePath;
+        private DbPath databasePath;
         private LocalDateTime lastStarted;
         private LocalDateTime lastStopped;
         private RunMode runMode;
@@ -60,6 +61,7 @@ public class Program {
         private Integer queryTimeout;
         private Status status;
         private Integer[] timeFrame;
+        private List<DayOfWeek> daysOfWeek;
         private String title;
         private String viewName;
 
@@ -88,8 +90,7 @@ public class Program {
                     DominoUtil.getItemString(doc, "uuid"),
                     "Document cannot be null");
 
-            databasePath = new DatabasePath(
-                    DominoUtil.getItemString(doc, "database"));
+            databasePath = new DbPath(DominoUtil.getItemString(doc, "database"));
 
             intervalInMinutes = DominoUtil.getItemValue(
                     doc, "interval", (val) -> Integer.valueOf((String) val));
@@ -133,6 +134,9 @@ public class Program {
                     ? Arrays.asList(0, 23)
                     : tempTimeFrame)
                             .toArray(new Integer[0]);
+            
+            daysOfWeek = DominoUtil.getItemValues(doc, "daysOfWeek",
+                    (val) -> DayOfWeek.of(Integer.valueOf((String) val)));
 
             title = getTitle(doc);
 
@@ -242,7 +246,7 @@ public class Program {
 
     private final String id;
     private final Properties jdbcProperties;
-    private final DatabasePath databasePath;
+    private final DbPath databasePath;
     private final FieldPair fieldDeletion;
     private final FieldPair fieldKey;
     private final List<FieldPair> fieldList;
@@ -260,6 +264,7 @@ public class Program {
     private final Integer queryTimeout;
     private final RunMode runMode;
     private final Integer[] timeFrame;
+    private final List<DayOfWeek> daysOfWeek;
     private final String title;
     private final String viewName;
 
@@ -293,6 +298,7 @@ public class Program {
         runMode = builder.runMode;
         status = builder.status;
         timeFrame = builder.timeFrame;
+        daysOfWeek = builder.daysOfWeek;
         title = builder.title;
         viewName = builder.viewName;
     }
@@ -301,7 +307,7 @@ public class Program {
         return jdbcProperties;
     }
 
-    public DatabasePath getDatabasePath() {
+    public DbPath getDatabasePath() {
         return databasePath;
     }
 
@@ -387,6 +393,11 @@ public class Program {
         }
 
         LocalDateTime now = LocalDateTime.now();
+
+        if (!daysOfWeek.contains(now.getDayOfWeek())) {
+            return false;
+        }
+        
         int currentHour = now.getHour();
 
         if (currentHour < timeFrame[0] || currentHour > timeFrame[1]) {

@@ -432,6 +432,37 @@ Yg4BAIQAAAAAAAAAAAA=
 </par>
 </tablecell>
 </tablerow>
+<tablerow>
+<tablecell borderwidth="0px" bgcolor="#f7f7f7">
+<par def="6">
+<run>
+<font size="8pt" style="bold"/>Days of Week:</run>
+</par>
+</tablecell>
+<tablecell borderwidth="0px">
+<par def="7">
+<run>
+<font size="8pt"/>
+</run>
+<run>
+<font size="8pt"/>
+<field showdelimiters="false" lookupeachchar="false" lookupaddressonrefresh="false" type="keyword" allowmultivalues="true" kind="editable" name="daysOfWeek" listinputseparators="comma" listdisplayseparator="comma">
+<keywords columns="1" ui="dialoglist">
+<textlist>
+<text>Monday|1</text>
+<text>Tuesday|2</text>
+<text>Wednesday|3</text>
+<text>Thursday|4</text>
+<text>Friday|5</text>
+<text>Saturday|6</text>
+<text>Sunday|7</text>
+</textlist>
+</keywords>
+</field>
+</run>
+</par>
+</tablecell>
+</tablerow>
 </table>
 </tablecell>
 </tablerow>

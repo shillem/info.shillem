@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import info.shillem.domino.util.DominoUtil;
-import info.shillem.domino.util.ViewAccessPolicy;
+import info.shillem.domino.util.VwAccessPolicy;
 import info.shillem.synchronizer.dots.Program.Nature;
 import info.shillem.synchronizer.dto.Record;
 import info.shillem.synchronizer.dto.ValueChange;
@@ -328,7 +328,7 @@ public class ProcessorDominoToSql<T extends Record> extends Processor<T> {
         try (SqlHelper sqlHelper = new SqlHelper(helper.getSqlFactory().getConnection())) {
             helper.logMessage("Processing records...");
 
-            View view = getView(ViewAccessPolicy.FRESH);
+            View view = getView(VwAccessPolicy.FRESH);
             Document doc = null;
 
             try {
