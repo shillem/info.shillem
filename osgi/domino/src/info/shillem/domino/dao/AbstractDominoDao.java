@@ -5,8 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -42,8 +43,9 @@ import info.shillem.dto.AttachedFiles;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseDto.SchemaFilter;
 import info.shillem.dto.BaseField;
-import info.shillem.dto.FieldProperties;
+import info.shillem.dto.ValueType;
 import info.shillem.dto.JsonValue;
+import info.shillem.util.CastUtil;
 import info.shillem.util.CollectionUtil;
 import info.shillem.util.IOUtil;
 import info.shillem.util.JsonHandler;
@@ -292,18 +294,19 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected void pullItem(E field, Document doc, T wrapper, Locale locale) {
-        Class<? extends Serializable> type = field.getProperties().getType();
+        Class<? extends Serializable> type = field.getValueType().getValueClass();
 
         try {
             if (AttachedFiles.class.isAssignableFrom(type)) {
                 wrapper.presetValue(field, pullItemAttachedFiles(field, doc));
             } else if (JsonValue.class.isAssignableFrom(type)) {
                 wrapper.presetValue(field, pullItemJsonValue(field, doc));
-            } else if (field.getProperties().isList()) {
+            } else if (field.getValueType().isCollection()) {
                 wrapper.presetValue(field, DominoUtil.getItemValues(
                         doc,
                         getDocumentItemName(field),
-                        (value) -> Unthrow.on(() -> pullValue(type, value))));
+                        (val) -> Unthrow.on(() -> pullValue(type, val)),
+                        field.getValueType()::newCollection));
             } else {
                 wrapper.presetValue(field, DominoUtil.getItemValue(
                         doc,
@@ -337,8 +340,8 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             AttachedFiles files;
 
             try {
-                files = (AttachedFiles) field.getProperties()
-                        .getType()
+                files = (AttachedFiles) field.getValueType()
+                        .getValueClass()
                         .getDeclaredConstructor()
                         .newInstance();
             } catch (Exception e) {
@@ -372,17 +375,17 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 return null;
             }
 
-            FieldProperties props = field.getProperties();
+            ValueType props = field.getValueType();
             JavaType type;
 
-            if (props.isList()) {
+            if (props.isCollection()) {
                 type = JSON
                         .getTypeFactory()
-                        .constructCollectionType(ArrayList.class, props.getType());
+                        .constructCollectionType(props.getCollectionClass(), props.getValueClass());
             } else {
                 type = JSON
                         .getTypeFactory()
-                        .constructType(props.getType());
+                        .constructType(props.getValueClass());
             }
 
             return JSON.deserialize(mimeEntity.getContentAsText(), type);
@@ -439,6 +442,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
         for (E field : query.getSchema()) {
             String fieldName = getDocumentItemName(field);
+            ValueType props = field.getValueType();
             int columnIndex = walker.indexOfColumn(fieldName);
 
             if (columnIndex < 0) {
@@ -447,21 +451,23 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             }
 
             Object value = columnValues.get(columnIndex);
-            Class<? extends Serializable> type = field.getProperties().getType();
+            Class<? extends Serializable> type = props.getValueClass();
 
             try {
-                if (field.getProperties().isList()) {
-                    List<Object> values = new ArrayList<>();
+                if (props.isCollection()) {
+                    List<Object> values;
 
                     if (value instanceof List) {
-                        values.addAll((List<?>) value);
+                        values = CastUtil.toAnyList((List<?>) value);
                     } else if (!(value instanceof String && ((String) value).isEmpty())) {
-                        values.add(value);
+                        values = Arrays.asList(value);
+                    } else {
+                        values = Collections.emptyList();
                     }
-
+ 
                     wrapper.presetValue(field, values.stream()
                             .map((val) -> Unthrow.on(() -> pullValue(type, val)))
-                            .collect(Collectors.toList()));
+                            .collect(Collectors.toCollection(props::newCollection)));
                 } else {
                     Object val;
 
@@ -524,7 +530,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
     }
 
     protected void pushWrapperField(E field, T wrapper, Document doc) throws NotesException {
-        Class<? extends Serializable> type = field.getProperties().getType();
+        Class<? extends Serializable> type = field.getValueType().getValueClass();
 
         if (AttachedFiles.class.isAssignableFrom(type)) {
             pushWrapperFieldAttachedFiles(field, wrapper, doc);
@@ -544,11 +550,11 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
         if (value == null) {
             doc.removeItem(itemName);
-        } else if (field.getProperties().isList()) {
+        } else if (field.getValueType().isCollection()) {
             Vector<Object> values = new Vector<>();
 
             try {
-                for (Object o : (List<?>) value) {
+                for (Object o : (Collection<?>) value) {
                     values.add(pushValue(o));
                 }
 
@@ -569,7 +575,10 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
         }
     }
 
-    private void pushWrapperFieldAttachedFiles(E field, T wrapper, Document doc)
+    private void pushWrapperFieldAttachedFiles(
+            E field,
+            T wrapper,
+            Document doc)
             throws NotesException {
         AttachedFiles files = wrapper.getValue(field, AttachedFiles.class);
 

@@ -2,8 +2,8 @@ package info.shillem.dto;
 
 public interface BaseField {
 
-    FieldProperties getProperties();
-    
+    ValueType getValueType();
+
     String name();
 
 }

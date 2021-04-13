@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Vector;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import info.shillem.util.CastUtil;
@@ -137,15 +138,16 @@ public class DominoUtil {
 
             if (item.getType() == Item.RICHTEXT) {
                 return converter.apply(item.getText());
-            } else {
-                List<?> values = item.getValues();
-
-                if (values == null || values.isEmpty()) {
-                    return null;
-                }
-
-                return converter.apply(values.get(0));
             }
+            
+            
+            List<?> values = item.getValues();
+
+            if (values == null || values.isEmpty()) {
+                return null;
+            }
+
+            return converter.apply(values.get(0));
         } finally {
             DominoUtil.recycle(item);
         }
@@ -163,9 +165,19 @@ public class DominoUtil {
             String itemName,
             Function<Object, T> converter)
             throws NotesException {
+        return (List<T>) getItemValues(doc, itemName, converter, ArrayList::new);
+    }
+
+    public static <T> Collection<T> getItemValues(
+            Document doc,
+            String itemName,
+            Function<Object, T> converter,
+            Supplier<Collection<T>> supplier)
+            throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
         Objects.requireNonNull(itemName, "Item name cannot be null");
         Objects.requireNonNull(converter, "Converter cannot be null");
+        Objects.requireNonNull(supplier, "Supplier cannot be null");
 
         Item item = null;
 
@@ -173,11 +185,11 @@ public class DominoUtil {
             item = doc.getFirstItem(itemName);
 
             if (item == null) {
-                return new ArrayList<>();
+                return supplier.get();
             }
 
             if (item.getType() == Item.RICHTEXT) {
-                List<T> values = new ArrayList<>();
+                Collection<T> values = supplier.get();
 
                 values.add(converter.apply(item.getText()));
 
@@ -187,12 +199,12 @@ public class DominoUtil {
             List<?> values = item.getValues();
 
             if (values == null) {
-                return new ArrayList<>();
+                return supplier.get();
             }
 
             return values.stream()
                     .map(converter)
-                    .collect(Collectors.toList());
+                    .collect(Collectors.toCollection(supplier));
         } finally {
             DominoUtil.recycle(item);
         }
@@ -220,7 +232,8 @@ public class DominoUtil {
 
     public static List<MIMEEntity> getMimeEntitiesByContentType(
             MIMEEntity entity,
-            MimeContentType contentType) throws NotesException {
+            MimeContentType contentType)
+            throws NotesException {
         Objects.requireNonNull(entity, "Entity cannot be null");
         Objects.requireNonNull(contentType, "Content type cannot be null");
 
@@ -248,7 +261,10 @@ public class DominoUtil {
         return subentities;
     }
 
-    public static MIMEEntity getMimeEntity(Document doc, String itemName, boolean createOnFail)
+    public static MIMEEntity getMimeEntity(
+            Document doc,
+            String itemName,
+            boolean createOnFail)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
         Objects.requireNonNull(itemName, "Item name cannot be null");
@@ -268,7 +284,8 @@ public class DominoUtil {
         return mimeEntity;
     }
 
-    public static Optional<String> getMimeEntityAttachmentFilename(MIMEEntity entity)
+    public static Optional<String> getMimeEntityAttachmentFilename(
+            MIMEEntity entity)
             throws NotesException {
         Objects.requireNonNull(entity, "Entity cannot be null");
 
@@ -278,7 +295,9 @@ public class DominoUtil {
     }
 
     public static Optional<String> getMimeEntityHeaderValAndParams(
-            MIMEEntity entity, Predicate<String> matcher) throws NotesException {
+            MIMEEntity entity,
+            Predicate<String> matcher)
+            throws NotesException {
         Objects.requireNonNull(entity, "Entity cannot be null");
         Objects.requireNonNull(matcher, "Matcher cannot be null");
 
@@ -334,7 +353,10 @@ public class DominoUtil {
         }
     }
 
-    public static void setAuthorValue(Document doc, String itemName, Object value)
+    public static void setAuthorValue(
+            Document doc,
+            String itemName,
+            Object value)
             throws NotesException {
         Item item = null;
 
@@ -346,7 +368,11 @@ public class DominoUtil {
         }
     }
 
-    public static void setDate(Session session, Document doc, String itemName, Date value)
+    public static void setDate(
+            Session session,
+            Document doc,
+            String itemName,
+            Date value)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
         Objects.requireNonNull(itemName, "Item name cannot be null");
@@ -364,7 +390,10 @@ public class DominoUtil {
         }
     }
 
-    public static void setNameValue(Document doc, String itemName, Object value)
+    public static void setNameValue(
+            Document doc,
+            String itemName,
+            Object value)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
         Objects.requireNonNull(itemName, "Item name cannot be null");
@@ -379,7 +408,10 @@ public class DominoUtil {
         }
     }
 
-    public static void setReaderValue(Document doc, String itemName, Object value)
+    public static void setReaderValue(
+            Document doc,
+            String itemName,
+            Object value)
             throws NotesException {
         Objects.requireNonNull(doc, "Document cannot be null");
         Objects.requireNonNull(itemName, "Item name cannot be null");

@@ -69,7 +69,7 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
 
     private Query.Clause deserializeNode(Entry<String, JsonNode> node) {
         E field = Enum.valueOf(cls, node.getKey());
-        Class<?> type = field.getProperties().getType();
+        Class<?> type = field.getValueType().getValueClass();
 
         if (!node.getValue().isObject()) {
             return new Query.Value<>(field, deserializeValue(node.getValue(), type));

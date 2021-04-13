@@ -2,10 +2,9 @@ package info.shillem.dto;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -91,19 +90,19 @@ public class BaseDtoDeserializer<T extends BaseDto<?>> extends StdDeserializer<T
             ObjectCodec codec)
             throws IOException {
         BaseDto<E> dto = ((BaseDto<E>) value);
-        FieldProperties props = field.getProperties();
+        ValueType props = field.getValueType();
 
-        if (props.isList()) {
+        if (props.isCollection()) {
             Iterator<JsonNode> iter = node.iterator();
-            List<Object> values = new ArrayList<>();
+            Collection<Object> values = props.newCollection();
 
             while (iter.hasNext()) {
-                values.add(iter.next().traverse(codec).readValueAs(props.getType()));
+                values.add(iter.next().traverse(codec).readValueAs(props.getValueClass()));
             }
 
             dto.setValue(field, values);
         } else {
-            dto.setValue(field, node.traverse(codec).readValueAs(props.getType()));
+            dto.setValue(field, node.traverse(codec).readValueAs(props.getValueClass()));
         }
     }
 

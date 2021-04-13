@@ -1,7 +1,7 @@
 package info.shillem.dto;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collection;
 
 public class ValueHolder implements Serializable {
 
@@ -17,12 +17,15 @@ public class ValueHolder implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    private final ValueType type;
+
     private Object value;
     private Object updateValue;
     private Object transactionValue;
     private State state;
 
-    private ValueHolder(Object value, State state) {
+    private ValueHolder(ValueType type, Object value, State state) {
+        this.type = type;
         this.value = value;
         this.state = state;
     }
@@ -68,7 +71,7 @@ public class ValueHolder implements Serializable {
         return state != State.SAVE;
     }
 
-    private boolean isValueChanged(Object before, Object after, Class<?> type) {
+    private boolean isValueChanged(Object before, Object after) {
         if (after == before) {
             return false;
         }
@@ -79,8 +82,8 @@ public class ValueHolder implements Serializable {
 
         testValue(after, type);
 
-        return type.isArray()
-                ? !(((List<?>) after).equals((List<?>) before))
+        return type.isCollection()
+                ? !(((Collection<?>) after).equals((Collection<?>) before))
                 : !after.equals(before);
     }
 
@@ -111,8 +114,8 @@ public class ValueHolder implements Serializable {
         state = State.UPDATE;
     }
 
-    public void transactValue(Object value, Class<?> type) {
-        if (isValueChanged(getValue(), value, type)) {
+    public void transactValue(Object value) {
+        if (isValueChanged(getValue(), value)) {
             transactionValue = value;
 
             switch (state) {
@@ -131,58 +134,58 @@ public class ValueHolder implements Serializable {
         }
     }
 
-    public void updateValue(Object value, Class<?> type) {
-        if (isValueChanged(getValue(), value, type)) {
+    public void updateValue(Object value) {
+        if (isValueChanged(getValue(), value)) {
             updateValue = value;
             state = State.UPDATE;
         }
     }
 
-    public static ValueHolder newSavedValue(Object value, Class<?> type) {
-        testValue(value, type);
-
-        return new ValueHolder(value, State.SAVE);
+    public static ValueHolder newSavedValue(Object value, ValueType type) {
+        return newValueHolder(type, value, State.SAVE);
     }
 
-    public static ValueHolder newTransactionValue(Object value, Class<?> type) {
-        testValue(value, type);
-
-        return new ValueHolder(value, State.TRANSACTION);
+    public static ValueHolder newTransactionValue(Object value, ValueType type) {
+        return newValueHolder(type, value, State.TRANSACTION);
     }
 
-    public static ValueHolder newValue(Object value, Class<?> type) {
-        testValue(value, type);
-
-        return new ValueHolder(value, State.NEW);
+    public static ValueHolder newValue(Object value, ValueType type) {
+        return newValueHolder(type, value, State.NEW);
     }
 
-    private static void testValue(Object value, Class<?> type) {
+    private static ValueHolder newValueHolder(ValueType type, Object value, State state) {
+        testValue(value, type);
+
+        return new ValueHolder(type, value, state);
+    }
+
+    private static void testValue(Object value, ValueType type) {
         if (value == null) {
             return;
         }
 
-        if (type.isArray()) {
-            if (!(value instanceof List)) {
+        if (type.isCollection()) {
+            if (!(value instanceof Collection)) {
                 throw new IllegalArgumentException(
-                        String.format(
-                                "Value type is List<%s> and not %s",
-                                type.getComponentType().getName(), value.getClass().getName()));
+                        String.format("Value type is %s and not %s",
+                                type.toString(),
+                                value.getClass().getName()));
             }
 
-            ((List<?>) value).stream()
-                    .filter(o -> o.getClass() != type.getComponentType())
+            ((Collection<?>) value).stream()
+                    .filter(o -> o.getClass() != type.getValueClass())
                     .findAny()
                     .ifPresent(o -> {
                         throw new IllegalArgumentException(
-                                String.format(
-                                        "Value type is List<%s> and not List<%s>",
-                                        type.getComponentType().getName(), o.getClass().getName()));
+                                String.format("Value type is List<%s> and not List<%s>",
+                                        type.toString(),
+                                        o.getClass().getName()));
                     });
-        } else if (value.getClass() != type) {
+        } else if (value.getClass() != type.getValueClass()) {
             throw new IllegalArgumentException(
-                    String.format(
-                            "Value type is %s and not %s",
-                            type.getName(), value.getClass().getName()));
+                    String.format("Value type is %s and not %s",
+                            type.toString(),
+                            value.getClass().getName()));
         }
     }
 

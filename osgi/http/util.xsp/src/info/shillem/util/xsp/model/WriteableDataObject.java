@@ -1,6 +1,6 @@
 package info.shillem.util.xsp.model;
 
-import info.shillem.util.xsp.context.SFunction;
+import info.shillem.util.SFunction;
 
 public class WriteableDataObject<K, V> extends TypedDataObject<K, V> {
 

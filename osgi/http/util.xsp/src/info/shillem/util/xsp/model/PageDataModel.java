@@ -13,7 +13,7 @@ import javax.faces.model.DataModelListener;
 import com.ibm.xsp.component.FacesDataIterator;
 import com.ibm.xsp.model.TabularDataModel;
 
-import info.shillem.util.xsp.context.SConsumer;
+import info.shillem.util.SConsumer;
 
 public class PageDataModel<T> extends TabularDataModel implements Serializable {
 

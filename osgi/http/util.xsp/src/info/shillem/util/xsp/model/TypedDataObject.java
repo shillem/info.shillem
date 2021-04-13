@@ -7,7 +7,7 @@ import java.util.Objects;
 
 import com.ibm.xsp.model.DataObject;
 
-import info.shillem.util.xsp.context.SFunction;
+import info.shillem.util.SFunction;
 
 public abstract class TypedDataObject<K, V> implements DataObject, Serializable {
 

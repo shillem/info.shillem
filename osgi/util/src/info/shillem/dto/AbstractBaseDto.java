@@ -55,7 +55,7 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     public BigDecimal getBigDecimal(E key) {
         return getValue(key, BigDecimal.class);
     }
-    
+
     @Override
     public Boolean getBoolean(E key) {
         return getValue(key, Boolean.class);
@@ -98,11 +98,7 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
 
             return value != null ? CastUtil.toAnyList(value) : Collections.emptyList();
         } catch (ClassCastException e) {
-            throw new IllegalArgumentException(
-                    String.format("%s value type is List<%s> and not %s",
-                            key,
-                            key.getProperties().getType().getName(),
-                            type.getName()));
+            throw newIllegalCastException(key, type);
         }
     }
 
@@ -119,6 +115,17 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
             return values.keySet();
         default:
             throw new UnsupportedOperationException(filter + " is not implemented");
+        }
+    }
+    
+    @Override
+    public <T> Set<T> getSet(E key, Class<T> type) {
+        try {
+            Set<?> value = (Set<?>) getValue(key);
+
+            return value != null ? CastUtil.toAnySet(value) : Collections.emptySet();
+        } catch (ClassCastException e) {
+            throw newIllegalCastException(key, type);
         }
     }
 
@@ -141,19 +148,7 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
         try {
             return type.cast(value);
         } catch (ClassCastException e) {
-            if (key.getProperties().isList()) {
-                throw new IllegalArgumentException(
-                        String.format("%s value type is List<%s> and not %s",
-                                key,
-                                key.getProperties().getType().getName(),
-                                type.getName()));
-            } else {
-                throw new IllegalArgumentException(
-                        String.format("%s value type is %s and not %s",
-                                key,
-                                key.getProperties().getType().getName(),
-                                type.getName()));
-            }
+            throw newIllegalCastException(key, type);
         }
     }
 
@@ -180,6 +175,14 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
         return holder != null && holder.isUpdated();
     }
 
+    private IllegalArgumentException newIllegalCastException(E key, Class<?> type) {
+        return new IllegalArgumentException(
+                String.format("%s value type is %s and not %s",
+                        key,
+                        key.getValueType().toString(),
+                        type.getName()));
+    }
+                                                                                                                                                                            
     @Override
     public void presetValue(E key, Object value) {
         ValueHolder holder = getValueHolder(key);
@@ -188,7 +191,7 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
             throw new IllegalStateException(key + " value is already set");
         }
 
-        values.put(key, ValueHolder.newSavedValue(value, key.getProperties().getFullType()));
+        values.put(key, ValueHolder.newSavedValue(value, key.getValueType()));
     }
 
     @Override
@@ -207,19 +210,18 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     }
 
     @Override
-    public void setLastModified(Date lastModified) {
-        this.lastModified = lastModified != null ? new Date(lastModified.getTime()) : null;
+    public void setLastModified(Date value) {
+        lastModified = value != null ? new Date(value.getTime()) : null;
     }
 
     @Override
     public void setValue(E key, Object value) {
         ValueHolder holder = getValueHolder(key);
-        Class<?> type = key.getProperties().getFullType();
 
         if (holder != null) {
-            holder.updateValue(value, type);
+            holder.updateValue(value);
         } else {
-            values.put(key, ValueHolder.newValue(value, type));
+            values.put(key, ValueHolder.newValue(value, key.getValueType()));
         }
     }
 
@@ -235,12 +237,11 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     @Override
     public void transactValue(E key, Object value) {
         ValueHolder holder = getValueHolder(key);
-        Class<?> type = key.getProperties().getFullType();
 
         if (holder != null) {
-            holder.transactValue(value, type);
+            holder.transactValue(value);
         } else {
-            values.put(key, ValueHolder.newTransactionValue(value, type));
+            values.put(key, ValueHolder.newTransactionValue(value, key.getValueType()));
         }
     }
 

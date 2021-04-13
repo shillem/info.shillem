@@ -1,4 +1,4 @@
-package info.shillem.util.xsp.context;
+package info.shillem.util;
 
 import java.io.Serializable;
 import java.util.function.BiFunction;

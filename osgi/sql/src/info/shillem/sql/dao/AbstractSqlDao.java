@@ -137,7 +137,7 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
             T wrapper,
             Locale locale)
             throws SQLException {
-        Class<? extends Serializable> type = field.getProperties().getType();
+        Class<? extends Serializable> type = field.getValueType().getValueClass();
 
         try {
             Object value = resultSet.getObject(field.toString());

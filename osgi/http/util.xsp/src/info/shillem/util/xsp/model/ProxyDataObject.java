@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 import com.ibm.xsp.model.DataObject;
 
-import info.shillem.util.xsp.context.SFunction;
+import info.shillem.util.SFunction;
 
 public class ProxyDataObject<K, V> implements DataObject, Serializable {
 

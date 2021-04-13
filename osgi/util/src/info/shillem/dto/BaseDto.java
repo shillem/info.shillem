@@ -67,8 +67,10 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
     Date getLastModified();
 
     <T> List<T> getList(E key, Class<T> type);
-
+    
     Set<E> getSchema(SchemaFilter schemaQuery);
+
+    <T> Set<T> getSet(E key, Class<T> type);
 
     String getString(E key);
 
