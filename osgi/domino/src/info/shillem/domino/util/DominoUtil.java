@@ -53,11 +53,31 @@ public class DominoUtil {
     }
 
     public static Date getItemDate(Document doc, String itemName) throws NotesException {
-        return getItemValue(doc, itemName, Date.class::cast);
+        return getItemValue(doc, itemName, (val) -> Unthrow.on(() -> {
+            if (val instanceof DateTime) {
+                try {
+                    return ((DateTime) val).toJavaDate();
+                } finally {
+                    recycle((DateTime) val);
+                }
+            }
+
+            return (Date) val;
+        }));
     }
 
     public static List<Date> getItemDates(Document doc, String itemName) throws NotesException {
-        return getItemValues(doc, itemName, Date.class::cast);
+        return getItemValues(doc, itemName, (val) -> Unthrow.on(() -> {
+            if (val instanceof DateTime) {
+                try {
+                    return ((DateTime) val).toJavaDate();
+                } finally {
+                    recycle((DateTime) val);
+                }
+            }
+
+            return (Date) val;
+        }));
     }
 
     public static BigDecimal getItemDecimal(Document doc, String itemName) throws NotesException {
@@ -139,8 +159,7 @@ public class DominoUtil {
             if (item.getType() == Item.RICHTEXT) {
                 return converter.apply(item.getText());
             }
-            
-            
+
             List<?> values = item.getValues();
 
             if (values == null || values.isEmpty()) {

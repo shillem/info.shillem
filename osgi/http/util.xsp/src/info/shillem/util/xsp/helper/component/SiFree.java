@@ -14,7 +14,10 @@ public class SiFree extends SiStatic {
     private static final long serialVersionUID = 1L;
 
     @Override
-    public void validate(FacesContext context, UIComponent component, Object value)
+    public void validate(
+            FacesContext context,
+            UIComponent component,
+            Object value)
             throws ValidatorException {
         List<SelectItem> selectItems = getItems();
 
@@ -41,7 +44,7 @@ public class SiFree extends SiStatic {
                 iter.remove();
             }
         }
-        
+
         values.forEach(this::addValue);
     }
 
