@@ -1,7 +1,6 @@
 package info.shillem.util;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 public class NumberUtil {
 
@@ -12,11 +11,7 @@ public class NumberUtil {
     }
 
     public static BigDecimal percentageOf(BigDecimal value, BigDecimal percentage) {
-        BigDecimal fraction = percentage.divide(BIG_DECIMAL_HUNDRED);
-        fraction = value.multiply(fraction);
-        fraction = fraction.setScale(-1, RoundingMode.HALF_UP);
-
-        return fraction;
+        return value.multiply(percentage.divide(BIG_DECIMAL_HUNDRED));
     }
 
     public static BigDecimal subtractPercentageOf(BigDecimal value, BigDecimal percentage) {
