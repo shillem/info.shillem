@@ -64,8 +64,9 @@ public class DominoLoop {
 
     public static class OptionsViewEntry<R> extends Options<ViewEntry, R> {
 
-        OptionEntry kind;
         boolean disableColumnData;
+        OptionEntry kind;
+        int precount;
 
         public OptionsViewEntry() {
             super();
@@ -79,6 +80,10 @@ public class DominoLoop {
 
         public void setKind(OptionEntry value) {
             kind = value;
+        }
+
+        public void setPrecount(int value) {
+            precount = value;
         }
 
     }
@@ -158,9 +163,20 @@ public class DominoLoop {
         Objects.requireNonNull(options, "View entry options cannot be null");
 
         return readViewEntries(
-                options.offset > 0
-                        ? (result) -> coll.getNthEntry(options.offset + 1)
-                        : (result) -> coll.getFirstEntry(),
+                (result) -> {
+                    ViewEntry entry = options.offset > 0
+                            ? coll.getNthEntry(options.offset + 1)
+                            : coll.getFirstEntry();
+
+                    Summary summary = result.summary;
+
+                    if (summary.isMaxOffset() && options.precount > 0) {
+                        summary.recalculateOffset(options.precount);
+                        summary.setTotal(options.precount);
+                    }
+
+                    return entry;
+                },
                 (current) -> coll.getNextEntry(),
                 coll::getCount,
                 options);

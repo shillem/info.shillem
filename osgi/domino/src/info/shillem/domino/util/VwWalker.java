@@ -33,12 +33,13 @@ public class VwWalker<E extends Enum<E> & BaseField> {
         public final Function<E, String> namer;
         public final View view;
 
+        private int count;
+
         private Parameters(Query<E> query, Function<E, String> namer, View view) {
             this.query = query;
             this.namer = namer;
             this.view = view;
         }
-
     }
 
     private final String notesUrlPrefix;
@@ -86,7 +87,10 @@ public class VwWalker<E extends Enum<E> & BaseField> {
             String syntax = new FtSearchQuery<>(params.query).withNamer(params.namer).output();
 
             try {
-                params.view.FTSearchSorted(syntax, params.query.getLimit());
+                params.count = params.view.FTSearchSorted(syntax,
+                        params.query.isMaxOffset()
+                                ? 0
+                                : params.query.getOffset() + params.query.getLimit());
 
                 return params.view.getAllEntries();
             } catch (NotesException e) {
@@ -171,6 +175,8 @@ public class VwWalker<E extends Enum<E> & BaseField> {
 
         try {
             if (base instanceof ViewEntryCollection) {
+                options.setPrecount(params.count);
+
                 result = DominoLoop.read((ViewEntryCollection) base, options);
             } else {
                 result = DominoLoop.read((ViewNavigator) base, options);
