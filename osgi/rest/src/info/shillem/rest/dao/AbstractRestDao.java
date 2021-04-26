@@ -13,7 +13,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -56,7 +56,10 @@ public abstract class AbstractRestDao<T extends BaseDto<E>, E extends Enum<E> & 
             HttpUriRequest request,
             BiFunction<HttpResponse, HttpEntity, R> fn)
             throws DaoException {
-        try (CloseableHttpClient client = HttpClients.createDefault();
+        try (CloseableHttpClient client = HttpClientBuilder
+                .create()
+                .useSystemProperties()
+                .build();
                 CloseableHttpResponse response = client.execute(request)) {
             HttpEntity entity = response.getEntity();
             R value = fn.apply(response, entity);
