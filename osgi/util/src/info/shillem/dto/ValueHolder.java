@@ -32,7 +32,6 @@ public class ValueHolder implements Serializable {
 
     public void commit() {
         switch (state) {
-        case TRANSACTION:
         case TRANSACTION_FROM_NEW:
         case TRANSACTION_FROM_SAVE:
         case TRANSACTION_FROM_UPDATE:
@@ -89,6 +88,11 @@ public class ValueHolder implements Serializable {
 
     public void rollback() {
         switch (state) {
+        case TRANSACTION:
+            value = null;
+            state = State.NEW;
+            
+            break;
         case TRANSACTION_FROM_NEW:
             transactionValue = null;
             state = State.NEW;
