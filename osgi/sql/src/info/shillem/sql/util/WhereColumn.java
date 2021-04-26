@@ -29,6 +29,26 @@ public class WhereColumn implements IWhere {
         this.value = value;
     }
 
+    public WhereColumn addNameFunction(String value) {
+        if (nfuns == null) {
+            nfuns = new ArrayList<>();
+        }
+
+        nfuns.add(validateFunction(value));
+
+        return this;
+    }
+
+    public WhereColumn addValueFunction(String value) {
+        if (vfuns == null) {
+            vfuns = new ArrayList<>();
+        }
+
+        vfuns.add(validateFunction(value));
+
+        return this;
+    }
+
     @Override
     public String output(Schema schema) {
         if (operator == ComparisonOperator.IN
@@ -38,7 +58,7 @@ public class WhereColumn implements IWhere {
                     .append(outputOperator())
                     .append(" ")
                     .append("(")
-                    .append(outputValues())
+                    .append(outputValues(schema))
                     .append(")")
                     .toString();
         }
@@ -53,15 +73,19 @@ public class WhereColumn implements IWhere {
 
             return "("
                     .concat(values.stream()
-                            .map((val) -> left.concat(outputValue(val)))
+                            .map((val) -> left.concat(outputValue(val, schema)))
                             .collect(Collectors.joining(" AND ")))
                     .concat(")");
         }
 
-        return left.concat(outputValue(value));
+        return left.concat(outputValue(value, schema));
     }
 
     private String outputColumn(Schema schema) {
+        return outputColumn(name, schema);
+    }
+
+    private String outputColumn(String name, Schema schema) {
         String n = SelectQuery.getColumner(schema).apply(name);
 
         if (nfuns == null) {
@@ -100,7 +124,7 @@ public class WhereColumn implements IWhere {
         }
     }
 
-    private String outputValue(Object value) {
+    private String outputValue(Object value, Schema schema) {
         Function<String, String> formatter = vfuns != null
                 ? (v) -> {
                     for (String vfun : vfuns) {
@@ -135,10 +159,14 @@ public class WhereColumn implements IWhere {
             return formatter.apply("'".concat(SHORT_DATE_FORMAT.format((Date) value)).concat("'"));
         }
 
+        if (value instanceof SelectQuery.Column) {
+            return outputColumn(((SelectQuery.Column) value).getName(), schema);
+        }
+
         return formatter.apply(value.toString());
     }
 
-    private String outputValues() {
+    private String outputValues(Schema schema) {
         if (value == null) {
             return "NULL";
         }
@@ -146,10 +174,12 @@ public class WhereColumn implements IWhere {
         if (value instanceof Collection) {
             Collection<?> values = (Collection<?>) value;
 
-            return values.stream().map(this::outputValue).collect(Collectors.joining(","));
+            return values.stream()
+                    .map((v) -> outputValue(v, schema))
+                    .collect(Collectors.joining(","));
         }
 
-        return outputValue(value);
+        return outputValue(value, schema);
     }
 
     private String validateFunction(String function) {
@@ -159,26 +189,6 @@ public class WhereColumn implements IWhere {
         }
 
         return function;
-    }
-
-    public WhereColumn addNameFunction(String value) {
-        if (nfuns == null) {
-            nfuns = new ArrayList<>();
-        }
-
-        nfuns.add(validateFunction(value));
-
-        return this;
-    }
-
-    public WhereColumn addValueFunction(String value) {
-        if (vfuns == null) {
-            vfuns = new ArrayList<>();
-        }
-
-        vfuns.add(validateFunction(value));
-
-        return this;
     }
 
 }

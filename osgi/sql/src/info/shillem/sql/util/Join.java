@@ -83,21 +83,25 @@ public class Join implements IJoin {
         String output(Schema schema);
 
     }
+    
+    public enum Type {
+        INNER_JOIN,
+        LEFT_JOIN;
+    }
 
     private final List<Instruction> instructions;
     private final String table;
-    private final SelectQuery tableCustom;
+    private final SelectQuery innerTable;
     private final Type type;
 
     public Join(Type type, String table) {
-        this(type, Objects.requireNonNull(table, "Table cannot be null"), null);
+        this(type, table, null);
     }
 
-    public Join(Type type, String table, SelectQuery tableCustom) {
+    public Join(Type type, String table, SelectQuery innerTable) {
+        this.innerTable = innerTable;
         this.type = Objects.requireNonNull(type, "Type cannot be null");
         this.table = Objects.requireNonNull(table, "Table cannot be null");
-        this.tableCustom = tableCustom;
-
         this.instructions = new ArrayList<>();
     }
 
@@ -130,8 +134,8 @@ public class Join implements IJoin {
     }
 
     private String outputTable(Schema schema) {
-        if (tableCustom != null) {
-            return "(".concat(tableCustom.output()).concat(") ").concat(table);
+        if (innerTable != null) {
+            return "(".concat(innerTable.output()).concat(") ").concat(table);
         }
 
         if (schema != null) {

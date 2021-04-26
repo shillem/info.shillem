@@ -225,14 +225,6 @@ public class SelectQuery {
         return groups;
     }
 
-    public SelectQuery join(IJoin.Type type, String table, String column) {
-        Join join = new Join(type, table);
-        join.on(column, from);
-        joins.add(join);
-
-        return this;
-    }
-
     public LJoin joins() {
         if (joins == null) {
             joins = new LJoin();
