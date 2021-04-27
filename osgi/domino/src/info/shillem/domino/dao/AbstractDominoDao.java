@@ -1,8 +1,5 @@
 package info.shillem.domino.dao;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -43,11 +40,10 @@ import info.shillem.dto.AttachedFiles;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseDto.SchemaFilter;
 import info.shillem.dto.BaseField;
-import info.shillem.dto.ValueType;
 import info.shillem.dto.JsonValue;
+import info.shillem.dto.ValueType;
 import info.shillem.util.CastUtil;
 import info.shillem.util.CollectionUtil;
-import info.shillem.util.IOUtil;
 import info.shillem.util.JsonHandler;
 import info.shillem.util.StringUtil;
 import info.shillem.util.Unthrow;
@@ -621,23 +617,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                     .collect(Collectors.toList());
 
             for (AttachedFile af : additions) {
-                InputStream is;
-
-                try {
-                    is = new FileInputStream(af.getFile());
-                } catch (FileNotFoundException e) {
-                    throw new IllegalArgumentException(String.format(
-                            "The file %s with path %s was not found",
-                            af.getName(),
-                            af.getFile().getAbsolutePath()));
-                }
-
                 lotus.domino.Stream stm = null;
 
                 try {
-                    stm = factory.getSession().createStream();
-                    stm.setContents(is);
-
                     MIMEEntity child = attachmentsByName.get(af.getName());
 
                     if (child == null) {
@@ -647,6 +629,9 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                                 "attachment; filename=\"".concat(af.getName()).concat("\""));
                     }
 
+                    stm = factory.getSession().createStream();
+                    stm.open(af.getFile().getPath());
+
                     child.setContentFromBytes(stm,
                             "application/octet-stream",
                             MIMEEntity.ENC_IDENTITY_BINARY);
@@ -654,7 +639,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                     stm.close();
                 } finally {
                     DominoUtil.recycle(stm);
-                    IOUtil.close(is);
                 }
 
                 af.unlink();
@@ -665,7 +649,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
                 mimeEntity.remove();
             }
         } finally {
-            if (doc.hasItem(itemName)) {
+            if (mimeEntity != null) {
                 doc.closeMIMEEntities(true, itemName);
             }
 
