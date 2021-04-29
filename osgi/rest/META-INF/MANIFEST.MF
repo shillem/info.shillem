@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Shillem REST Plug-in
+Bundle-SymbolicName: info.shillem.rest;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Shillem Volpato
+Export-Package: info.shillem.rest,
+ info.shillem.rest.dao,
+ info.shillem.rest.factory
+Import-Package: com.fasterxml.jackson.annotation;version="2.11.2",
+ com.fasterxml.jackson.databind;version="2.11.2",
+ com.fasterxml.jackson.databind.deser;version="2.11.2",
+ com.fasterxml.jackson.databind.module;version="2.11.2",
+ info.shillem.dao,
+ info.shillem.dao.lang,
+ info.shillem.dto,
+ info.shillem.lang,
+ info.shillem.util,
+ org.apache.http;version="4.4.11",
+ org.apache.http.client;version="4.5.9",
+ org.apache.http.client.methods;version="4.5.9",
+ org.apache.http.impl.client;version="4.5.9",
+ org.apache.http.util;version="4.4.11"

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.lotus.com/dxl" name="SqlConnection" nocompose="true" publicaccess="false" renderpassthrough="true">
+<code event="windowtitle">
+<formula>@If(@IsNewDoc;
+	"New SQL Connection";
+	"SQL Connection:" + title
+)</formula>
+</code>
+<actionbar bgcolor="#f0f0f0" bordercolor="black">
+<actionbuttonstyle bgcolor="#f0f0f0"/>
+<font color="system"/>
+<border style="solid" width="0px 0px 1px" color="system"/>
+</actionbar>
+<body>
+<richtext>
+<pardef id="1" hide="notes web"/>
+<par def="1">
+<run>
+<font size="8pt" color="red"/>
+</run>
+<run>
+<font size="8pt" color="red"/>
+<sharedfieldref name="uuid"/>
+</run>
+</par>
+<pardef id="2"/>
+<par def="2"/>
+<table widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
+<tablecolumn width="2in"/>
+<tablecolumn width="5in"/>
+<tablerow>
+<tablecell borderwidth="0px" bgcolor="#f7f7f7">
+<pardef id="4" align="right" keepwithnext="true" keeptogether="true"/>
+<par def="4">
+<run>
+<font size="8pt" style="bold"/>Title</run>
+<run>
+<font size="8pt" style="bold" color="red"/> *</run>
+<run>
+<font size="8pt" style="bold"/>:</run>
+</par>
+</tablecell>
+<tablecell borderwidth="0px">
+<pardef id="5" keepwithnext="true" keeptogether="true"/>
+<par def="5">
+<run>
+<font size="8pt"/>
+</run>
+<run>
+<font size="8pt"/>
+<field showdelimiters="false" type="text" kind="editable" name="title">
+<code event="inputvalidation">
+<formula>@If(@ThisValue="";
+	@Failure("Title is mandatory");
+	@Success
+)</formula>
+</code>
+</field>
+</run>
+<compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+</par>
+</tablecell>
+</tablerow>
+<tablerow>
+<tablecell borderwidth="0px" bgcolor="#f7f7f7">
+<par def="4">
+<run>
+<font size="8pt" style="bold"/>Description:</run>
+</par>
+</tablecell>
+<tablecell borderwidth="0px">
+<par def="5">
+<run>
+<font size="8pt"/>
+</run>
+<run>
+<font size="8pt"/>
+<field showdelimiters="false" type="text" kind="editable" name="description"/>
+</run>
+<compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+</par>
+</tablecell>
+</tablerow>
+</table>
+<par def="2"/>
+<table widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
+<tablecolumn width="2in"/>
+<tablecolumn width="5in"/>
+<tablerow>
+<tablecell borderwidth="0px" bgcolor="#f7f7f7">
+<par def="4">
+<run>
+<font size="8pt" style="bold"/>Driver</run>
+<run>
+<font size="8pt" style="bold" color="red"/> *</run>
+<run>
+<font size="8pt" style="bold"/>:</run>
+</par>
+</tablecell>
+<tablecell borderwidth="0px">
+<par def="5">
+<run>
+<font size="8pt"/>
+</run>
+<run>
+<font size="8pt"/>
+<field showdelimiters="false" type="text" kind="editable" name="driver">
+<code event="inputvalidation">
+<formula>@If(@ThisValue="";
+	@Failure("Driver is mandatory");
+	@Success
+)</formula>
+</code>
+</field>
+</run>
+<compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+</par>
+</tablecell>
+</tablerow>
+<tablerow>
+<tablecell borderwidth="0px" bgcolor="#f7f7f7">
+<par def="4">
+<run>
+<font size="8pt" style="bold"/>URL</run>
+<run>
+<font size="8pt" style="bold" color="red"/> *</run>
+<run>
+<font size="8pt" style="bold"/>:</run>
+</par>
+</tablecell>
+<tablecell borderwidth="0px">
+<par def="5">
+<run>
+<font size="8pt"/>
+</run>
+<run>
+<font size="8pt"/>
+<field showdelimiters="false" type="text" kind="editable" name="url">
+<code event="inputvalidation">
+<formula>@If(@ThisValue="";
+	@Failure("URL is mandatory");
+	@Success
+)</formula>
+</code>
+</field>
+</run>
+<compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+</par>
+</tablecell>
+</tablerow>
+<tablerow>
+<tablecell borderwidth="0px" bgcolor="#f7f7f7">
+<pardef id="6" align="right" keepwithnext="true" keeptogether="true"/>
+<par def="6">
+<run>
+<font size="8pt" style="bold"/>Username</run>
+<run>
+<font size="8pt" style="bold"/>:</run>
+</par>
+</tablecell>
+<tablecell borderwidth="0px">
+<pardef id="7" keepwithnext="true" keeptogether="true"/>
+<par def="7">
+<run>
+<font size="8pt"/>
+</run>
+<run>
+<font size="8pt"/>
+<field showdelimiters="false" type="text" kind="editable" name="username"/>
+</run>
+<compositedata type="98" prevtype="65418" nexttype="222" afterparcount="8" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+</par>
+</tablecell>
+</tablerow>
+<tablerow>
+<tablecell borderwidth="0px" bgcolor="#f7f7f7">
+<par def="6">
+<run>
+<font size="8pt" style="bold"/>Password</run>
+<run>
+<font size="8pt" style="bold"/>:</run>
+</par>
+</tablecell>
+<tablecell borderwidth="0px">
+<par def="7">
+<run>
+<font size="8pt"/>
+</run>
+<run>
+<font size="8pt"/>
+<field showdelimiters="false" type="password" kind="editable" seal="true" name="password"/>
+</run>
+</par>
+</tablecell>
+</tablerow>
+<tablerow>
+<tablecell borderwidth="0px" bgcolor="#f7f7f7">
+<par def="6">
+<run>
+<font size="8pt" style="bold"/>Additional Properties</run>
+<run>
+<font size="8pt" style="bold"/>:</run>
+</par>
+</tablecell>
+<tablecell borderwidth="0px">
+<par def="7">
+<run>
+<font size="8pt"/>
+</run>
+<run>
+<font size="8pt"/>
+<field showdelimiters="false" type="text" allowmultivalues="true" kind="editable" name="additionalProperties" listinputseparators="newline" listdisplayseparator="newline"/>
+</run>
+<compositedata type="98" prevtype="65418" nexttype="222" afterparcount="7" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+</par>
+</tablecell>
+</tablerow>
+</table>
+<par def="2"/>
+</richtext>
+</body>
+</form>

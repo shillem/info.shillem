@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<subform xmlns="http://www.lotus.com/dxl" name="DOMINO_TO_SQL" renderpassthrough="true">
+  <body>
+    <richtext>
+      <pardef id="1" hide="notes web"/>
+      <par def="1"/>
+      <table cellbordercolor="black" widthtype="fixedleft" rowspacing="0.1000in" columnspacing="0.0500in" refwidth="7.2000in">
+        <tablecolumn width="2in"/>
+        <tablecolumn width="5in"/>
+        <tablerow>
+          <tablecell borderwidth="0px" bgcolor="#f7f7f7">
+            <pardef id="3" align="right" keepwithnext="true" keeptogether="true"/>
+            <par def="3">
+              <run>
+                <font size="8pt" style="bold"/>Reference Table:</run>
+            </par>
+          </tablecell>
+          <tablecell borderwidth="0px">
+            <pardef id="4" keepwithnext="true" keeptogether="true"/>
+            <par def="4">
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+              </run>
+              <run>
+                <font size="8pt"/>
+                <field showdelimiters="false" type="text" kind="editable" name="query_reference_table"/>
+              </run>
+              <compositedata type="98" prevtype="65418" nexttype="222" afterparcount="13" containertype="65418" aftercontainercount="1" afterbegincount="4">
+Yg4BAIQAAAAAAAAAAAA=
+</compositedata>
+              <run>
+                <font size="8pt"/>
+              </run>
+            </par>
+          </tablecell>
+        </tablerow>
+      </table>
+      <pardef id="5" firstlineleftmargin="1in" hide="notes web"/>
+      <par def="5"/>
+    </richtext>
+  </body>
+  <item name="queryTimeout" summary="false" sign="true">
+    <number>0</number>
+  </item>
+  <item name="query_timeout" summary="false">
+    <number>0</number>
+  </item>
+</subform>

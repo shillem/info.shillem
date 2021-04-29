@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config>
+	<faces-config-extension>
+		<namespace-uri>http://shillem.info/xsp/library</namespace-uri>
+		<default-prefix>sh</default-prefix>
+	</faces-config-extension>
+
+	<component>
+		<display-name>New Line</display-name>
+		<description>A control to print a new line in the final HTML source code</description>
+		<component-type>info.shillem.xsp.NewLine</component-type>
+		<component-class>info.shillem.util.xsp.component.UINewLine</component-class>
+
+		<component-extension>
+			<tag-name>nl</tag-name>
+			<component-family>info.shillem.xsp.NewLine</component-family>
+			<designer-extension>
+				<generate-id>false</generate-id>
+				<category>Shillem Controls</category>
+			</designer-extension>
+		</component-extension>
+	</component>
+
+	<component>
+		<display-name>Tag</display-name>
+		<description>A control that will output any tag after the name property</description>
+		<component-type>info.shillem.xsp.Tag</component-type>
+		<component-class>info.shillem.util.xsp.component.UITag</component-class>
+
+		<group-type-ref>com.ibm.xsp.group.core</group-type-ref>
+		<group-type-ref>com.ibm.xsp.group.events</group-type-ref>
+		<group-type-ref>com.ibm.xsp.group.aria.role</group-type-ref>
+		<group-type-ref>com.ibm.xsp.group.FacesAttrsObject.complex</group-type-ref>
+
+		<property>
+			<description>Disables the tag output</description>
+			<display-name>Disable Output Tag</display-name>
+			<property-name>disableOutputTag</property-name>
+			<property-class>java.lang.Boolean</property-class>
+        </property>
+		
+		<property>
+			<description>Indicates the name of the tag that will be output</description>
+			<display-name>Tag Name</display-name>
+			<property-name>name</property-name>
+			<property-class>java.lang.String</property-class>
+        </property>
+
+		<component-extension>
+			<component-family>info.shillem.xsp.Tag</component-family>
+			<renderer-type>info.shillem.xsp.Tag</renderer-type>
+			<tag-name>tag</tag-name>
+			<designer-extension>
+				<generate-id>false</generate-id>
+				<category>Shillem Controls</category>
+			</designer-extension>
+		</component-extension>
+	</component>
+
+	<converter>
+		<description>Converts a given string to an enum</description>
+		<display-name>Enum Converter</display-name>
+		<converter-id>info.shillem.xsp.EnumConverter</converter-id>
+		<converter-class>info.shillem.util.xsp.converter.EnumConverter</converter-class>
+		
+		<property>
+			<description>
+				The optional enum class used for the conversion.
+				It can be either string or the class itself.
+				When absent it will be guessed.
+			</description>
+			<display-name>Enum Class Name</display-name>
+			<property-name>className</property-name>
+			<property-class>java.lang.Object</property-class>
+		</property>
+
+		<converter-extension>
+			<tag-name>convertEnum</tag-name>
+		</converter-extension>
+	</converter>
+
+	<converter>
+		<description>Converts a given string to a number</description>
+		<display-name>Number Converter</display-name>
+		<converter-id>info.shillem.xsp.NumberConverter</converter-id>
+		<converter-class>info.shillem.util.xsp.converter.NumberConverter</converter-class>
+
+		<!-- ======== Sun NumberConverter Properties ====================== -->
+		<property>
+			<!-- key: property.currencyCode. -->
+			<description>
+				Specifies the current code to use when converting the
+				value to a currency
+				format. Valid values are ISO 4217 currency codes,
+				e.g. USD for US
+				dollars.
+			</description>
+			<display-name>Currency Code</display-name>
+			<property-name>currencyCode</property-name>
+			<property-class>string</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+			</property-extension>
+		</property>
+		<property>
+			<!-- key: property.currencySymbol. -->
+			<description>
+				Specifies the currency symbol to use when formatting
+				currencies
+			</description>
+			<display-name>Currency Symbol</display-name>
+			<property-name>currencySymbol</property-name>
+			<property-class>string</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+			</property-extension>
+		</property>
+		<!-- ________ more Sun NumberConverter Properties _________________ -->
+		<property>
+			<!-- key: property.groupingUsed. -->
+			<description>
+				Specifies whether the converted value will contain
+				grouping separators.
+				Defaults to true.
+			</description>
+			<display-name>Grouping Used</display-name>
+			<property-name>groupingUsed</property-name>
+			<property-class>boolean</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+				<designer-extension>
+					<!-- runtime-default-true, unlike most boolean propertys this defaults 
+						to true. It's ok though because the property description explains the unusual 
+						default. And because it is a converter complex-type instead of a control, 
+						there is no concern about the inability to set the property value through 
+						a theme file (the theme files only set values on controls, not converters.) -->
+					<tags>
+						runtime-default-true
+					</tags>
+				</designer-extension>
+			</property-extension>
+		</property>
+		<property>
+			<!-- key: property.integerOnly. -->
+			<description>
+				Specifies whether only the integer part of the value
+				string will be formatted
+				and parsed. Defaults to false.
+			</description>
+			<display-name>Integer Only</display-name>
+			<property-name>integerOnly</property-name>
+			<property-class>boolean</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+			</property-extension>
+		</property>
+		<!-- ________ more Sun NumberConverter Properties _________________ -->
+		<property>
+			<!-- key: property.locale.converter.id.javax.faces.Number. -->
+			<description>
+				Specifies a locale to use when formatting and parsing
+				styles for numbers.
+				Value can be a string or an expression that
+				evaluates to a locale
+				data type.
+			</description>
+			<display-name>Locale</display-name>
+			<property-name>locale</property-name>
+			<property-class>java.util.Locale</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+				<designer-extension>
+					<editor>com.ibm.workplace.designer.property.editors.langPicker
+					</editor>
+				</designer-extension>
+			</property-extension>
+		</property>
+		<property>
+			<!-- key: property.maxFractionDigits. -->
+			<description>
+				Specifies the maximum number of digits that will be
+				formatted in the
+				fractional portion of the number
+			</description>
+			<display-name>Maximum Fraction Digits</display-name>
+			<property-name>maxFractionDigits</property-name>
+			<property-class>java.lang.Integer</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+			</property-extension>
+		</property>
+		<!-- ________ more Sun NumberConverter Properties _________________ -->
+		<property>
+			<!-- key: property.maxIntegerDigits. -->
+			<description>
+				Specifies the maximum number of digits that will be
+				formatted in the integer
+				portion of the number
+			</description>
+			<display-name>Maximum Integer Digits</display-name>
+			<property-name>maxIntegerDigits</property-name>
+			<property-class>java.lang.Integer</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+			</property-extension>
+		</property>
+		<property>
+			<!-- key: property.minFractionDigits. -->
+			<description>
+				Specifies the minimum number of digits that will be
+				formatted in the
+				fractional portion of the number
+			</description>
+			<display-name>Minimum Fraction Digits</display-name>
+			<property-name>minFractionDigits</property-name>
+			<property-class>java.lang.Integer</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+			</property-extension>
+		</property>
+		<!-- ________ more Sun NumberConverter Properties _________________ -->
+		<property>
+			<!-- key: property.minIntegerDigits. -->
+			<description>
+				Specifies the minimum number of digits that will be
+				formatted in the integer
+				portion of the number
+			</description>
+			<display-name>Min Integer Digits</display-name>
+			<property-name>minIntegerDigits</property-name>
+			<property-class>java.lang.Integer</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+			</property-extension>
+		</property>
+		<property>
+			<!-- key: property.pattern.converter.id.javax.faces.Number. -->
+			<description>
+				Specifies the pattern that determines how the number
+				string should be
+				formatted and parsed
+			</description>
+			<display-name>Pattern</display-name>
+			<property-name>pattern</property-name>
+			<property-class>string</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+			</property-extension>
+		</property>
+		<!-- ________ more Sun NumberConverter Properties _________________ -->
+		<property>
+			<!-- key: property.type.converter.id.javax.faces.Number. -->
+			<!-- # "number", "currency", and "percent" should not be translated -->
+			<description>
+				Specifies how the number string will be formatted and
+				parsed. Valid values
+				are "number" (any number), "integer", "double", "bigDecimal",
+				"currency", and "percent". Defaults to "number".
+			</description>
+			<display-name>Type</display-name>
+			<property-name>type</property-name>
+			<property-class>string</property-class>
+			<property-extension>
+				<allow-run-time-binding>false</allow-run-time-binding>
+				<designer-extension>
+					<editor>com.ibm.workplace.designer.property.editors.comboParameterEditor
+					</editor>
+					<editor-parameter>
+						number
+						integer
+						double
+						bigDecimal
+						currency
+						percent
+					</editor-parameter>
+				</designer-extension>
+			</property-extension>
+		</property>
+		<!-- ======== /end Sun NumberConverter Properties ================= -->
+
+		<property>
+			<description>The nearest integer to round the number to
+			</description>
+			<display-name>Nearest integer</display-name>
+			<property-name>nearestInteger</property-name>
+			<property-class>java.lang.Integer</property-class>
+		</property>
+
+		<converter-extension>
+			<tag-name>convertNumber</tag-name>
+		</converter-extension>
+	</converter>
+	
+	<validator>
+		<description>Validates that the controls String value has a length
+			within the specified range
+		</description>
+		<display-name>Length Validator</display-name>
+		<validator-id>javax.faces.Length</validator-id>
+		<validator-class>javax.faces.validator.LengthValidator</validator-class>
+		<property>
+			<description>Specifies the maximum valid length</description>
+			<display-name>Maximum</display-name>
+			<property-name>maximum</property-name>
+			<property-class>int</property-class>
+		</property>
+		<property>
+			<description>Specifies the minimum valid length</description>
+			<display-name>Minimum</display-name>
+			<property-name>minimum</property-name>
+			<property-class>int</property-class>
+		</property>
+		<validator-extension>
+			<tag-name>validateLength</tag-name>
+		</validator-extension>
+	</validator>
+	
+	<validator>
+		<description>Validates the string by means of an expression pattern</description>
+		<display-name>Pattern Validator</display-name>
+		<validator-id>info.shillem.xsp.PatternValidator</validator-id>
+		<validator-class>info.shillem.util.xsp.validator.PatternValidator
+		</validator-class>
+		<property>
+			<description>
+				Specifies the message that will be displayed when the validation fails
+			</description>
+			<display-name>Message</display-name>
+			<property-name>message</property-name>
+			<property-class>string</property-class>
+		</property>
+		<property>
+			<description>Specifies the expression pattern that must be matched</description>
+			<display-name>Pattern</display-name>
+			<property-name>pattern</property-name>
+			<property-class>java.util.regex.Pattern</property-class>
+		</property>
+		<property>
+			<description>Specifies the regular expression that must be matched</description>
+			<display-name>Regular expression</display-name>
+			<property-name>regex</property-name>
+			<property-class>string</property-class>
+		</property>
+		<validator-extension>
+			<tag-name>validatePattern</tag-name>
+		</validator-extension>
+	</validator>
+
+</faces-config>

@@ -1,0 +1,20 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Shillem Domino Plug-in
+Bundle-SymbolicName: info.shillem.domino;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Shillem Volpato
+Import-Package: com.fasterxml.jackson.annotation;version="2.11.2",
+ com.fasterxml.jackson.core;version="2.11.2",
+ com.fasterxml.jackson.databind;version="2.11.2",
+ com.fasterxml.jackson.databind.module;version="2.11.2",
+ com.fasterxml.jackson.databind.type;version="2.11.2",
+ info.shillem.dao,
+ info.shillem.dao.lang,
+ info.shillem.dto,
+ info.shillem.lang,
+ info.shillem.util,
+ lotus.domino
+Export-Package: info.shillem.domino.dao,
+ info.shillem.domino.factory,
+ info.shillem.domino.util

@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Shillem Util for XPages Plug-in
+Bundle-SymbolicName: info.shillem.util.xsp;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: com.ibm.commons,
+ com.ibm.xsp.extsn,
+ com.ibm.xsp.extlib.core,
+ info.shillem.util;visibility:=reexport
+Bundle-Vendor: Shillem Volpato
+Export-Package: info.shillem.util.xsp.annotation,
+ info.shillem.util.xsp.component,
+ info.shillem.util.xsp.context,
+ info.shillem.util.xsp.converter,
+ info.shillem.util.xsp.dispatcher,
+ info.shillem.util.xsp.helper.component,
+ info.shillem.util.xsp.listener,
+ info.shillem.util.xsp.model,
+ info.shillem.util.xsp.renderer,
+ info.shillem.util.xsp.validator
+Bundle-Activator: info.shillem.util.xsp.XspActivator
+Import-Package: org.osgi.framework
+Bundle-ActivationPolicy: lazy

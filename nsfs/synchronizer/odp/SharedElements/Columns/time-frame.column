@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sharedcolumn xmlns="http://www.lotus.com/dxl" name="time-frame">
+<column sort="ascending" hidedetailrows="false" itemname="timeFrame" width="8" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<font size="8pt"/>
+<columnheader title="Time Frame">
+<font size="8pt" style="bold"/>
+</columnheader>
+<datetimeformat show="time" date="yearmonthday" fourdigityearfor21stcentury="true" time="hourminute" zone="never" dateformat="weekdaymonthdayyear" dayformat="twodigitday" monthformat="twodigitmonth" yearformat="fourdigityear" weekdayformat="shortname" dateseparator1=" " dateseparator2="/" dateseparator3="/" timeseparator=":" preference="usersetting"/>
+<numberformat format="general" punctuated="false" parens="false" percent="false" bytes="false"/>
+</column>
+<item name="$SourceSeqTime">
+<datetime>20201202T101045,69+01</datetime>
+</item>
+<item name="$SourceSequence">
+<text>00000001</text>
+</item>
+</sharedcolumn>

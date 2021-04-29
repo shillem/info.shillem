@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Shillem SQL for XPages Plug-in
+Bundle-SymbolicName: info.shillem.sql.xsp;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: com.ibm.commons,
+ com.ibm.xsp.extsn,
+ info.shillem.sql;visibility:=reexport
+Import-Package: info.shillem.util,
+ org.osgi.framework,
+ org.osgi.util.tracker
+Export-Package: info.shillem.sql.xsp
+Bundle-ActivationPolicy: lazy
+Bundle-Vendor: Shillem Volpato
+Bundle-Activator: info.shillem.sql.xsp.SqlActivator

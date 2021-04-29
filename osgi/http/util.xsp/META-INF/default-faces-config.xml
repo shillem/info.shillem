@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<faces-config>
+	<converter>
+		<converter-id>info.shillem.xsp.EnumConverter</converter-id>
+		<converter-class>info.shillem.util.xsp.converter.EnumConverter</converter-class>
+	</converter>
+	<converter>
+		<converter-id>info.shillem.xsp.NumberConverter</converter-id>
+		<converter-class>info.shillem.util.xsp.converter.NumberConverter</converter-class>
+	</converter>
+	<render-kit>
+		<renderer>
+			<component-family>info.shillem.xsp.Tag</component-family>
+			<renderer-type>info.shillem.xsp.Tag</renderer-type>
+			<renderer-class>info.shillem.util.xsp.renderer.UITagRenderer</renderer-class>
+		</renderer>
+	</render-kit>
+	<validator>
+		<validator-id>info.shillem.xsp.PatternValidator</validator-id>
+		<validator-class>info.shillem.util.xsp.validator.PatternValidator</validator-class>
+	</validator>
+	<validator>
+		<validator-id>javax.faces.Length</validator-id>
+		<validator-class>javax.faces.validator.LengthValidator</validator-class>
+	</validator>
+</faces-config>

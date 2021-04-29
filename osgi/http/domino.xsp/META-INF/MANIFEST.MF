@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Shillem Domino for XPages Plug-in
+Bundle-SymbolicName: info.shillem.domino.xsp;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: com.ibm.commons,
+ com.ibm.xsp.extsn,
+ info.shillem.domino;visibility:=reexport
+Import-Package: com.ibm.domino.napi.c,
+ com.ibm.domino.napi.c.xsp,
+ com.ibm.xsp.model.domino,
+ info.shillem.util,
+ lotus.domino
+Export-Package: info.shillem.domino.xsp.factory

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view xmlns="http://www.lotus.com/dxl" name="($Program)" showinmenu="false" publicaccess="false" unreadmarks="none" onopengoto="lastopened" onrefresh="displayindicator" headers="beveled" opencollapsed="false" showresponsehierarchy="true" showmargin="true" shrinkrows="false" extendlastcolumn="false" showhierarchies="false" unreadcolor="black" rowlinecount="1" headerlinecount="1" rowspacing="1" bgcolor="white" totalscolor="black" headerbgcolor="white" boldunreadrows="false" evaluateactions="false" allownewdocuments="false" allowcustomizations="true" hidemarginborder="false" marginwidth="0px" marginbgcolor="white" uniquekeys="false">
+<code event="selection">
+<formula>SELECT Form = "Program" &amp; archived != "true"</formula>
+</code>
+<column sort="ascending" hidedetailrows="false" itemname="server" width="10" resizable="true" separatemultiplevalues="true" sortnoaccent="true" sortnocase="true" showaslinks="false" categorized="true">
+<columnheader title="server">
+<font size="9pt" style="bold"/>
+</columnheader>
+</column>
+<column sort="ascending" hidedetailrows="false" itemname="schedule" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<font size="8pt"/>
+<columnheader title="schedule">
+<font size="9pt" style="bold"/>
+</columnheader>
+</column>
+<column sort="ascending" hidedetailrows="false" itemname="order" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<font size="8pt"/>
+<columnheader title="order">
+<font size="9pt" style="bold"/>
+</columnheader>
+</column>
+<column sort="ascending" hidedetailrows="false" itemname="uuid" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="true" sortnocase="true" showaslinks="false">
+<font size="8pt"/>
+<columnheader title="uuid">
+<font size="9pt" style="bold"/>
+</columnheader>
+</column>
+</view>

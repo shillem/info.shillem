@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<sharedactions xmlns='http://www.lotus.com/dxl' version='11.0' maintenanceversion='1.0'
+ replicaid='C12582560063E70A' hide='v3 v4strict' designerversion='8.5.3' maxid='3'>
+<noteinfo noteid='2a2' unid='03DBDA2FE726DD28C125863100416C8E' sequence='20'>
+<created><datetime>20201201T125436,30+01</datetime></created>
+<modified><datetime>20201202T103251,88+01</datetime></modified>
+<revised><datetime>20201202T103251,87+01</datetime></revised>
+<lastaccessed><datetime>20201202T103251,87+01</datetime></lastaccessed>
+<addedtofile><datetime>20201201T125436,38+01</datetime></addedtofile></noteinfo>
+<updatedby><name>CN=Shillem Volpato/O=MTK</name></updatedby>
+<wassignedby><name>CN=Shillem Volpato/O=MTK</name></wassignedby>
+<action title='New Sql To Domino' icon='30' id='1'><code event='options'><lotusscript
+>Option Declare
+Use "View"
+
+</lotusscript></code><code event='click'><lotusscript>Sub Click(Source As Button)
+	
+	Call UINewProgram("SQL_TO_DOMINO")
+	
+End Sub</lotusscript></code></action>
+<action title='New Domino To Sql' icon='30' id='2'><code event='options'><lotusscript
+>Option Declare
+Use "View"
+
+</lotusscript></code><code event='click'><lotusscript>Sub Click(Source As Button)
+	
+	Call UINewProgram("DOMINO_TO_SQL")
+	
+End Sub</lotusscript></code></action></sharedactions>
+

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<agent xmlns="http://www.lotus.com/dxl" name="Reset Status To Stop" hide="v3" publicaccess="false">
+<trigger type="actionsmenu"/>
+<documentset type="selected"/>
+<code event="action">
+<simpleaction action="runformula">
+<formula>FIELD status := "STOPPED";
+SELECT @All</formula>
+</simpleaction>
+</code>
+</agent>

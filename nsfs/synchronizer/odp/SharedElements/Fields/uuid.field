@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sharedfield xmlns="http://www.lotus.com/dxl" name="uuid">
+  <field type="text" kind="computedwhencomposed" name="uuid">
+    <code event="defaultvalue">
+      <formula>x := 1;
+y := 999;
+@LowerCase(@Implode(@Abstract([DropVowels]:[Abbrev];4;"";"Form"):@Unique:@Text(@Integer((y - x) * @Random + x));"-"))</formula>
+    </code>
+  </field>
+  <item name="$HTMLCode" sign="true">
+    <rawitemdata type="1"/>
+  </item>
+</sharedfield>

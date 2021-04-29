@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sharedcolumn xmlns="http://www.lotus.com/dxl" name="description">
+<column hidedetailrows="false" itemname="description" width="10" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false" extwindowwidth="true">
+<font size="8pt"/>
+<columnheader title="Description">
+<font size="8pt" style="bold"/>
+</columnheader>
+</column>
+<item name="$SourceSeqTime">
+<datetime>20201202T101126,43+01</datetime>
+</item>
+<item name="$SourceSequence">
+<text>00000001</text>
+</item>
+</sharedcolumn>

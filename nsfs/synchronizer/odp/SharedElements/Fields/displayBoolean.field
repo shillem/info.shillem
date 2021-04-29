@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sharedfield xmlns="http://www.lotus.com/dxl" name="displayBoolean">
+  <field type="text" kind="computedfordisplay" name="displayBoolean">
+    <code event="defaultvalue">
+      <formula>"Yes|true"</formula>
+    </code>
+  </field>
+  <item name="$HTMLCode" sign="true">
+    <rawitemdata type="1"/>
+  </item>
+</sharedfield>

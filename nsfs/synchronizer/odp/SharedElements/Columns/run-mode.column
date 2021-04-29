@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sharedcolumn xmlns="http://www.lotus.com/dxl" name="run-mode">
+<column align="center" hidedetailrows="false" itemname="runMode" width="9" resizable="true" separatemultiplevalues="false" sortnoaccent="false" sortnocase="true" showaslinks="false">
+<font size="8pt"/>
+<columnheader align="center" title="Run Mode">
+<font size="8pt" style="bold"/>
+</columnheader>
+</column>
+<item name="$SourceSeqTime">
+<datetime>20201202T101139,84+01</datetime>
+</item>
+<item name="$SourceSequence">
+<text>00000001</text>
+</item>
+</sharedcolumn>
