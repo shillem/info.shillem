@@ -1,12 +1,12 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Shillem REST Plug-in
-Bundle-SymbolicName: info.shillem.rest;singleton:=true
+Bundle-SymbolicName: info.shillem.ws;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Shillem Volpato
-Export-Package: info.shillem.rest,
- info.shillem.rest.dao,
- info.shillem.rest.factory
+Export-Package: info.shillem.rs,
+ info.shillem.rs.dao,
+ info.shillem.rs.factory
 Import-Package: com.fasterxml.jackson.annotation;version="2.11.2",
  com.fasterxml.jackson.databind;version="2.11.2",
  com.fasterxml.jackson.databind.deser;version="2.11.2",

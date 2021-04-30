@@ -1,4 +1,4 @@
-package info.shillem.rest.xsp;
+package info.shillem.ws.xsp;
 
 import com.ibm.xsp.library.AbstractXspLibrary;
 

@@ -1,4 +1,4 @@
-package info.shillem.rest.dao;
+package info.shillem.rs.dao;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,10 +30,10 @@ import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseDtoDeserializer;
 import info.shillem.dto.BaseDtoSerializer;
 import info.shillem.dto.BaseField;
-import info.shillem.rest.factory.RestFactory;
+import info.shillem.rs.factory.RsFactory;
 import info.shillem.util.JsonHandler;
 
-public abstract class AbstractRestDao<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
+public abstract class AbstractRsDao<T extends BaseDto<E>, E extends Enum<E> & BaseField> {
 
     protected static final JsonHandler JSON = new JsonHandler(new ObjectMapper()
             .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
@@ -46,9 +46,9 @@ public abstract class AbstractRestDao<T extends BaseDto<E>, E extends Enum<E> & 
                             .setDeserializerModifier(new BaseDtoDeserializer.Modifier()))
             .setSerializationInclusion(Include.NON_NULL));
 
-    protected final RestFactory factory;
+    protected final RsFactory factory;
 
-    protected AbstractRestDao(RestFactory factory) {
+    protected AbstractRsDao(RsFactory factory) {
         this.factory = Objects.requireNonNull(factory, "Factory cannot be null");
     }
 

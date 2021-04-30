@@ -1,4 +1,4 @@
-package info.shillem.rest.factory;
+package info.shillem.rs.factory;
 
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -7,7 +7,7 @@ import java.util.Objects;
 
 import org.apache.http.client.methods.RequestBuilder;
 
-public class RestFactory {
+public class RsFactory {
 
     public static class Builder {
 
@@ -24,8 +24,8 @@ public class RestFactory {
             return this;
         }
 
-        public RestFactory build() {
-            return new RestFactory(this);
+        public RsFactory build() {
+            return new RsFactory(this);
         }
 
         public Builder setBaseUrl(String value) {
@@ -39,7 +39,7 @@ public class RestFactory {
     private final Map<String, String> headers;
     private final String baseUrl;
 
-    private RestFactory(Builder builder) {
+    private RsFactory(Builder builder) {
         Objects.requireNonNull(builder, "Builder cannot be null");
 
         baseUrl = builder.baseUrl;
