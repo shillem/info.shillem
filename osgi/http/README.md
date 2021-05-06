@@ -25,8 +25,8 @@ It exposes the `info.shillem.sql` OSGi plugin as XPage Library.
 - `info.shillem.util`
 - `info.shillem.sql`
 
-## info.shillem.rest.xsp
-It exposes the `info.shillem.rest` OSGi plugin as XPage Library.
+## info.shillem.ws.xsp
+It exposes the `info.shillem.ws` OSGi plugin as XPage Library.
 
 ### Dependencies
-- `info.shillem.rest`
+- `info.shillem.ws`

@@ -1,4 +1,4 @@
-package info.shillem.rest;
+package info.shillem.rs;
 
 import info.shillem.dao.Query;
 import info.shillem.dao.Summary;

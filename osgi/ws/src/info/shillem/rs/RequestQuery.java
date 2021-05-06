@@ -1,4 +1,4 @@
-package info.shillem.rest;
+package info.shillem.rs;
 
 import java.util.Collections;
 import java.util.List;
