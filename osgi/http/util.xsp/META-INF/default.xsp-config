@@ -58,6 +58,27 @@
 	</component>
 
 	<converter>
+		<description>Converts a string to a list</description>
+		<display-name>List Converter</display-name>
+		<converter-id>info.shillem.xsp.ListConverter</converter-id>
+		<converter-class>info.shillem.util.xsp.converter.ListConverter</converter-class>
+		
+		<property>
+			<description>
+				Specifies the delimiter by which multiple values will be joined
+				when shown as string
+			</description>
+			<display-name>Delimiter</display-name>
+			<property-name>delimiter</property-name>
+			<property-class>java.lang.String</property-class>
+		</property>
+
+		<converter-extension>
+			<tag-name>convertList</tag-name>
+		</converter-extension>
+	</converter>
+	
+	<converter>
 		<description>Converts a given string to an enum</description>
 		<display-name>Enum Converter</display-name>
 		<converter-id>info.shillem.xsp.EnumConverter</converter-id>
