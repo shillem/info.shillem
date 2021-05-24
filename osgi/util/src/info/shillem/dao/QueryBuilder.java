@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import info.shillem.dao.Query.Clause;
 import info.shillem.dao.Query.Group;
 import info.shillem.dao.Query.Logical;
+import info.shillem.dao.Query.Type;
 import info.shillem.dto.BaseField;
 import info.shillem.util.OrderOperator;
 
@@ -118,6 +119,28 @@ public class QueryBuilder<E extends Enum<E> & BaseField> {
         return this;
     }
 
+    // If any changes are made here
+    // they must also be ported Query constructor logic
+    public Query.Type getCurrentQueryType() {
+        if (clause != null) {
+            return Type.SEARCH;
+        }
+        
+        if (!filters.isEmpty()) {
+            return Type.FILTER;
+        }
+        
+        if (id != null) {
+            return Type.ID;
+        }
+        
+        if (url != null) {
+            return Type.URL;
+        }
+        
+        return Type.FLAT;
+    }
+    
     public int getLimit() {
         return limit;
     }

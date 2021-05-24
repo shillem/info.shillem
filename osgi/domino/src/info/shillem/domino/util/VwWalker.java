@@ -87,10 +87,15 @@ public class VwWalker<E extends Enum<E> & BaseField> {
             String syntax = new FtSearchQuery<>(params.query).withNamer(params.namer).output();
 
             try {
-                params.count = params.view.FTSearchSorted(syntax,
-                        params.query.isMaxOffset()
-                                ? 0
-                                : params.query.getOffset() + params.query.getLimit());
+                int maxCount = params.query.isMaxOffset()
+                        ? 0
+                        : 0;
+                // : params.query.getOffset() + params.query.getLimit();
+                // Due to freaking behaviour I can't optimize here
+                // I must search with no entry limit otherwise the
+                // returned results will always be ordered differently
+
+                params.count = params.view.FTSearchSorted(syntax, maxCount);
 
                 return params.view.getAllEntries();
             } catch (NotesException e) {
