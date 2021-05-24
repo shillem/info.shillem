@@ -193,6 +193,8 @@ public class Query<E extends Enum<E> & BaseField> {
         sorters = Optional.ofNullable(builder.sorters).orElse(Collections.emptyMap());
         url = builder.url;
 
+        // If any changes are made here
+        // they must also be ported QueryBuilder.getCurrentQueryType method
         if (clause != null) {
             type = Type.SEARCH;
         } else if (!filters.isEmpty()) {
