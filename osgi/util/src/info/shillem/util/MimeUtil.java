@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MimeUtil {
-    
+
     private MimeUtil() {
         throw new UnsupportedOperationException();
     }
@@ -15,12 +15,15 @@ public class MimeUtil {
         Objects.requireNonNull(value, "Value cannot be null");
 
         Pattern pattern = Pattern.compile(
-                name + "=['\"]*([^'\";]+)['\"]*;*",
+                name + "=['\"]*((?:.|\\s)+)['\"](?:;|$)*",
                 Pattern.CASE_INSENSITIVE);
-
         Matcher m = pattern.matcher(value);
 
         return m.find() ? m.group(1) : null;
+    }
+
+    public static String sanitizeFileName(String value) {
+        return value.replaceAll("[^\\w-.]", "-");
     }
 
 }
