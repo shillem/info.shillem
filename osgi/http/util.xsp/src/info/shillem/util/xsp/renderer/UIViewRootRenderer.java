@@ -36,8 +36,10 @@ public class UIViewRootRenderer extends ViewRootRendererEx2 {
         SCRIPT_JQUERY_DEFINE_AMD.setContents("define.amd.jQuery = true;");
         SCRIPT_JQUERY_DEFINE_AMD.setClientSide(true);
 
-        SCRIPT_XSP = new ScriptResource(
-                "/.ibmxspres/.extlib/".concat(XspLoader.NAMESPACE).concat("/js/xsp.js"), true);
+        SCRIPT_XSP = new ScriptResource("/.ibmxspres/.extlib/"
+                .concat(XspLoader.NAMESPACE)
+                .concat("/js/xsp.js?open&version=")
+                .concat(XspLoader.VERSION), true);
     }
 
     @Override

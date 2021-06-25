@@ -14,6 +14,7 @@ import com.ibm.xsp.extlib.util.ExtLibUtil;
 public class XspLoader extends ExtLibLoaderExtension {
 
     public static final String NAMESPACE = "shillem";
+    public static final String VERSION = "v2021.6.25";
 
     private BundleContext context;
 

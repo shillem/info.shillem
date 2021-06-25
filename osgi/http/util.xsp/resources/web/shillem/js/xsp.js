@@ -196,6 +196,8 @@ function XPages() {
         _onLoadListeners = [];
     };
     const _partialRefresh = function (method, form, refreshId, options) {
+        const controller = new AbortController();
+
         options.onStart &&
             (typeof options.onStart === "function"
                 ? options.onStart(options)
@@ -206,7 +208,7 @@ function XPages() {
             (form.action.match(/\?/) ? "&" : "?") +
             "$$ajaxid=" +
             encodeURIComponent(refreshId);
-        let xhropt = { method: method.toUpperCase() };
+        let xhropt = { method: method.toUpperCase(), signal: controller.signal };
 
         if (xhropt.method === "GET") {
             if (options.params) {
@@ -240,97 +242,117 @@ function XPages() {
             }
         }
 
-        _timeout(
-            _self.submitLatency,
-            fetch(xhrurl, xhropt)
-                .then((response) =>
-                    response.text().then((text) => {
-                        return {
-                            headers: response.headers,
-                            text,
-                            ok: response.ok,
-                            status: response.status,
-                            statusText: response.statusText,
-                        };
-                    })
-                )
-                .then((response) => {
-                    if (!response.ok) {
-                        const err = new Error(response.statusText);
-                        err.response = response;
-                        throw err;
+        _preFetchListeners.forEach((l) => l());
+
+        let timeoutId = setTimeout(function () {
+            controller.abort();
+        }, _self.submitLatency);
+
+        fetch(xhrurl, xhropt)
+            .then((response) => {
+                clearTimeout(timeoutId);
+
+                return response.text().then((text) => {
+                    return {
+                        headers: response.headers,
+                        text,
+                        ok: response.ok,
+                        status: response.status,
+                        statusText: response.statusText,
+                    };
+                });
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    const err = new Error(response.statusText);
+                    err.response = response;
+                    throw err;
+                }
+
+                const headers = response.headers;
+
+                if (headers.has("X-XspLocation")) {
+                    window.location = headers.get("X-XspLocation");
+
+                    return;
+                }
+
+                if (headers.has("X-XspRefreshId")) {
+                    refreshId = headers.get("X-XspRefreshId");
+                }
+
+                if (refreshId !== "@none") {
+                    _replaceNode(refreshId, response.text);
+                }
+
+                _self.allowSubmit();
+
+                options.onComplete &&
+                    (typeof options.onComplete === "function"
+                        ? options.onComplete(options, response)
+                        : eval(options.onComplete));
+            })
+            .catch((error) => {
+                clearTimeout(timeoutId);
+
+                if (error instanceof DOMException && error.name === "AbortError") {
+                    if (_timeoutListener) {
+                        _self.allowSubmit();
+
+                        const ne = new Error("Request timed out");
+                        ne.method = xhropt.method;
+                        _timeoutListener(ne);
+
+                        return;
                     }
+                }
 
-                    const headers = response.headers;
+                let errorDisplayed = false;
 
-                    if (headers.has("X-XspLocation")) {
-                        window.location = headers.get("X-XspLocation");
+                if (error.response && error.response.text) {
+                    const start = error.response.text.search(/<(!doctype )*html|/i);
+                    const end = start < 0 ? -1 : error.response.text.search(/<\/html>/i);
+
+                    if (start === 0 && end > 0) {
+                        _postFetchListeners.forEach((l) => l());
+                        _postFetchListeners = [];
+
+                        const page = document.open("text/html", "replace");
+                        page.write(error.response.text);
+                        page.close();
 
                         return;
                     }
 
-                    if (headers.has("X-XspRefreshId")) {
-                        refreshId = headers.get("X-XspRefreshId");
-                    }
-
-                    if (refreshId !== "@none") {
-                        _replaceNode(refreshId, response.text);
-                    }
-
-                    _self.allowSubmit();
-
-                    options.onComplete &&
-                        (typeof options.onComplete === "function"
-                            ? options.onComplete(options, response)
-                            : eval(options.onComplete));
-                })
-                .catch((error) => {
-                    let errorDisplayed = false;
-
-                    if (error.response && error.response.text) {
-                        const start = error.response.text.search(/<(!doctype )*html|/i);
-                        const end = start < 0 ? -1 : error.response.text.search(/<\/html>/i);
-
-                        if (start === 0 && end > 0) {
-                            _postFetchListeners.forEach((l) => l());
-                            _postFetchListeners = [];
-
-                            const page = document.open("text/html", "replace");
-                            page.write(error.response.text);
-                            page.close();
-
-                            return;
-                        }
-
-                        if (
-                            refreshId !== "@none" &&
-                            error.response.text.search(new RegExp('<.+id="' + refreshId, "i")) > -1
-                        ) {
-                            _replaceNode(refreshId, error.response.text);
-
-                            errorDisplayed = true;
-                        }
-                    }
-
-                    _self.allowSubmit();
-
-                    if (options.onError) {
-                        typeof options.onError === "function"
-                            ? options.onError(options, error)
-                            : eval(options.onError);
+                    if (
+                        refreshId !== "@none" &&
+                        error.response.text.search(new RegExp('<.+id="' + refreshId, "i")) > -1
+                    ) {
+                        _replaceNode(refreshId, error.response.text);
 
                         errorDisplayed = true;
                     }
+                }
 
-                    if (errorDisplayed) {
-                        return;
-                    }
+                _self.allowSubmit();
 
-                    let message = "An error occurred while updating the page.";
-                    if (error.message) message += "\n" + error.message;
-                    console.error(message);
-                })
-        );
+                if (options.onError) {
+                    typeof options.onError === "function"
+                        ? options.onError(options, error)
+                        : eval(options.onError);
+
+                    errorDisplayed = true;
+                }
+
+                if (errorDisplayed) {
+                    return;
+                }
+
+                let message = "An error occurred while updating the page.";
+                if (error.message) message += "\n" + error.message;
+                console.error(message);
+            })
+            .then(() => _postFetchListeners.forEach((l) => l()));
     };
     const _processListeners = function (listeners, formId, targetId) {
         for (let listener of listeners) {
@@ -446,26 +468,6 @@ function XPages() {
 
         return x + "|" + y;
     };
-    const _timeout = function (ms, promise) {
-        return new Promise((resolve, reject) => {
-            const timer = setTimeout(() => {
-                reject(new Error("TIMEOUT"));
-            }, ms);
-
-            _preFetchListeners.forEach((l) => l());
-
-            promise
-                .then((value) => {
-                    clearTimeout(timer);
-                    resolve(value);
-                })
-                .catch((reason) => {
-                    clearTimeout(timer);
-                    reject(reason);
-                })
-                .then(() => _postFetchListeners.forEach((l) => l()));
-        });
-    };
 
     let _onLoadCalled;
     let _onLoadListeners = [];
@@ -474,6 +476,7 @@ function XPages() {
     let _preSubmitListeners = [];
     let _querySubmitListeners = [];
     let _unnamedSubmitListenerCount;
+    let _timeoutListener;
 
     this.addOnLoad = function (fn) {
         _onLoadListeners.push(fn);
@@ -619,6 +622,9 @@ function XPages() {
         } else {
             this.allowSubmit();
         }
+    };
+    this.setTimeoutListener = function (fn) {
+        _timeoutListener = fn;
     };
     this.submitLatency = 20 * 1000;
     this.validateAll = function (formId, valmode, execId) {
