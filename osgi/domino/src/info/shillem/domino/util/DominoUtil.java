@@ -13,6 +13,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import info.shillem.util.CastUtil;
 import info.shillem.util.MimeUtil;
@@ -308,26 +309,51 @@ public class DominoUtil {
             throws NotesException {
         Objects.requireNonNull(entity, "Entity cannot be null");
 
-        return getMimeEntityHeaderValAndParams(
-                entity, h -> Unthrow.on(() -> h.contains("attachment")))
-                        .map(s -> MimeUtil.getHeaderProperty("filename", s));
+        List<String> matches = getMimeEntityHeaderStrings(
+                entity,
+                h -> Unthrow.on(() -> h.contains("attachment")));
+
+        if (matches.isEmpty()) {
+            return Optional.empty();
+        }
+
+        String name = MimeUtil.getHeaderParam("filename", matches.get(0));
+
+        if (name != null) {
+            return Optional.of(name);
+        }
+
+        matches = getMimeEntityHeaderStrings(
+                entity,
+                h -> Unthrow.on(() -> h.startsWith("Content-Type")));
+
+        if (matches.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.ofNullable(MimeUtil.getHeaderParam("name", matches.get(0)));
     }
 
-    public static Optional<String> getMimeEntityHeaderValAndParams(
+    public static List<String> getMimeEntityHeaderStrings(
             MIMEEntity entity,
             Predicate<String> matcher)
             throws NotesException {
         Objects.requireNonNull(entity, "Entity cannot be null");
-        Objects.requireNonNull(matcher, "Matcher cannot be null");
 
         Vector<MIMEHeader> headers = CastUtil.toAnyVector(entity.getHeaderObjects());
 
         try {
-            return headers
+            Stream<String> stream = headers
                     .stream()
-                    .map((h) -> Unthrow.on(() -> h.getHeaderValAndParams(false, true)))
-                    .filter(matcher)
-                    .findFirst();
+                    .map((h) -> Unthrow.on(() -> h.getHeaderName()
+                            .concat(": ")
+                            .concat(h.getHeaderValAndParams(false, true))));
+
+            if (matcher != null) {
+                stream = stream.filter(matcher);
+            }
+
+            return stream.collect(Collectors.toList());
         } finally {
             recycle(headers);
         }

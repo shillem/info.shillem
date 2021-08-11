@@ -11,13 +11,15 @@ public enum MimeContentType {
             for (String property : properties) {
                 if (property.startsWith("Content-Disposition")) {
                     score++;
-                }
 
-                if (property.contains("attachment")) {
-                    score++;
-                }
+                    if (property.contains("attachment")) {
+                        score++;
+                    }
 
-                if (property.contains("filename")) {
+                    if (property.contains("filename")) {
+                        score++;
+                    }
+                } else if (property.startsWith("Content-Type") && property.contains("name")) {
                     score++;
                 }
 
