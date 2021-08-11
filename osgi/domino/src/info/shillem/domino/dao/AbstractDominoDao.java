@@ -387,8 +387,6 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
             return JSON.deserialize(mimeEntity.getContentAsText(), type);
         } finally {
             DominoUtil.recycle(mimeEntity);
-
-            doc.closeMIMEEntities(false, itemName);
         }
     }
 
@@ -683,7 +681,7 @@ public abstract class AbstractDominoDao<T extends BaseDto<E>, E extends Enum<E> 
 
             stm.close();
         } finally {
-            if (doc.hasItem(itemName)) {
+            if (mimeEntity != null) {
                 doc.closeMIMEEntities(true, itemName);
             }
 
