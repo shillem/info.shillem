@@ -3,6 +3,7 @@ package info.shillem.util;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class StringUtil {
 
@@ -108,6 +109,24 @@ public class StringUtil {
 
     public static boolean isNotEmpty(String s) {
         return !isEmpty(s);
+    }
+
+    public static String padLeft(String value, int size, char c) {
+        return padString(value, size, (b) -> b.insert(0, c));
+    }
+
+    public static String padRight(String value, int size, char c) {
+        return padString(value, size, (b) -> b.append(c));
+    }
+
+    private static String padString(String value, int size, Consumer<StringBuilder> consumer) {
+        StringBuilder builder = new StringBuilder(value);
+
+        while (builder.length() < size) {
+            consumer.accept(builder);
+        }
+
+        return builder.toString();
     }
 
     public static String right(String s, int len) {
