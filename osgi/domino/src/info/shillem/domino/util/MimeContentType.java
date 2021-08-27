@@ -1,11 +1,13 @@
 package info.shillem.domino.util;
 
+import java.util.List;
+
 public enum MimeContentType {
 
     ATTACHMENT("attachment") {
 
         @Override
-        public boolean matches(String[] properties) {
+        public boolean matches(List<String> properties) {
             int score = 0;
 
             for (String property : properties) {
@@ -42,7 +44,7 @@ public enum MimeContentType {
         this.type = type;
     }
 
-    public boolean matches(String[] properties) {
+    public boolean matches(List<String> properties) {
         for (String property : properties) {
             if (property.startsWith("Content-Type") && property.contains(type)) {
                 return true;

@@ -31,13 +31,6 @@ import lotus.domino.Session;
 
 public class DominoUtil {
 
-    private static final Vector<String> MIME_FILTERED_HEADERS = new Vector<>();
-
-    static {
-        MIME_FILTERED_HEADERS.add("Content-Type");
-        MIME_FILTERED_HEADERS.add("Content-Disposition");
-    }
-
     private DominoUtil() {
         throw new UnsupportedOperationException();
     }
@@ -264,11 +257,9 @@ public class DominoUtil {
             nextEntity = entity.getNextEntity();
 
             while (nextEntity != null) {
-                String[] entityFilteredHeaders = nextEntity
-                        .getSomeHeaders(MIME_FILTERED_HEADERS, true)
-                        .split("\\n");
+                List<String> headers = getMimeEntityHeaderStrings(nextEntity, null);
 
-                if (contentType.matches(entityFilteredHeaders)) {
+                if (contentType.matches(headers)) {
                     subentities.add(nextEntity);
                 }
 
