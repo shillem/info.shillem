@@ -54,7 +54,7 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
         return helper.getDominoFactory().setDefaults(db.createDocument());
     }
 
-    protected void deleteDocument(Document doc) throws NotesException {
+    protected void deleteDocument(Document doc, T record) throws NotesException {
         if (getDominoSilo().isDocumentLockingEnabled()) {
             if (!doc.lock()) {
                 throw new RuntimeException("Unable to acquire lock on note " + doc.getNoteID());
@@ -94,9 +94,9 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                     try {
                         doc = findDocument(record).orElse(null);
 
-                        if (record.isDeleted()) {
+                        if (isDeleted(record)) {
                             if (doc != null && !helper.isMode(Mode.TEST)) {
-                                deleteDocument(doc);
+                                deleteDocument(doc, record);
 
                                 helper.logVerboseMessage("Deleted record " + getKeyValue(record));
 
