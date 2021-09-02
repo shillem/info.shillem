@@ -77,8 +77,23 @@ public class Join implements IJoin {
         }
 
     }
+    
+    public static class CustomExpression implements Instruction {
+        
+        private final String value;
+        
+        public CustomExpression(String value) {
+            this.value = Objects.requireNonNull(value, "Custome expression value cannot be null");
+        }
+        
+        @Override
+        public String output(Schema schema) {
+            return value;
+        }
+        
+    }
 
-    interface Instruction {
+    public interface Instruction {
 
         String output(Schema schema);
 
@@ -105,18 +120,18 @@ public class Join implements IJoin {
         this.instructions = new ArrayList<>();
     }
 
-    private Column on(Column c) {
+    public Instruction on(Instruction c) {
         instructions.add(c);
         
         return c;        
     }
     
     public Column on(String acol, String btab) {
-        return on(new Column(acol, btab));
+        return (Column) on(new Column(acol, btab));
     }
     
     public Column on(String acol, String btab, String bcol) {
-        return on(new Column(acol, btab, bcol));
+        return (Column) on(new Column(acol, btab, bcol));
     }
 
     @Override

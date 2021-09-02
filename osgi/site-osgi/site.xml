@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/info.shillem.domino.feature_1.0.0.202010071140.jar" id="info.shillem.domino.feature" version="1.0.0.202010071140">
+   <feature url="features/info.shillem.domino.feature_1.0.0.202108120825.jar" id="info.shillem.domino.feature" version="1.0.0.202108120825">
       <category name="Shillem"/>
    </feature>
-   <feature url="features/info.shillem.sql.feature_1.0.0.202010071140.jar" id="info.shillem.sql.feature" version="1.0.0.202010071140">
+   <feature url="features/info.shillem.sql.feature_1.0.0.202108120825.jar" id="info.shillem.sql.feature" version="1.0.0.202108120825">
       <category name="Shillem"/>
    </feature>
-   <feature url="features/info.shillem.util.feature_1.0.0.202010071140.jar" id="info.shillem.util.feature" version="1.0.0.202010071140">
+   <feature url="features/info.shillem.util.feature_1.0.0.202108120825.jar" id="info.shillem.util.feature" version="1.0.0.202108120825">
       <category name="Shillem"/>
    </feature>
    <category-def name="Shillem" label="Shillem"/>

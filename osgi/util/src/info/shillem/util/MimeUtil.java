@@ -3,6 +3,7 @@ package info.shillem.util;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class MimeUtil {
 
@@ -10,16 +11,23 @@ public class MimeUtil {
         throw new UnsupportedOperationException();
     }
 
-    public static String getHeaderProperty(String name, String value) {
+    public static String getHeaderParam(String name, String value) {
         Objects.requireNonNull(name, "Name cannot be null");
         Objects.requireNonNull(value, "Value cannot be null");
 
         Pattern pattern = Pattern.compile(
-                name + "=['\"]*((?:.|\\s)+)['\"](?:;|$)*",
+                name.concat("=\\s*([\"'])*((?:(?!\\1).)*)\\1*"),
                 Pattern.CASE_INSENSITIVE);
-        Matcher m = pattern.matcher(value);
 
-        return m.find() ? m.group(1) : null;
+        return Stream.of(value.split(";"))
+                .map((s) -> {
+                    Matcher m = pattern.matcher(s);
+
+                    return m.find() ? m.group(2) : null;
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     public static String sanitizeFileName(String value) {

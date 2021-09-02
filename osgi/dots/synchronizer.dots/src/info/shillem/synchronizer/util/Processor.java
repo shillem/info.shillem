@@ -58,6 +58,16 @@ public abstract class Processor<T extends Record> {
         }
     }
 
+    protected boolean isDeleted(T record) {
+        if (!helper.getFieldDeletion().isPresent()) {
+            return false;
+        }
+
+        Object value = record.getValue(helper.getFieldDeletion().get().getName());
+
+        return value != null && value instanceof Boolean && (Boolean) value;
+    }
+
     public abstract boolean isNature(Nature nature);
 
     public T newRecord() {
