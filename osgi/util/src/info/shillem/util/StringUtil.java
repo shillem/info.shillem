@@ -4,8 +4,40 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class StringUtil {
+
+    public enum Case {
+        KEBAB {
+            @Override
+            public String toKebabCase(String value) {
+                return value;
+            }
+            
+            @Override
+            public String toLowerCamelCase(String value) {
+                String v = toUpperCamelCase(value);
+
+                return Character.toLowerCase(v.charAt(0)) + v.substring(1);
+            }
+
+            @Override
+            public String toUpperCamelCase(String value) {
+                return Stream.of(value.split("-"))
+                        .map(v -> Character.toUpperCase(
+                                v.charAt(0)) + (v.substring(1).toLowerCase()))
+                        .collect(Collectors.joining());
+            }
+        };
+
+        public abstract String toKebabCase(String value);
+        
+        public abstract String toLowerCamelCase(String value);
+
+        public abstract String toUpperCamelCase(String value);
+    }
 
     private StringUtil() {
         throw new UnsupportedOperationException();
