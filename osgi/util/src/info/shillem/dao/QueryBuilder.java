@@ -108,7 +108,7 @@ public class QueryBuilder<E extends Enum<E> & BaseField> {
 
     public QueryBuilder<E> filter(E field, Object value) {
         Objects.requireNonNull(field, "Field cannot be null");
-        Objects.requireNonNull(value, "Value cannot be null");
+        Objects.requireNonNull(value, field.name().concat(" value cannot be null"));
         
         if (filters == null) {
             filters = new LinkedHashMap<>();

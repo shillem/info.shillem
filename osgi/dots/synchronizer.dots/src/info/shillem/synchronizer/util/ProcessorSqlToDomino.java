@@ -95,28 +95,32 @@ public class ProcessorSqlToDomino<T extends Record> extends Processor<T> {
                         doc = findDocument(record).orElse(null);
 
                         if (isDeleted(record)) {
-                            if (doc != null && !helper.isMode(Mode.TEST)) {
-                                deleteDocument(doc, record);
+                            if (doc != null) {
+                                if (!helper.isMode(Mode.TEST)) {
+                                    deleteDocument(doc, record);
+
+                                    setViewAccessPolicy(VwAccessPolicy.FRESH);
+                                }
 
                                 helper.logVerboseMessage("Deleted record " + getKeyValue(record));
 
-                                setViewAccessPolicy(VwAccessPolicy.FRESH);
+                                tracker.addDeleted();
+                            } else {
+                                tracker.addSkipped();
                             }
-
-                            tracker.addDeleted();
 
                             continue;
                         }
 
                         RecordPolicy policy = helper.getRecordPolicy();
-                        
+
                         if (doc == null) {
                             if (policy == RecordPolicy.UPDATE) {
                                 tracker.addSkipped();
 
                                 continue;
                             }
-                            
+
                             doc = initializeDocument(record);
 
                             record.setNew(true);
