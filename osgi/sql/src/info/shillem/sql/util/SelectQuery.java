@@ -35,12 +35,7 @@ public class SelectQuery {
         }
 
         public Column withFunction(String function) {
-            if (function != null && !function.contains("%s")) {
-                throw new IllegalArgumentException(
-                        "Function must contain '%s' token for replacement");
-            }
-
-            this.function = function;
+            this.function = Objects.requireNonNull(function, "Function cannot be null");
 
             return this;
         }
