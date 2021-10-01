@@ -347,10 +347,13 @@ public class SynchronizerTask extends AbstractServerTask {
     }
 
     private void runProgram(Program program, TaskRun taskRun, boolean verbose) {
+        boolean started = false;
         ProcessorHelper helper = null;
 
         try {
-            if (!program.setAsStarted(getSession())) {
+            started = program.setAsStarted(getSession());
+            
+            if (!started) {
                 switch (program.getStatus()) {
                 case ARCHIVED:
                     logMessage(String.format(
@@ -463,10 +466,10 @@ public class SynchronizerTask extends AbstractServerTask {
         } finally {
             if (helper != null) {
                 helper.recycle();
-            }
-
-            if (program.getStatus() == Program.Status.STARTED) {
-                program.setAsStopped(getSession(), helper.getLog());
+                
+                if (started) {
+                    program.setAsStopped(getSession(), helper.getLog());
+                }
             }
         }
     }
