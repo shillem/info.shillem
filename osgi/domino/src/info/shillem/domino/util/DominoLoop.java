@@ -226,7 +226,10 @@ public class DominoLoop {
                 return entry;
             };
             advancer = (current) -> nav.getNext();
-            counter = () -> nav.skip(Integer.MAX_VALUE);
+            counter = () -> {
+                nav.getFirst();
+                return nav.skip(Integer.MAX_VALUE);
+            };
 
             break;
         }
