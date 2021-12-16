@@ -82,6 +82,10 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
                 && !query.containsOption("FETCH_TOTAL_ONLY")) {
             select.top(query.getLimit());
         }
+        
+        if (query.containsOption("DISTINCT")) {
+            select.distinct();
+        }
     }
 
     protected void populateSelectQueryWhere(LWhere wheres, Query.Clause clause) {

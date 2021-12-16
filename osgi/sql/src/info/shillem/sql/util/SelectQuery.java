@@ -1,5 +1,6 @@
 package info.shillem.sql.util;
 
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import info.shillem.util.OrderOperator;
 
 public class SelectQuery {
@@ -179,9 +182,13 @@ public class SelectQuery {
 
     }
 
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     private final List<Column> columns;
     private final String from;
 
+    private Boolean distinct;
     private LGroup groups;
     private LJoin joins;
     private LOrder orders;
@@ -276,7 +283,11 @@ public class SelectQuery {
             builder.insert(0, "WITH ".concat(wrapper).concat(" AS (\n")).append(")");
         }
 
-        return builder.toString();
+        String result = builder.toString();
+
+        LOGGER.debug(result);
+
+        return result;
     }
 
     public String outputFrom() {
@@ -297,6 +308,10 @@ public class SelectQuery {
 
     public String outputSelect() {
         StringBuilder builder = new StringBuilder("SELECT");
+
+        if (distinct != null && distinct) {
+            builder.append(" DISTINCT");
+        }
 
         if (top != null) {
             builder.append(" TOP ").append(top);
@@ -371,6 +386,16 @@ public class SelectQuery {
         }
 
         return false;
+    }
+
+    public SelectQuery distinct() {
+        return distinct(true);
+    }
+
+    public SelectQuery distinct(Boolean value) {
+        distinct = value;
+
+        return this;
     }
 
     public SelectQuery top(Integer value) {

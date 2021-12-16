@@ -16,4 +16,5 @@ Import-Package: info.shillem.dao,
  org.apache.commons.pool2;version="2.9.0",
  org.apache.commons.pool2.impl;version="2.9.0",
  org.osgi.framework,
- org.osgi.util.tracker
+ org.osgi.util.tracker,
+ org.slf4j;version="1.7.30"

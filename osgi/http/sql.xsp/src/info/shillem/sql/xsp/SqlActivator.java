@@ -75,7 +75,7 @@ public class SqlActivator implements BundleActivator {
 
     public static DataSource getDataSource(Properties properties) {
         Objects.requireNonNull(properties, "Data source properties cannot be null");
-        
+
         return SERVICE.getDataSource(properties);
     }
 
