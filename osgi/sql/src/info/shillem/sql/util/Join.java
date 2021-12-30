@@ -7,11 +7,9 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import info.shillem.sql.util.Schema.Table;
+public class Join extends AJoin {
 
-public class Join implements IJoin {
-
-    public class Column implements Instruction {
+    public static class Column extends Instruction {
 
         private final String acol;
         private final String btab;
@@ -31,27 +29,24 @@ public class Join implements IJoin {
         }
 
         @Override
-        public String output(Schema schema) {
-            BiFunction<String, String, String> columner;
+        public String output() {
+            String left = getJoin()
+                    .findSchemaColumn(acol)
+                    .map(Schema.Column::getName)
+                    .orElse(acol);
 
-            if (schema != null) {
-                columner = (n, fn) -> {
-                    String name = Optional
-                            .ofNullable(schema.getColumn(n))
-                            .map(Schema.Column::getName)
-                            .orElse(n);
+            String right = getJoin()
+                    .findSchemaColumn(Optional.ofNullable(bcol).orElse(acol))
+                    .map(Schema.Column::getName)
+                    .orElse(Optional.ofNullable(bcol).orElse(acol));
 
-                    return fn != null ? String.format(fn, name) : name;
-                };
-            } else {
-                columner = (n, fn) -> fn != null ? String.format(fn, n) : n;
-            }
+            BiFunction<String, String, String> wrapper =
+                    (fn, name) -> fn != null ? String.format(fn, name) : name;
 
             return new StringBuilder()
-                    .append(columner.apply(table.concat(".").concat(acol), afun))
+                    .append(wrapper.apply(getJoin().table.concat(".").concat(left), afun))
                     .append(" = ")
-                    .append(columner.apply(btab.concat(".")
-                            .concat(Optional.ofNullable(bcol).orElse(acol)), bfun))
+                    .append(wrapper.apply(btab.concat(".").concat(right), bfun))
                     .toString();
         }
 
@@ -77,28 +72,44 @@ public class Join implements IJoin {
         }
 
     }
-    
-    public static class CustomExpression implements Instruction {
-        
+
+    public static class CustomExpression extends Instruction {
+
         private final String value;
-        
+
         public CustomExpression(String value) {
             this.value = Objects.requireNonNull(value, "Custome expression value cannot be null");
         }
-        
+
         @Override
-        public String output(Schema schema) {
+        public String output() {
             return value;
         }
-        
-    }
-
-    public interface Instruction {
-
-        String output(Schema schema);
 
     }
-    
+
+    public static abstract class Instruction {
+
+        private Join join;
+
+        public Join getJoin() {
+            return join;
+        }
+
+        protected final void link(Join join) {
+            if (this.join != null) {
+                throw new IllegalStateException(
+                        getClass().getName().concat(" is already linked to ")
+                                .concat(join.getClass().getName()));
+            }
+
+            this.join = join;
+        }
+
+        public abstract String output();
+
+    }
+
     public enum Type {
         INNER_JOIN,
         LEFT_JOIN;
@@ -121,47 +132,43 @@ public class Join implements IJoin {
     }
 
     public Instruction on(Instruction c) {
+        c.link(this);
+
         instructions.add(c);
-        
-        return c;        
+
+        return c;
     }
-    
+
     public Column on(String acol, String btab) {
         return (Column) on(new Column(acol, btab));
     }
-    
+
     public Column on(String acol, String btab, String bcol) {
         return (Column) on(new Column(acol, btab, bcol));
     }
 
     @Override
-    public String output(Schema schema) {
+    public String output() {
         StringBuilder builder = new StringBuilder("\t")
                 .append(outputType())
                 .append(" ")
-                .append(outputTable(schema))
+                .append(outputTable())
                 .append(" ON ")
                 .append(instructions.stream()
-                        .map((i) -> i.output(schema))
+                        .map((i) -> i.output())
                         .collect(Collectors.joining("\n\t\tAND ")));
 
         return builder.toString();
     }
 
-    private String outputTable(Schema schema) {
+    private String outputTable() {
         if (innerTable != null) {
             return "(".concat(innerTable.output()).concat(") ").concat(table);
         }
 
-        if (schema != null) {
-            Table t = schema.getTable(table);
-
-            if (t != null) {
-                return t.getName().concat(" ").concat(table);
-            }
-        }
-
-        return table;
+        return findSchemaTable(table)
+                .map((t) -> t.getName().concat(" ").concat(table))
+                .orElse(table);
     }
 
     private String outputType() {

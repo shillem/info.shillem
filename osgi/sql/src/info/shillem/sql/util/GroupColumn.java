@@ -2,7 +2,7 @@ package info.shillem.sql.util;
 
 import java.util.Objects;
 
-public class GroupColumn implements IGroup {
+public class GroupColumn extends AGroup {
 
     private final String name;
 
@@ -11,8 +11,10 @@ public class GroupColumn implements IGroup {
     }
 
     @Override
-    public String output(Schema schema) {
-        return SelectQuery.getColumner(schema).apply(name);
+    public String output() {
+        return findSchemaColumn(name)
+                .map(this::outputSchemaColumn)
+                .orElse(name);
     }
 
 }

@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import info.shillem.util.OrderOperator;
 
-public class OrderColumn implements IOrder {
+public class OrderColumn extends AOrder {
 
     private final String name;
     private final OrderOperator operator;
@@ -15,8 +15,10 @@ public class OrderColumn implements IOrder {
     }
 
     @Override
-    public String output(Schema schema) {
-        return SelectQuery.getColumner(schema).apply(name)
+    public String output() {
+        return findSchemaColumn(name)
+                .map(this::outputSchemaColumn)
+                .orElse(name)
                 .concat(" ")
                 .concat(operator == OrderOperator.ASCENDING ? "ASC" : "DESC");
     }

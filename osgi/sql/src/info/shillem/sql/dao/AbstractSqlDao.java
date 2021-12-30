@@ -18,8 +18,8 @@ import info.shillem.dao.Summary;
 import info.shillem.dto.BaseDto;
 import info.shillem.dto.BaseField;
 import info.shillem.sql.factory.SqlFactory;
+import info.shillem.sql.util.SelectColumn;
 import info.shillem.sql.util.SelectQuery;
-import info.shillem.sql.util.SelectQuery.Column;
 import info.shillem.sql.util.SelectQuery.LWhere;
 import info.shillem.sql.util.WhereColumn;
 import info.shillem.sql.util.WhereGroup;
@@ -36,8 +36,8 @@ public abstract class AbstractSqlDao<T extends BaseDto<E>, E extends Enum<E> & B
         this.factory = Objects.requireNonNull(factory, "Factory cannot be null");
     }
 
-    protected Column createSelectQueryColumn(E field) {
-        return new Column(field.name());
+    protected SelectColumn createSelectQueryColumn(E field) {
+        return new SelectColumn(field.name());
     }
 
     protected WhereColumn createSelectQueryWhereColumn(

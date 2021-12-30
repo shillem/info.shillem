@@ -1,7 +1,5 @@
 package info.shillem.sql.util;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -12,9 +10,7 @@ import java.util.stream.Collectors;
 
 import info.shillem.util.ComparisonOperator;
 
-public class WhereColumn implements IWhere {
-
-    private static final DateFormat SHORT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+public class WhereColumn extends AWhere {
 
     private final String name;
     private final ComparisonOperator operator;
@@ -50,43 +46,38 @@ public class WhereColumn implements IWhere {
     }
 
     @Override
-    public String output(Schema schema) {
+    public String output() {
+        StringBuilder identifier = new StringBuilder(outputName(name))
+                .append(" ")
+                .append(outputOperator())
+                .append(" ");
+
         if (operator == ComparisonOperator.IN
                 || operator == ComparisonOperator.NOT_IN) {
-            return new StringBuilder(outputColumn(schema))
-                    .append(" ")
-                    .append(outputOperator())
-                    .append(" ")
+            return identifier
                     .append("(")
-                    .append(outputValues(schema))
+                    .append(outputValues())
                     .append(")")
                     .toString();
         }
-
-        String left = outputColumn(schema)
-                .concat(" ")
-                .concat(outputOperator())
-                .concat(" ");
 
         if (value instanceof Collection) {
             Collection<?> values = (Collection<?>) value;
 
             return "("
                     .concat(values.stream()
-                            .map((val) -> left.concat(outputValue(val, schema)))
+                            .map((val) -> identifier.toString().concat(outputValue(val)))
                             .collect(Collectors.joining(" AND ")))
                     .concat(")");
         }
 
-        return left.concat(outputValue(value, schema));
+        return identifier.append(outputValue(value)).toString();
     }
 
-    private String outputColumn(Schema schema) {
-        return outputColumn(name, schema);
-    }
-
-    private String outputColumn(String name, Schema schema) {
-        String n = SelectQuery.getColumner(schema).apply(name);
+    private String outputName(String name) {
+        String n = findSchemaColumn(name)
+                .map(this::outputSchemaColumn)
+                .orElse(name);
 
         if (nfuns == null) {
             return n;
@@ -124,7 +115,7 @@ public class WhereColumn implements IWhere {
         }
     }
 
-    private String outputValue(Object value, Schema schema) {
+    private String outputValue(Object value) {
         Function<String, String> formatter = vfuns != null
                 ? (v) -> {
                     for (String vfun : vfuns) {
@@ -156,17 +147,18 @@ public class WhereColumn implements IWhere {
         }
 
         if (value instanceof Date) {
-            return formatter.apply("'".concat(SHORT_DATE_FORMAT.format((Date) value)).concat("'"));
+            return formatter.apply(
+                    "'".concat(SelectQuery.SHORT_DATE_FORMAT.format((Date) value)).concat("'"));
         }
 
-        if (value instanceof SelectQuery.Column) {
-            return outputColumn(((SelectQuery.Column) value).getName(), schema);
+        if (value instanceof SelectColumn) {
+            return outputName(((SelectColumn) value).getName());
         }
 
         return formatter.apply(value.toString());
     }
 
-    private String outputValues(Schema schema) {
+    private String outputValues() {
         if (value == null) {
             return "NULL";
         }
@@ -175,11 +167,11 @@ public class WhereColumn implements IWhere {
             Collection<?> values = (Collection<?>) value;
 
             return values.stream()
-                    .map((v) -> outputValue(v, schema))
+                    .map((v) -> outputValue(v))
                     .collect(Collectors.joining(","));
         }
 
-        return outputValue(value, schema);
+        return outputValue(value);
     }
 
     private String validateFunction(String function) {
