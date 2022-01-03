@@ -126,6 +126,10 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
     }
 
     private Object deserializeValue(JsonNode node, Class<?> type) {
+        if (node.isNull()) {
+            return null;
+        }
+        
         if (type.isEnum()) {
             return StringUtil.enumFromString(type, node.asText());
         }

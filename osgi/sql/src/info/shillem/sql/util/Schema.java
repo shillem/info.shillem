@@ -12,11 +12,11 @@ public class Schema {
 
         private final Table table;
         private final String name;
-        private final NameAs nameAs;
+        private final ColumnAs nameAs;
 
         private String alias;
 
-        Column(Table table, NameAs nameAs) {
+        Column(Table table, ColumnAs nameAs) {
             this.table = table;
             this.name = null;
             this.nameAs = nameAs;
@@ -36,7 +36,7 @@ public class Schema {
             return name;
         }
 
-        public NameAs getNameAs() {
+        public ColumnAs getNameAs() {
             return nameAs;
         }
 
@@ -60,11 +60,11 @@ public class Schema {
 
     }
 
-    public static class NameAs {
+    public static class ColumnAs {
 
         private final Object value;
 
-        public NameAs(Object value) {
+        public ColumnAs(Object value) {
             this.value = value;
         }
 
@@ -93,7 +93,7 @@ public class Schema {
             }
         }
 
-        public Table column(NameAs nameAs, String alias) {
+        public Table column(ColumnAs nameAs, String alias) {
             checkFrozen();
 
             columns.add(new Column(this, nameAs).setAlias(alias));

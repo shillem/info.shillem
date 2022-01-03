@@ -4,6 +4,8 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -127,13 +129,21 @@ public class Query<E extends Enum<E> & BaseField> {
 
         private final E field;
         private final ComparisonOperator operator;
-        private final Set<Object> values;
+        private final Set<?> values;
 
-        public Values(E field, Set<Object> values) {
+        public Values(E field, List<?> values) {
+            this(field, new HashSet<>(values));
+        }
+        
+        public Values(E field, List<?> values, ComparisonOperator operator) {
+            this(field, new HashSet<>(values), operator);
+        }
+        
+        public Values(E field, Set<?> values) {
             this(field, values, ComparisonOperator.IN);
         }
 
-        public Values(E field, Set<Object> values, ComparisonOperator operator) {
+        public Values(E field, Set<?> values, ComparisonOperator operator) {
             this.field = Objects.requireNonNull(field, "Field cannot be null");
             this.operator = Objects.requireNonNull(operator, "Operator cannot be null");
 
@@ -154,7 +164,7 @@ public class Query<E extends Enum<E> & BaseField> {
             return operator;
         }
 
-        public Set<Object> getValues() {
+        public Set<?> getValues() {
             return values;
         }
 
@@ -252,20 +262,20 @@ public class Query<E extends Enum<E> & BaseField> {
         return options;
     }
 
-    public Summary getSummary() {
-        if (summary == null) {
-            summary = new Summary(limit, offset);
-        }
-
-        return summary;
-    }
-
     public Set<E> getSchema() {
         return schema;
     }
 
     public Map<E, OrderOperator> getSorters() {
         return sorters;
+    }
+
+    public Summary getSummary() {
+        if (summary == null) {
+            summary = new Summary(limit, offset);
+        }
+
+        return summary;
     }
 
     public Type getType() {

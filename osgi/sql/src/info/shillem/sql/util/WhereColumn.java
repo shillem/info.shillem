@@ -151,6 +151,10 @@ public class WhereColumn extends AWhere {
                     "'".concat(SelectQuery.SHORT_DATE_FORMAT.format((Date) value)).concat("'"));
         }
 
+        if (value instanceof Enum) {
+            return formatter.apply("'".concat(((Enum<?>) value).name()).concat("'"));
+        }
+
         if (value instanceof SelectColumn) {
             return outputName(((SelectColumn) value).getName());
         }
