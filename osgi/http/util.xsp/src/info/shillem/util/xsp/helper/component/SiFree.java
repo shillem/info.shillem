@@ -13,20 +13,16 @@ public class SiFree extends SiStatic {
 
     private static final long serialVersionUID = 1L;
 
+    public void addImmovableValue(Object value) {
+        addItem(new ImmovableSelectItem(value));
+    }
+
     @Override
     public void validate(
             FacesContext context,
             UIComponent component,
             Object value)
             throws ValidatorException {
-        List<SelectItem> selectItems = getItems();
-
-        if (value == null) {
-            selectItems.clear();
-
-            return;
-        }
-
         List<Object> values = new ArrayList<>();
 
         if (value instanceof List) {
@@ -35,17 +31,31 @@ public class SiFree extends SiStatic {
             values.add(value);
         }
 
-        for (Iterator<SelectItem> iter = selectItems.iterator(); iter.hasNext();) {
-            SelectItem selectItem = iter.next();
+        List<SelectItem> safeItems = new ArrayList<>();
 
-            if (values.contains(selectItem.getValue())) {
-                values.remove(selectItem.getValue());
-            } else {
+        values.forEach((v) -> {
+            SelectItem si = valueOf(v);
+
+            if (si != null) {
+                safeItems.add(si);
+                return;
+            }
+
+            si = new SelectItem(v);
+
+            addItem(si);
+            safeItems.add(si);
+        });
+
+        List<SelectItem> items = getItems();
+
+        for (Iterator<SelectItem> iter = items.iterator(); iter.hasNext();) {
+            SelectItem item = iter.next();
+
+            if (!(item instanceof ImmovableSelectItem || safeItems.contains(item))) {
                 iter.remove();
             }
         }
-
-        values.forEach(this::addValue);
     }
 
 }

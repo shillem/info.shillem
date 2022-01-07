@@ -30,7 +30,11 @@ public abstract class SelectItems implements Serializable {
     }
 
     protected void setItems(List<SelectItem> items) {
-        this.items = items;
+        getItems().clear();
+
+        if (items != null) {
+            getItems().addAll(items);
+        }
     }
 
     public void sort(Comparator<SelectItem> comparator) {
