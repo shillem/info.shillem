@@ -79,6 +79,8 @@ public interface BaseDto<E extends Enum<E> & BaseField> {
     <T> T getValue(E key, Class<T> type);
 
     boolean isNew();
+    
+    boolean isValueEmpty(E key);
 
     boolean isValueTrue(E key);
 

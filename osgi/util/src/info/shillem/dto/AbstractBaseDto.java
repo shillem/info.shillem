@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import info.shillem.util.CastUtil;
+import info.shillem.util.StringUtil;
 
 public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
         implements BaseDto<E>, Serializable {
@@ -117,7 +118,7 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
             throw new UnsupportedOperationException(filter + " is not implemented");
         }
     }
-    
+
     @Override
     public <T> Set<T> getSet(E key, Class<T> type) {
         try {
@@ -162,6 +163,13 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
     }
 
     @Override
+    public boolean isValueEmpty(E key) {
+        return key.getValueType().getValueClass() == String.class
+                ? StringUtil.isEmpty(getString(key))
+                : Objects.isNull(getValue(key));
+    }
+
+    @Override
     public boolean isValueTrue(E key) {
         Boolean flag = getBoolean(key);
 
@@ -182,7 +190,7 @@ public abstract class AbstractBaseDto<E extends Enum<E> & BaseField>
                         key.getValueType().toString(),
                         type.getName()));
     }
-                                                                                                                                                                            
+
     @Override
     public void presetValue(E key, Object value) {
         ValueHolder holder = getValueHolder(key);
