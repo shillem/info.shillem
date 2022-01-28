@@ -1,176 +1,148 @@
 package info.shillem.sql.util;
 
+import java.lang.invoke.MethodHandles;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import info.shillem.sql.util.Schema.Column;
 import info.shillem.util.OrderOperator;
 
 public class SelectQuery {
 
-    public static class Column {
+    abstract static class L<T extends IComponent> extends SelectQueryLinked {
 
-        private final String name;
+        protected final List<T> instructions;
+        protected final String delimiter;
 
-        private String alias;
-        private String function;
-
-        public Column(String name) {
-            this.name = Objects.requireNonNull(name, "Column name cannot be null");
+        L(String delimiter) {
+            this.instructions = new ArrayList<>();
+            this.delimiter = delimiter;
         }
 
-        public String getName() {
-            return name;
-        }
+        L<T> addInstruction(T instruction) {
+            instructions.add(Objects.requireNonNull(instruction, "Instruction cannot be null"));
 
-        public Column withAlias(String alias) {
-            this.alias = alias;
+            if (instruction instanceof SelectQueryLinked) {
+                ((SelectQueryLinked) instruction).link(getSelect());
+            }
 
             return this;
         }
-
-        public Column withFunction(String function) {
-            this.function = Objects.requireNonNull(function, "Function cannot be null");
-
-            return this;
-        }
-
-    }
-
-    abstract static class L<T> {
-
-        protected List<T> instructions = new ArrayList<>();
 
         boolean isEmpty() {
             return instructions.isEmpty();
         }
 
-        public abstract String output(Schema schema);
+        public String output() {
+            return instructions.stream()
+                    .map((i) -> i.output())
+                    .collect(Collectors.joining(delimiter));
+        }
 
     }
 
-    public static class LGroup extends L<IGroup> {
+    public static class LGroup extends L<AGroup> {
 
         LGroup() {
-
+            super(", ");
         }
 
-        public LGroup add(IGroup instruction) {
-            instructions.add(Objects.requireNonNull(instruction, "Instruction cannot be null"));
-
-            return this;
-        }
-
-        @Override
-        public String output(Schema schema) {
-            return new StringBuilder()
-                    .append(instructions.stream()
-                            .map((i) -> i.output(schema))
-                            .collect(Collectors.joining(", ")))
-                    .toString();
+        public LGroup add(AGroup instruction) {
+            return (LGroup) addInstruction(instruction);
         }
 
     }
 
-    public static class LJoin extends L<IJoin> {
+    public static class LJoin extends L<AJoin> {
 
         LJoin() {
-
+            super("\n");
         }
 
-        public LJoin add(IJoin instruction) {
-            instructions.add(Objects.requireNonNull(instruction, "Instruction cannot be null"));
-
-            return this;
-        }
-
-        @Override
-        public String output(Schema schema) {
-            return instructions.stream()
-                    .map((i) -> i.output(schema))
-                    .collect(Collectors.joining("\n"));
+        public LJoin add(AJoin instruction) {
+            return (LJoin) addInstruction(instruction);
         }
 
     }
 
-    public static class LOrder extends L<IOrder> {
+    public static class LOrder extends L<AOrder> {
 
         LOrder() {
-
+            super(", ");
         }
 
-        public LOrder add(IOrder instruction) {
-            instructions.add(Objects.requireNonNull(instruction, "Instruction cannot be null"));
-
-            return this;
-        }
-
-        @Override
-        public String output(Schema schema) {
-            return new StringBuilder()
-                    .append(instructions.stream()
-                            .map((i) -> i.output(schema))
-                            .collect(Collectors.joining(", ")))
-                    .toString();
+        public LOrder add(AOrder instruction) {
+            return (LOrder) addInstruction(instruction);
         }
 
     }
 
-    public static class LWhere extends L<IWhere> {
+    public static class LWhere extends L<AWhere> {
 
         LWhere() {
-
+            super(" ");
         }
 
-        public LWhere add(IWhere instruction, IWhere... instrs) {
+        public LWhere add(AWhere instruction, AWhere... instrs) {
             Objects.requireNonNull(instruction, "Instruction cannot be null");
 
             if (instruction instanceof WhereLogic) {
-                if (!instructions.isEmpty()) {
-                    instructions.add(instruction);
+                if (!isEmpty()) {
+                    addInstruction(instruction);
                 }
             } else {
-                instructions.add(instruction);
+                addInstruction(instruction);
             }
 
             if (instrs != null) {
-                for (IWhere instr : instrs) {
-                    instructions.add(instr);
+                for (AWhere instr : instrs) {
+                    addInstruction(instr);
                 }
             }
 
             return this;
         }
 
-        public LWhere and(IWhere instruction) {
+        public LWhere and(AWhere instruction) {
             add(WhereLogic.AND, instruction);
 
             return this;
         }
 
-        public LWhere or(IWhere instruction) {
+        @Override
+        public void link(SelectQuery select) {
+            super.link(select);
+
+            instructions.forEach((i) -> i.link(select));
+        }
+
+        public LWhere or(AWhere instruction) {
             add(WhereLogic.OR, instruction);
 
             return this;
         }
 
         @Override
-        public String output(Schema schema) {
+        public String output() {
             StringBuilder builder = new StringBuilder();
 
-            for (IWhere instruction : instructions) {
+            for (AWhere instruction : instructions) {
                 if (instruction instanceof WhereLogic) {
                     builder
                             .append("\n\t")
-                            .append(instruction.output(schema))
-                            .append(" ");
+                            .append(instruction.output())
+                            .append(delimiter);
                 } else {
-                    builder.append(instruction.output(schema));
+                    builder.append(instruction.output());
                 }
             }
 
@@ -179,11 +151,18 @@ public class SelectQuery {
 
     }
 
-    private final List<Column> columns;
+    static final DateFormat SHORT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+    private final List<SelectColumn> columns;
     private final String from;
 
+    private Boolean distinct;
     private LGroup groups;
     private LJoin joins;
+    private boolean nested;
     private LOrder orders;
     private Schema schema;
     private Integer top;
@@ -196,14 +175,41 @@ public class SelectQuery {
         this.from = Objects.requireNonNull(from, "From from cannot be null");
     }
 
-    public SelectQuery column(Column column) {
+    public SelectQuery column(SelectColumn column) {
         columns.add(Objects.requireNonNull(column, "Column cannot be null"));
+        column.link(this);
 
         return this;
     }
 
     public SelectQuery column(String name) {
-        return column(new Column(name));
+        return column(new SelectColumn(name));
+    }
+
+    public SelectQuery distinct() {
+        return distinct(true);
+    }
+
+    public SelectQuery distinct(Boolean value) {
+        distinct = value;
+
+        return this;
+    }
+
+    Optional<Schema.Column> findSchemaColumn(String identifier) {
+        if (schema == null) {
+            return Optional.empty();
+        }
+
+        return schema.findColumnByAlias(identifier);
+    }
+
+    Optional<Schema.Table> findSchemaTable(String identifier) {
+        if (schema == null) {
+            return Optional.empty();
+        }
+
+        return schema.findTableByAlias(identifier);
     }
 
     public SelectQuery group(String name) {
@@ -215,14 +221,20 @@ public class SelectQuery {
     public LGroup groups() {
         if (groups == null) {
             groups = new LGroup();
+            groups.link(this);
         }
 
         return groups;
     }
 
+    boolean isNested() {
+        return nested;
+    }
+
     public LJoin joins() {
         if (joins == null) {
             joins = new LJoin();
+            joins.link(this);
         }
 
         return joins;
@@ -237,6 +249,7 @@ public class SelectQuery {
     public LOrder orders() {
         if (orders == null) {
             orders = new LOrder();
+            orders.link(this);
         }
 
         return orders;
@@ -251,19 +264,19 @@ public class SelectQuery {
                 .append(outputFrom());
 
         if (joins != null && !joins.isEmpty()) {
-            builder.append("\n").append(joins.output(schema));
+            builder.append("\n").append(joins.output());
         }
 
         if (wheres != null && !wheres.isEmpty()) {
-            builder.append("\nWHERE ").append(wheres.output(schema));
+            builder.append("\nWHERE ").append(wheres.output());
         }
 
         if (groups != null && !groups.isEmpty()) {
-            builder.append("\nGROUP BY ").append(groups.output(schema));
+            builder.append("\nGROUP BY ").append(groups.output());
         }
 
         if (orders != null && !orders.isEmpty()) {
-            builder.append("\nORDER BY ").append(orders.output(schema));
+            builder.append("\nORDER BY ").append(orders.output());
         }
 
         if (unions != null && !unions.isEmpty()) {
@@ -276,27 +289,29 @@ public class SelectQuery {
             builder.insert(0, "WITH ".concat(wrapper).concat(" AS (\n")).append(")");
         }
 
-        return builder.toString();
+        String result = builder.toString();
+
+        LOGGER.debug(result);
+
+        return result;
     }
 
-    public String outputFrom() {
+    private String outputFrom() {
         StringBuilder builder = new StringBuilder("FROM ");
 
         if (schema != null) {
-            Schema.Table t = schema.getTable(from);
-
-            if (t != null) {
-                builder.append(t.getName()).append(" ").append(from);
-            }
-        } else {
-            builder.append(from);
+            findSchemaTable(from).ifPresent((t) -> builder.append(t.getName()).append(" "));
         }
 
-        return builder.toString();
+        return builder.append(from).toString();
     }
 
-    public String outputSelect() {
+    private String outputSelect() {
         StringBuilder builder = new StringBuilder("SELECT");
+
+        if (distinct != null && distinct) {
+            builder.append(" DISTINCT");
+        }
 
         if (top != null) {
             builder.append(" TOP ").append(top);
@@ -306,47 +321,9 @@ public class SelectQuery {
             return builder.append("*").toString();
         }
 
-        Function<Column, String> columner;
-
-        if (schema != null) {
-            columner = (selectColumn) -> {
-                Schema.Column schemaColumn = schema.getColumn(selectColumn.getName());
-
-                if (schemaColumn == null) {
-                    return outputSelectColumn(
-                            selectColumn.getName(),
-                            selectColumn.alias,
-                            selectColumn.function);
-                }
-
-                return outputSelectColumn(
-                        joins != null
-                                ? schema.getColumnTable(schemaColumn).getKey()
-                                        .concat(".")
-                                        .concat(schemaColumn.getName())
-                                : schemaColumn.getName(),
-                        Optional.ofNullable(selectColumn.alias).orElse(selectColumn.getName()),
-                        selectColumn.function);
-            };
-        } else {
-            columner = (c) -> outputSelectColumn(c.getName(), c.alias, c.function);
-        }
-
-        builder.append(columns.stream()
-                .map(columner)
-                .collect(Collectors.joining(",")));
-
-        return builder.toString();
-    }
-
-    private String outputSelectColumn(String name, String alias, String function) {
-        StringBuilder builder = new StringBuilder("\n\t");
-
-        builder.append(function != null ? String.format(function, name) : name);
-
-        if (alias != null) {
-            builder.append(" AS ").append(alias);
-        }
+        builder.append("\n").append(columns.stream()
+                .map((c) -> c.output())
+                .collect(Collectors.joining(",\n")));
 
         return builder.toString();
     }
@@ -361,16 +338,20 @@ public class SelectQuery {
                 n.addAll(Arrays.asList(names));
             }
 
-            for (Column col : columns) {
-                Map.Entry<String, Schema.Table> t = schema.getColumnTable(col.getName());
+            for (SelectColumn col : columns) {
+                Optional<Column> opt = schema.findColumnByAlias(col.getName());
 
-                if (t != null && n.contains(t.getKey())) {
+                if (opt.isPresent() && n.contains(opt.get().getTable().getAlias())) {
                     return true;
                 }
             }
         }
 
         return false;
+    }
+
+    void setAsNested() {
+        nested = true;
     }
 
     public SelectQuery top(Integer value) {
@@ -392,6 +373,7 @@ public class SelectQuery {
     public LWhere wheres() {
         if (wheres == null) {
             wheres = new LWhere();
+            wheres.link(this);
         }
 
         return wheres;
@@ -407,27 +389,6 @@ public class SelectQuery {
         wrapper = value;
 
         return this;
-    }
-
-    static Function<String, String> getColumner(Schema schema) {
-        if (schema == null) {
-            return Function.identity();
-        }
-
-        return (n) -> {
-            Schema.Column c = schema.getColumn(n);
-
-            if (c == null) {
-                return n;
-            }
-
-            return new StringBuilder()
-                    .append(schema.getColumnTable(c).getKey())
-                    .append(".")
-                    .append(c.getName())
-                    .toString();
-        };
-
     }
 
 }

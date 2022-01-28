@@ -1,21 +1,87 @@
 package info.shillem.sql.util;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 public class Schema {
 
-    public class Column {
+    public static class Column {
 
+        private final Table table;
         private final String name;
+        private final ColumnAs nameAs;
 
-        Column(String name) {
-            this.name = Objects.requireNonNull(name, "Column name cannot be null");
+        private String alias;
+
+        Column(Table table, ColumnAs nameAs) {
+            this.table = table;
+            this.name = null;
+            this.nameAs = nameAs;
+        }
+
+        Column(Table table, String name) {
+            this.table = table;
+            this.name = name;
+            this.nameAs = null;
+        }
+
+        public String getAlias() {
+            return alias;
         }
 
         public String getName() {
             return name;
+        }
+
+        public ColumnAs getNameAs() {
+            return nameAs;
+        }
+
+        public Table getTable() {
+            return table;
+        }
+
+        public boolean isAliased() {
+            return alias != null;
+        }
+
+        public boolean isNameAs() {
+            return nameAs != null;
+        }
+
+        Column setAlias(String value) {
+            alias = value;
+
+            return this;
+        }
+
+    }
+
+    public static class ColumnAs {
+
+        private final Object value;
+        
+        private boolean untreat;
+
+        public ColumnAs(Object value) {
+            this.value = value;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+        
+        public boolean isAsIs() {
+            return untreat;
+        }
+        
+        public ColumnAs setAsIs(boolean flag) {
+            untreat = flag;
+            
+            return this;
         }
 
     }
@@ -23,33 +89,46 @@ public class Schema {
     public class Table {
 
         private final String name;
-        private final Map<String, Column> columns;
+        private final List<Column> columns;
 
+        private String alias;
         private boolean frozen;
 
         Table(String name) {
-            this.name = Objects.requireNonNull(name, "Table name cannot be null");
-            this.columns = new HashMap<>();
+            this.name = name;
+            this.columns = new ArrayList<>();
         }
 
-        public Table column(String name) {
-            return column(name, name);
-        }
-
-        public Table column(String alias, String name) {
+        private void checkFrozen() {
             if (frozen) {
                 throw new IllegalStateException("Cannot add a column after the table was frozen");
             }
+        }
 
-            columns.put(
-                    Objects.requireNonNull(alias, "Table column alias cannot be null"),
-                    new Column(name));
+        public Table column(ColumnAs nameAs, String alias) {
+            checkFrozen();
+
+            columns.add(new Column(this, nameAs).setAlias(alias));
+
+            return this;
+        }
+
+        public Table column(String name) {
+            return column(name, (String) null);
+        }
+
+        public Table column(String name, String alias) {
+            Objects.requireNonNull(name, "Table column name cannot be null");
+
+            checkFrozen();
+
+            columns.add(new Column(this, name).setAlias(alias));
 
             return this;
         }
 
         public boolean containsColumn(Column column) {
-            return columns.containsValue(column);
+            return columns.contains(column);
         }
 
         Table freeze() {
@@ -58,78 +137,86 @@ public class Schema {
             return this;
         }
 
-        public Column getColumn(String alias) {
-            return columns.get(alias);
+        public String getAlias() {
+            return alias;
         }
 
         public String getName() {
             return name;
         }
 
+        public boolean isAliased() {
+            return alias != null;
+        }
+
+        Table setAlias(String value) {
+            alias = value;
+
+            return this;
+        }
+
     }
 
-    private final Map<String, Table> tables;
+    private final List<Table> tables;
 
     private boolean frozen;
 
     public Schema() {
-        tables = new HashMap<>();
+        tables = new ArrayList<>();
+    }
+
+    public Optional<Column> findColumn(Predicate<Column> predicate) {
+        Objects.requireNonNull(predicate, "Predicate cannot be null");
+
+        for (Table table : tables) {
+            Optional<Column> optional = table.columns.stream().filter(predicate).findFirst();
+
+            if (optional.isPresent()) {
+                return optional;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    public Optional<Column> findColumnByAlias(String alias) {
+        Objects.requireNonNull(alias, "Alias cannot be null");
+
+        return findColumn((c) -> alias.equals(c.getAlias()));
+    }
+
+    public Optional<Table> findTable(Predicate<Table> predicate) {
+        return tables.stream().filter(predicate).findFirst();
+    }
+
+    public Optional<Table> findTableByAlias(String alias) {
+        Objects.requireNonNull(alias, "Alias cannot be null");
+
+        return findTable((t) -> alias.equals(t.getAlias()));
     }
 
     public Schema freeze() {
-        tables.values().forEach(Table::freeze);
+        tables.forEach(Table::freeze);
 
         frozen = true;
 
         return this;
     }
 
-    public Column getColumn(String alias) {
-        for (Table table : tables.values()) {
-            Column col = table.getColumn(alias);
-
-            if (col != null) {
-                return col;
-            }
-        }
-
-        return null;
+    public Table table(String name) {
+        return table(name, null);
     }
 
-    public Map.Entry<String, Table> getColumnTable(Column col) {
-        for (Map.Entry<String, Table> entry : tables.entrySet()) {
-            if (entry.getValue().containsColumn(col)) {
-                return entry;
-            }
-        }
+    public Table table(String name, String alias) {
+        Objects.requireNonNull(alias, "Schema table namea cannot be null");
 
-        return null;
-    }
-
-    public Map.Entry<String, Table> getColumnTable(String alias) {
-        for (Map.Entry<String, Table> entry : tables.entrySet()) {
-            if (entry.getValue().getColumn(alias) != null) {
-                return entry;
-            }
-        }
-
-        return null;
-    }
-
-    public Table getTable(String alias) {
-        return tables.get(alias);
-    }
-
-    public Table table(String alias, String name) {
         if (frozen) {
             throw new IllegalStateException("Cannot add a table after the schema was frozen");
         }
 
-        Objects.requireNonNull(alias, "Schema table alias cannot be null");
+        Table t = new Table(name).setAlias(alias);
 
-        Table t = new Table(name);
-
-        tables.put(alias, t);
+        tables.add(t);
 
         return t;
     }

@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
@@ -63,35 +64,40 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
             return group;
         }
         default:
-            return deserializeNode(entry);
+            return deserialize(entry);
         }
     }
 
-    private Query.Clause deserializeNode(Entry<String, JsonNode> node) {
-        E field = Enum.valueOf(cls, node.getKey());
-        Class<?> type = field.getValueType().getValueClass();
+    private Query.Clause deserialize(Map.Entry<String, JsonNode> entry) {
+        E field = Enum.valueOf(cls, entry.getKey());
 
-        if (!node.getValue().isObject()) {
-            return new Query.Value<>(field, deserializeValue(node.getValue(), type));
+        if (entry.getValue().isObject()) {
+            Entry<String, JsonNode> sub = entry.getValue().fields().next();
+            ComparisonOperator op = deserializeOperator(sub.getKey());
+
+            if (op != null) {
+                return deserialize(field, op, sub.getValue());
+            }
         }
 
-        Entry<String, JsonNode> entry = node.getValue().fields().next();
-        ComparisonOperator op = deserializeOperator(entry.getKey());
+        return deserialize(
+                field,
+                entry.getValue().isArray() ? ComparisonOperator.IN : ComparisonOperator.EQUAL,
+                entry.getValue());
+    }
 
-        if (op == null) {
-            throw new UnsupportedOperationException(
-                    entry.getKey() + " is not a supported operator");
-        }
+    private Query.Clause deserialize(E field, ComparisonOperator op, JsonNode node) {
+        Class<?> cls = field.getValueType().getValueClass();
 
-        if (entry.getValue().isArray()) {
-            Set<Object> values = StreamUtil.stream(entry.getValue().iterator())
-                    .map((val) -> deserializeValue(val, type))
+        if (node.isArray()) {
+            Set<Object> values = StreamUtil.stream(node.iterator())
+                    .map((val) -> deserializeValue(val, cls))
                     .collect(Collectors.toSet());
 
             return new Query.Values<>(field, values, op);
         }
 
-        return new Query.Value<>(field, deserializeValue(entry.getValue(), type), op);
+        return new Query.Value<>(field, deserializeValue(node, cls), op);
     }
 
     private ComparisonOperator deserializeOperator(String token) {
@@ -120,6 +126,10 @@ public class JsonQuery<E extends Enum<E> & BaseField> {
     }
 
     private Object deserializeValue(JsonNode node, Class<?> type) {
+        if (node.isNull()) {
+            return null;
+        }
+        
         if (type.isEnum()) {
             return StringUtil.enumFromString(type, node.asText());
         }

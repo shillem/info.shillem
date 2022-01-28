@@ -2,7 +2,7 @@ package info.shillem.sql.util;
 
 import info.shillem.sql.util.SelectQuery.LWhere;
 
-public class WhereGroup implements IWhere {
+public class WhereGroup extends AWhere {
 
     private final LWhere wheres;
 
@@ -11,10 +11,15 @@ public class WhereGroup implements IWhere {
     }
 
     @Override
-    public String output(Schema schema) {
+    public String output() {
         return wheres.isEmpty()
                 ? ""
-                : "(".concat(wheres.output(schema)).concat(")");
+                : "(".concat(wheres.output()).concat(")");
+    }
+
+    @Override
+    public void link(SelectQuery select) {
+        wheres.link(select);
     }
 
     public LWhere wheres() {

@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Shillem Log Plug-in
+Bundle-SymbolicName: info.shillem.log;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: Shillem Volpato
+Bundle-ClassPath: lib/logback-core-1.2.10.jar,
+ lib/logback-classic-1.2.10.jar,
+ lib/slf4j-api-1.7.30.jar,
+ .
+Eclipse-BuddyPolicy: registered
+Export-Package: org.slf4j;version="1.7.30",
+ org.slf4j.event;version="1.7.30",
+ org.slf4j.helpers;version="1.7.30",
+ org.slf4j.impl;version="1.7.30",
+ org.slf4j.spi;version="1.7.30"
+Import-Package: org.osgi.framework
+Bundle-Activator: info.shillem.log.Activator
+Bundle-ActivationPolicy: lazy

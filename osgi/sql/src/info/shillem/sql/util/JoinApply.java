@@ -2,7 +2,7 @@ package info.shillem.sql.util;
 
 import java.util.Objects;
 
-public class Apply implements IJoin {
+public class JoinApply extends AJoin {
 
     public enum Type {
         CROSS_APPLY,
@@ -13,23 +13,23 @@ public class Apply implements IJoin {
     private final SelectQuery innerTable;
     private final Type type;
 
-    public Apply(Type type, SelectQuery innerTable, String alias) {
+    public JoinApply(Type type, SelectQuery innerTable, String alias) {
         this.alias = Objects.requireNonNull(alias, "Alias cannot be null");
         this.innerTable = Objects.requireNonNull(innerTable, "Table cannot be null");
         this.type = Objects.requireNonNull(type, "Type cannot be null");
     }
 
     @Override
-    public String output(Schema schema) {
+    public String output() {
         StringBuilder builder = new StringBuilder("\t")
                 .append(outputType())
                 .append(" ")
-                .append(outputTable(schema));
+                .append(outputTable());
 
         return builder.toString();
     }
 
-    private String outputTable(Schema schema) {
+    private String outputTable() {
         return "(".concat(innerTable.output()).concat(") ").concat(alias);
     }
 
