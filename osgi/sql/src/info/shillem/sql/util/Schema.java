@@ -63,6 +63,8 @@ public class Schema {
     public static class ColumnAs {
 
         private final Object value;
+        
+        private boolean untreat;
 
         public ColumnAs(Object value) {
             this.value = value;
@@ -70,6 +72,16 @@ public class Schema {
 
         public Object getValue() {
             return value;
+        }
+        
+        public boolean isAsIs() {
+            return untreat;
+        }
+        
+        public ColumnAs setAsIs(boolean flag) {
+            untreat = flag;
+            
+            return this;
         }
 
     }

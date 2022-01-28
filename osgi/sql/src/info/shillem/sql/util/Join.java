@@ -30,18 +30,25 @@ public class Join extends AJoin {
 
         @Override
         public String output() {
-            String left = getJoin()
-                    .findSchemaColumn(acol)
-                    .map(Schema.Column::getName)
-                    .orElse(acol);
+            String left, right;
 
-            String right = getJoin()
-                    .findSchemaColumn(Optional.ofNullable(bcol).orElse(acol))
-                    .map(Schema.Column::getName)
-                    .orElse(Optional.ofNullable(bcol).orElse(acol));
+            if (getJoin().ignoreSchema) {
+                left = acol;
+                right = Optional.ofNullable(bcol).orElse(acol);
+            } else {
+                left = getJoin()
+                        .findSchemaColumn(acol)
+                        .map(Schema.Column::getName)
+                        .orElse(acol);
+
+                right = getJoin()
+                        .findSchemaColumn(Optional.ofNullable(bcol).orElse(acol))
+                        .map(Schema.Column::getName)
+                        .orElse(Optional.ofNullable(bcol).orElse(acol));
+            }
 
             BiFunction<String, String, String> wrapper =
-                    (fn, name) -> fn != null ? String.format(fn, name) : name;
+                    (name, fn) -> fn != null ? String.format(fn, name) : name;
 
             return new StringBuilder()
                     .append(wrapper.apply(getJoin().table.concat(".").concat(left), afun))
@@ -120,6 +127,8 @@ public class Join extends AJoin {
     private final SelectQuery innerTable;
     private final Type type;
 
+    private boolean ignoreSchema;
+
     public Join(Type type, String table) {
         this(type, table, null);
     }
@@ -180,6 +189,12 @@ public class Join extends AJoin {
         default:
             throw new UnsupportedOperationException(type.name());
         }
+    }
+
+    public Join setIgnoreSchema(boolean flag) {
+        ignoreSchema = flag;
+        
+        return this;
     }
 
 }

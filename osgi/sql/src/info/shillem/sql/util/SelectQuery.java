@@ -119,7 +119,7 @@ public class SelectQuery {
         }
 
         @Override
-        protected void link(SelectQuery select) {
+        public void link(SelectQuery select) {
             super.link(select);
 
             instructions.forEach((i) -> i.link(select));

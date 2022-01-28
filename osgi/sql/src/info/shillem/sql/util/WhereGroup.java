@@ -18,7 +18,7 @@ public class WhereGroup extends AWhere {
     }
 
     @Override
-    protected void link(SelectQuery select) {
+    public void link(SelectQuery select) {
         wheres.link(select);
     }
 

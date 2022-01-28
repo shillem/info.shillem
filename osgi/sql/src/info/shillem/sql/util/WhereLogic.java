@@ -18,7 +18,7 @@ public class WhereLogic extends AWhere {
     }
     
     @Override
-    protected void link(SelectQuery select) {
+    public void link(SelectQuery select) {
         // Unlinked
     }
 

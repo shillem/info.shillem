@@ -27,7 +27,7 @@ abstract class SelectQueryLinked {
         return getSelect() != null && getSelect().isNested();
     }
 
-    protected void link(SelectQuery select) {
+    public void link(SelectQuery select) {
         if (this.select != null) {
             throw new IllegalStateException(
                     getClass().getName().concat(" is already linked to ")
@@ -48,9 +48,11 @@ abstract class SelectQueryLinked {
             }
 
             if (value instanceof String) {
-                String val = ((String) value).replaceAll("'", "''");
+                String val = ((String) value);
 
-                return "'".concat(val).concat("'");
+                return col.getNameAs().isAsIs()
+                        ? val
+                        : "'".concat(val.replaceAll("'", "''")).concat("'");
             }
 
             if (value instanceof Date) {
